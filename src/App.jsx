@@ -1,7 +1,8 @@
  
 import React from 'react';
 import { Breadcrumb, Layout, Menu, theme } from 'antd';
-import PosForm from './components/PosForm';
+// import PosForm from './components/PosForm';
+import TransactionForm from './components/TransactionForm';
 
 const { Header, Content, Footer } = Layout;
 const items = new Array(3).fill(null).map((_, index) => ({
@@ -39,9 +40,10 @@ const App = () => {
             minHeight: 380,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
+            maxWidth:448
           }}
         >
-          <PosForm />
+          <TransactionForm />
         </div>
       </Content>
       <Footer style={{ textAlign: 'center'}}>
