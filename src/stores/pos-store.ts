@@ -27,8 +27,8 @@ interface POSState
     mm_km: number
     food_charge: number
     grandTotalPOS: number
-    updateField: (field: string, value: any) => Promise<void>
-    calculateTotals: (field: string, value: any) => Promise<void>
+    updateField: (field: string, value: number) => Promise<void>
+    calculateTotals: (field: string, value: number) => Promise<void>
 }
 
 export const usePOSStore = create<POSState>((set) => (
