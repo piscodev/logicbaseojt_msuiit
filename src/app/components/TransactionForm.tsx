@@ -304,7 +304,7 @@ const TransactionForm = () => {
                     <Form.Item
                     name={'_payment'}
                     rules={[{ required: true, message: 'Missing payment category' }]}
-                    style={{ width: '40%'}}
+                    style={{ width: '80%'}}
                     >
                         <Select placeholder="Select Category" >
                             {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
@@ -326,7 +326,7 @@ const TransactionForm = () => {
                     name={'_payment_amount'}
                     rules={[{ required: true, message: 'Missing payment amount' }]}
                     >   
-                        <InputNumber style={{ width: '240px'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
+                        <InputNumber style={{ width: 'auto'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
                         {/* <Input placeholder="Enter amount" /> */}
                     </Form.Item>
                     

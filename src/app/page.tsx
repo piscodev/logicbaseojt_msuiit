@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Breadcrumb, Layout, Menu, theme, ConfigProvider } from "antd";
+import { Breadcrumb, Layout, Menu, ConfigProvider, Col, Row, Card } from "antd";
 import TransactionForm from "./components/TransactionForm";
+import TransactionTable from "./components/TransactionTable";
 
 const { Header, Content, Footer } = Layout;
 
@@ -12,7 +13,10 @@ const items = new Array(3).fill(null).map((_, index) => ({
 }));
 
 export default function Home() {
-  
+  // const {
+  //   token: { colorBgContainer, borderRadiusLG },
+  // } = theme.useToken();
+
   return (
     <ConfigProvider>
       <Layout>
@@ -38,7 +42,20 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
-            <TransactionForm />
+          <Row>
+            <Col span={18} push={6} className="p-3">
+              <Card title="Transactions Log">
+                col-18 col-push-6
+                <TransactionTable />
+              </Card>
+            </Col>
+            <Col span={6} pull={18} className="p-3">
+              <Card title="Transaction Form">
+                col-6 col-pull-18
+                <TransactionForm />
+              </Card>
+            </Col>
+          </Row>
         </Content>
         <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()}
