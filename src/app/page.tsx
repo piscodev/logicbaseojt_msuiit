@@ -12,10 +12,7 @@ const items = new Array(3).fill(null).map((_, index) => ({
 }));
 
 export default function Home() {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-
+  
   return (
     <ConfigProvider>
       <Layout>
@@ -41,17 +38,7 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
-          <div
-            style={{
-              padding: 24,
-              minHeight: 380,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-              maxWidth:448
-            }}
-          >
             <TransactionForm />
-          </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()}
