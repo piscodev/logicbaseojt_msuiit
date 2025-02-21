@@ -47,6 +47,7 @@ export default function Home() {
               minHeight: 380,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
+              maxWidth:448
             }}
           >
             <TransactionForm />
