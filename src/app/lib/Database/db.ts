@@ -6,10 +6,10 @@ dotenv.config();
 
 // Create a pool with proper configuration
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
+  host: process.env.DB_HOST, // "mysql-9f132e1-tcmc-62a0.l.aivencloud.com"
+  user: process.env.DB_USER, // "avnadmin"
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  database: process.env.DB_NAME, // "logicbase_ojt_db"
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import type { AutoCompleteProps, StatisticProps, InputNumberProps } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { Alert, AutoComplete, Divider, Form, Input, Button, Space, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
+import { TransactionValuesState } from '../lib/Interface/route';
 // import debounce from 'lodash/debounce';
 
 // async function fetchUserList(username: string) {
@@ -102,14 +103,39 @@ import CountUp from 'react-countup';
 // const onFinish = (values: any) => {
 //     console.log('Received values of form:', values);
 // };
-
+interface Cashier{
+    name: string
+}
 const TransactionForm = () => {
     const [form] = Form.useForm();
+    const [isMounted, setIsMounted] = useState(false);
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([
-        { value: 'Marie' },
-        { value: 'Cherry' },
-        { value: 'John' },
+        // { value: 'Marie' },
+        // { value: 'Cherry' },
+        // { value: 'John' },
       ]);
+    const fetchCashiers = async() => {
+        try{
+            const response = await fetch(`/api/getCashiers`);
+            if(!response.ok) throw new Error('Failed to fetch cashiers');
+            const data = await response.json();
+            const cashierName = data.map((cashier:Cashier) => ({
+                ...cashier,
+                value: cashier.name
+            }))
+            setCashiers(cashierName)
+        }catch(error){
+            console.error('Error fetching users: ', error);
+        }
+    };
+    useEffect(() => {
+        if (!isMounted) {
+          setIsMounted(true);
+          return;
+        }
+        fetchCashiers();
+      }, [isMounted]);
+    
     
     const prevValueSubTotalTradePosRef = useRef<number | 0>(0)
     const prevValueSubTotalNonTradePosRef = useRef<number | 0>(0)
@@ -130,11 +156,11 @@ const TransactionForm = () => {
     );}
       const onChange: InputNumberProps['onChange'] = (value) => {
         console.log('changed', value);
-        setCashiers([
-            { value: 'Marie' },
-            { value: 'Cherry' },
-            { value: 'John' },
-          ])
+        // setCashiers([
+        //     { value: 'Marie' },
+        //     { value: 'Cherry' },
+        //     { value: 'John' },
+        //   ])
     };
     const watchResult = Form.useWatch((values) => {
     let subTotalTrade : number = prevValueSubTotalTradePosRef.current;
@@ -234,7 +260,7 @@ const TransactionForm = () => {
     const [componentDisabled, setComponentDisabled] = useState(true);
     const [isFilled, setIsFilled] = useState(true);
     const addTransaction = useTransactionStore((state) => state.addTransaction);
-    const logFinalValues = useTransactionStore((state) => state.logFinalValues);
+    const finalValues = useTransactionStore((state) => state.finalValues);
     // const [paymentFieldCount, setPaymentFieldCount] = useState(1);
     interface TransactionFormValues {
         cashier_name: string;
@@ -247,9 +273,25 @@ const TransactionForm = () => {
         other_expenses?: { payment: string; payment_amount: string }[];
     }
 
-    const onFinish = (values: TransactionFormValues) => {
+    const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
-        logFinalValues();
+        
+        const data : TransactionValuesState = finalValues() as TransactionValuesState;
+        try{
+            const response = await fetch(`/api/addTransaction`, {
+               method: 'POST',
+               headers: {
+                'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(data)
+            });
+            if(!response.ok){
+                throw new Error('Failed to add transaction');
+            }
+            console.log('Transaction added succcessfully');
+        } catch (error){
+            console.error('Error adding transaction: ', error);
+        }
         // Reset the form fields
         form.resetFields();
     };

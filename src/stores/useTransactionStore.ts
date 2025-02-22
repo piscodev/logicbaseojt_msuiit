@@ -13,9 +13,9 @@ interface TransactionFormValues {
     _expense_amount?: number;
     other_expenses?: other[];
   }
-interface TransactionValuesState {
+export interface TransactionValuesState {
     addTransaction: (values:TransactionFormValues) => void;
-    logFinalValues: () => void;
+    finalValues: () => TransactionFormValues;
     cashier_name: string;
     shift: string;
     _payment: string;
@@ -37,8 +37,8 @@ interface TransactionValuesState {
     foodpanda?: number
     streetby?: number
     grabfood?: number
-    gc_claimed_oth?: boolean
-    gc_claimed_own?: boolean
+    gc_claimed_oth?: number
+    gc_claimed_own?: number
     /* Non POS Sales Transactions */
     mm_head?: number
     mm_commisary?: number
@@ -54,7 +54,7 @@ interface TransactionValuesState {
     short_over_POS?: number
 
 }
-const useTransactionStore = create<TransactionValuesState>((set)=>({
+const useTransactionStore = create<TransactionValuesState>((set, get)=>({
     cashier_name: '',
     shift: '',
     _payment: '',
@@ -76,8 +76,8 @@ const useTransactionStore = create<TransactionValuesState>((set)=>({
     foodpanda: 0,
     streetby: 0,
     grabfood: 0,
-    // gc_claimed_oth: boolean
-    // gc_claimed_own?: boolean
+    gc_claimed_oth: 0,
+    gc_claimed_own: 0,
     /* Non POS Sales Transactions */
     mm_head: 0,
     mm_commisary: 0,
@@ -156,7 +156,7 @@ const useTransactionStore = create<TransactionValuesState>((set)=>({
           shift: values.shift,
         };
       }),
-      logFinalValues: () => {
+      finalValues: (): TransactionValuesState => {
         set((state) => {
           console.log('Final Transaction Values:', {
             cashier_name: state.cashier_name,
@@ -185,10 +185,38 @@ const useTransactionStore = create<TransactionValuesState>((set)=>({
             z_reading_POS: state.z_reading_POS,
             short_over_POS: state.short_over_POS,
           });
+          
           return state;
         });
-      },
-
-}))
-            
+        const state = get();
+        const data: TransactionValuesState = {
+          cashier_name: state.cashier_name,
+          shift: state.shift,
+          cash: state.cash,
+          check: state.check,
+          bpi_cc: state.bpi_cc,
+          bpi_dc: state.bpi_dc,
+          metro_cc: state.metro_cc,
+          metro_dc: state.metro_dc,
+          pay_maya: state.pay_maya,
+          aub_cc: state.aub_cc,
+          gcash: state.gcash,
+          foodpanda: state.foodpanda,
+          streetby: state.streetby,
+          grabfood: state.grabfood,
+          mm_head: state.mm_head,
+          mm_commisary: state.mm_commisary,
+          mm_: state.mm_,
+          mm_rm: state.mm_rm,
+          mm_dm: state.mm_dm,
+          mm_km: state.mm_km,
+          food_charge: state.food_charge,
+          sub_total_trade_POS: state.sub_total_trade_POS,
+          grand_total_trade_POS: state.grand_total_trade_POS,
+          z_reading_POS: state.z_reading_POS,
+          short_over_POS: state.short_over_POS,
+        } as TransactionValuesState;
+        return data;
+      }
+}))    
 export default useTransactionStore;
