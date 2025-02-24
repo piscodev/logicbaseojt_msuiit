@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
+    "antd-style": "^3.7.1",
     "dotenv": "^16.4.7",
     "lodash": "^4.17.21",
     "mysql2": "^3.12.0",

@@ -55,6 +55,23 @@ CREATE TABLE IF NOT EXISTS `TransactionDetail` (
 ) ENGINE=InnoDB;
 
 USE `logicbase_ojt_db`;
+-- INSERT INTO `Cashier` (`name`, `hashed_password`, `email`, `registeredAt`) VALUES ('Cherry', '$2a$10$vvk3fsM0XzkqxxNQW6ZMsOQl48VAWnjKr74SIHfn2fBXHElidYfou', 'my.test@email.com', NOW());
+-- INSERT INTO `Cashier` (`name`, `hashed_password`, `email`, `registeredAt`) VALUES ('John', '$2a$10$vvk3fsM0XzkqxxNQW6ZMsOQl48VAWnjKr74SIHfn2fBXHElidYfou', 'my.test2@email.com', NOW());
 
-INSERT INTO `Cashier` (`name`, `hashed_password`, `email`, `registeredAt`) VALUES ('Cherry', '$2a$10$vvk3fsM0XzkqxxNQW6ZMsOQl48VAWnjKr74SIHfn2fBXHElidYfou', 'my.test@email.com', NOW());
-INSERT INTO `Cashier` (`name`, `hashed_password`, `email`, `registeredAt`) VALUES ('John', '$2a$10$vvk3fsM0XzkqxxNQW6ZMsOQl48VAWnjKr74SIHfn2fBXHElidYfou', 'my.test2@email.com', NOW());
+-- INSERTING ESSENTIAL DATA:
+
+INSERT IGNORE INTO `Shift` (`name`) VALUES ('AM'), ('MID'), ('PM');
+INSERT IGNORE INTO `Particular` (`name`, `type`, `fee_percent`) 
+VALUES ('Cash', 'Trade', 0), ('Check', 'Trade', 0),
+('BPI Credit Card', 'Trade', 3.00), ('BPI Debit Card', 'Trade', 1.50),
+('Metro Credit Card', 'Trade', 1.50), ('Metrobank Debit Card', 'Trade', 1.00), 
+('AUB Credit Card', 'Trade', 1.50),
+('GCash', 'Trade', 1.50), ('Pay Maya', 'Trade', 2.25),
+('Food Panda', 'Trade', 25.00), ('Streetby', 'Trade', 10.00),
+('Grab Food', 'Trade', 20.00);
+
+INSERT IGNORE INTO `Particular` (`name`, `type`) 
+VALUES ('Food Charge', 'Non-Trade'), ('MM-HEAD OFFICE', 'Non-Trade'),
+('MM-COMMISSARY', 'Non-Trade'), ('MM-RM', 'Non-Trade'), ('MM-KM', 'Non-Trade'), ('MM-DM', 'Non-Trade')
+
+		
