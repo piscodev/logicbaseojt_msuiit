@@ -55,5 +55,6 @@ CREATE TABLE IF NOT EXISTS `TransactionDetail` (
 ) ENGINE=InnoDB;
 
 USE `logicbase_ojt_db`;
+
 INSERT INTO `Cashier` (`name`, `hashed_password`, `email`, `registeredAt`) VALUES ('Cherry', '$2a$10$vvk3fsM0XzkqxxNQW6ZMsOQl48VAWnjKr74SIHfn2fBXHElidYfou', 'my.test@email.com', NOW());
 INSERT INTO `Cashier` (`name`, `hashed_password`, `email`, `registeredAt`) VALUES ('John', '$2a$10$vvk3fsM0XzkqxxNQW6ZMsOQl48VAWnjKr74SIHfn2fBXHElidYfou', 'my.test2@email.com', NOW());
