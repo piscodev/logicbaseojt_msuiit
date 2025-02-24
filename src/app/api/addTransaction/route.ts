@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         const {
             cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge//, sub_total_trade_POS, grand_total_trade_POS, z_reading_POS, short_over_POS
         }: TransactionValuesState = await req.json();
-  
+        console.log("Received: ", cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge)
         // Validate if all fields are provided
         if (!cashier_name || !shift && (!cash || !check || !bpi_cc || !bpi_dc || !metro_cc || !metro_dc || !pay_maya || !aub_cc || !gcash || !foodpanda || !streetby || !grabfood || !mm_head || !mm_commisary || !mm_ || !mm_rm || !mm_dm || !mm_km || !food_charge)) {
             return NextResponse.json({ error: 'Some required fields are not filled' }, { status: 400 });
@@ -17,8 +17,10 @@ export async function POST(req: NextRequest) {
   
         let connection;
         try {
+            console.log('get connection')
             connection = await pool.getConnection();
             await connection.beginTransaction();
+            console.log('Connection established, begin transaction')
   
             // Check if a shift report already exists for the given day and shift
             const existingShift:[TransactionValuesState[], FieldPacket[]]=  await connection.query(
@@ -28,8 +30,8 @@ export async function POST(req: NextRequest) {
                 WHERE t.date = NOW() AND s.name = ?`,
                 [shift]
             ) as [TransactionValuesState[], FieldPacket[]];
-  
-            if (existingShift.length > 0) {
+            console.log('existing shift data: ', existingShift[0])
+            if (existingShift[0].length > 0) {
                 await connection.rollback();
                 return NextResponse.json({ error: `Shift report for ${shift} already exists for today` }, { status: 400 });
             }
@@ -55,7 +57,7 @@ export async function POST(req: NextRequest) {
                 { name: 'Metro Debit Card', amount: metro_dc },
                 { name: 'Pay Maya', amount: pay_maya },
                 { name: 'AUB Credit Card', amount: aub_cc },
-                { name: 'GCASH', amount: gcash },
+                { name: 'GCash', amount: gcash },
                 { name: 'Food Panda', amount: foodpanda },
                 { name: 'Streetby', amount: streetby },
                 { name: 'Grab Food', amount: grabfood },
