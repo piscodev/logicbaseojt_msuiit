@@ -104,7 +104,7 @@ import { TransactionValuesState } from '../lib/Interface/route';
 //     console.log('Received values of form:', values);
 // };
 interface Cashier{
-    name: string
+    value: string
 }
 const TransactionForm = () => {
     const [form] = Form.useForm();
@@ -121,11 +121,15 @@ const TransactionForm = () => {
             });
             if(!response.ok) throw new Error('Failed to fetch cashiers');
             const data = await response.json();
-            const cashierName = data.map((cashier:Cashier) => ({
+            console.log('data: ', data.cashiers);//data:  (2) [{…}, {…}]0: value: "Cherry"[[Prototype]]: Object1: value: "John"[[Prototype]]: Objectlength: 2[[Prototype]]: Array(0)
+
+            // const cashierNames = data.cashiers;
+            const cashierNames = data.cashiers.map((cashier:Cashier) => ({
                 ...cashier,
-                value: cashier.name
+                value: cashier.value
             }))
-            setCashiers(cashierName)
+            
+            setCashiers(cashierNames)
         }catch(error){
             console.error('Error fetching users: ', error);
         }
@@ -133,9 +137,9 @@ const TransactionForm = () => {
     useEffect(() => {
         if (!isMounted) {
           setIsMounted(true);
+          fetchCashiers();
           return;
         }
-        fetchCashiers();
       }, [isMounted]);
     
     

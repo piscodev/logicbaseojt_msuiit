@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
       ) as [Cashier[],FieldPacket[]];
       console.log('Result: ', rows);
       // Extract just the names from the result
-      const cashiers = rows.map((row: Cashier) => row.name);
+      const cashiers = rows.map((row: Cashier) => ({
+        value: row.name}));
       
       return NextResponse.json(
         { cashiers },
