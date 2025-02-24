@@ -3,8 +3,8 @@
 import React from "react";
 import { Breadcrumb, Layout, Menu, ConfigProvider, Col, Row, Card } from "antd";
 import TransactionForm from "./components/TransactionForm";
-import TransactionTable from "./components/TransactionTable";
-
+// import TransactionTable from "./components/TransactionTable";
+import TestTable from "@/app/components/testTable"
 const { Header, Content, Footer } = Layout;
 
 const items = new Array(3).fill(null).map((_, index) => ({
@@ -45,13 +45,11 @@ export default function Home() {
           <Row>
             <Col span={18} push={6} className="p-3">
               <Card title="Transactions Log">
-                col-18 col-push-6
-                <TransactionTable />
+                <TestTable />
               </Card>
             </Col>
             <Col span={6} pull={18} className="p-3">
               <Card title="Transaction Form">
-                col-6 col-pull-18
                 <TransactionForm />
               </Card>
             </Col>

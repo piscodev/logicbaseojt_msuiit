@@ -3,7 +3,7 @@ import { FieldPacket, ResultSetHeader } from "mysql2";
 import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { TransactionValuesState } from '@/app/lib/Interface/route';
-  
+import { DateTime } from "luxon";
 export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
         const {
@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
         }
   
         let connection;
+        const currentDate = DateTime.now().setZone('Asia/Manila').toFormat('yyyy-LL-dd')
         try {
             console.log('get connection')
             connection = await pool.getConnection();
@@ -27,8 +28,8 @@ export async function POST(req: NextRequest) {
                 `SELECT t.id 
                 FROM Transaction t
                 JOIN Shift s ON t.shift_id = s.id
-                WHERE t.date = NOW() AND s.name = ?`,
-                [shift]
+                WHERE t.date = ? AND s.name = ?`,
+                [currentDate, shift]
             ) as [TransactionValuesState[], FieldPacket[]];
             console.log('existing shift data: ', existingShift[0])
             if (existingShift[0].length > 0) {
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: `Shift report for ${shift} already exists for today` }, { status: 400 });
             }
             // 2. Create transaction
-            const [txResult]: [ ResultSetHeader, FieldPacket[]] = await connection.query(
+            const [txResult]: [ResultSetHeader, FieldPacket[]] = await connection.query(
                 `INSERT INTO Transaction (cashier_id, shift_id, date)
                 VALUES (
                 (SELECT id FROM Cashier WHERE name = ?),

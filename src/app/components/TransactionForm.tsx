@@ -5,115 +5,14 @@ import { Alert, AutoComplete, Divider, Form, Input, Button, Space, Select, Check
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
 import { TransactionValuesState } from '../lib/Interface/route';
-// import debounce from 'lodash/debounce';
 
-// async function fetchUserList(username: string) {
-    // console.log('fetching user', username);
-    /** 
-     * TEMPORARY HARD CODED FETCH IMPLEMENTATION.
-     * REPLACE WITH ACTUAL API FETCH TO DATABASE
-     * **/
-    // const cashiers = [
-    //     { id: 1, name: 'John Doe' },
-    //     { id: 2, name: 'Jane Doe'  },
-    //     { id: 3, name: 'Bob Smith'  },
-    //     { id: 4, name: 'Alice Johnson' },
-    //     { id: 5, name: 'Mike Williams' },
-    //     { id: 6, name: 'Will Smith'  },
-    //     { id: 7, name: 'Marie Curry' },
-    //     { id: 8, name: 'Stephen Carlson' },
-    //     // add more cashiers here...
-    // ];
-    // const data = {results: cashiers.slice(0, 5)};
-    // return  data.results.map((cashier) => ({
-    //           label: `${cashier.name}`,
-    //           value: cashier.name,
-            // }));
-    // return fetch('http://localhost:5173/api/getCashiers?results=5')//get cashiers then slice and return only 5
-    //   .then((response) => {
-    //     if(!response.ok){
-    //         throw new Error(`HTTP error! status: ${response.status}`)
-    //     }
-    //     return response.json()})
-    //   .then((body) =>
-    //     body.results.map((cashier) => ({
-    //       label: `${cashier.name}`,
-    //       value: cashier.name,
-    //     })),
-    //   );
-//   }
-// interface DebounceSelectProps {
-//   fetchOptions: (value: string) => Promise<{ label: string; value: string }[]>;
-//   debounceTimeout?: number;
-//   [key: string]: any;
-// }
-
-// function DebounceSelect({ fetchOptions, debounceTimeout = 800, ...props }: DebounceSelectProps) {
-//     const [fetching, setFetching] = useState(false);
-//     const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
-//     const fetchRef = useRef(0);
-//     const debounceFetcher = useMemo(() => {
-//       const loadOptions = (value: string) => {
-//         fetchRef.current += 1;
-//         const fetchId = fetchRef.current;
-//         setOptions([]);
-//         setFetching(true);
-//         fetchOptions(value).then((newOptions) => {
-//           if (fetchId !== fetchRef.current) {
-//             // for fetch callback order
-//             return;
-//           }
-//           setOptions(newOptions);
-//           setFetching(false);
-//         });
-//       };
-//       return debounce(loadOptions, debounceTimeout);
-//     }, [fetchOptions, debounceTimeout]);
-//     return (
-//       <Select
-//         labelInValue
-//         filterOption={false}
-//         onSearch={debounceFetcher}
-//         notFoundContent={fetching ? <Spin size="small" /> : null}
-//         {...props}
-//         options={options}
-//       />
-//     );
-//   }
-
-// const SelectFetch = () => {
-//     const [value, setValue] = useState([]);
-//   return (
-//     <DebounceSelect
-//       mode="multiple"
-//       maxCount='1'
-//       value={value}
-//       placeholder="Select users"
-//       fetchOptions={fetchUserList}
-//       onChange={(newValue: React.SetStateAction<never[]>) => {
-//         setValue(newValue);
-//       }}
-//       style={{
-//         width: '100%',
-//       }}
-//     />
-//   );
-// };
-
-// const onFinish = (values: any) => {
-//     console.log('Received values of form:', values);
-// };
 interface Cashier{
     value: string
 }
 const TransactionForm = () => {
     const [form] = Form.useForm();
     const [isMounted, setIsMounted] = useState(false);
-    const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([
-        // { value: 'Marie' },
-        // { value: 'Cherry' },
-        // { value: 'John' },
-      ]);
+    const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashiers`, {
@@ -121,9 +20,6 @@ const TransactionForm = () => {
             });
             if(!response.ok) throw new Error('Failed to fetch cashiers');
             const data = await response.json();
-            console.log('data: ', data.cashiers);//data:  (2) [{…}, {…}]0: value: "Cherry"[[Prototype]]: Object1: value: "John"[[Prototype]]: Objectlength: 2[[Prototype]]: Array(0)
-
-            // const cashierNames = data.cashiers;
             const cashierNames = data.cashiers.map((cashier:Cashier) => ({
                 ...cashier,
                 value: cashier.value
@@ -151,22 +47,20 @@ const TransactionForm = () => {
         
         return (
         
-            <CountUp start={startValue as number} end={value as number} separator="," decimals={2} onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number;}}/>
+            <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2}
+            onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number;}}
+            />
         );
     } 
     const formatter_subTotalNonTradePos: StatisticProps['formatter'] = (value) => {
         const startValue = prevValueSubTotalNonTradePosRef.current;
         
         return(
-        <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2} onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number; }}/>
+        <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2} onEnd={ () => {
+            prevValueSubTotalTradePosRef.current = value as number; }}/>
     );}
       const onChange: InputNumberProps['onChange'] = (value) => {
         console.log('changed', value);
-        // setCashiers([
-        //     { value: 'Marie' },
-        //     { value: 'Cherry' },
-        //     { value: 'John' },
-        //   ])
     };
     const watchResult = Form.useWatch((values) => {
     let subTotalTrade : number = prevValueSubTotalTradePosRef.current;
@@ -250,12 +144,8 @@ const TransactionForm = () => {
                 subTotalNonTrade += parseFloat(values.other_expenses[i]?.payment_amount)
 
         }
-    // subTotalNonTrade = subTotalTrade
     if(values?._expense !== undefined)
         subTotalNonTrade += parseFloat(values._expense_amount)
-    // console.log('_expense: ',values._expense)
-    // console.log('_expense_amount: ',values._expense_amount)
-    // console.log("Others: ", values)
     return { isMMHO, isMMCom, isMMRM, isMMDM, isMMKM, isMM__, isFoodCharges,
         isCash, isCheck, isBpi_cc, isBpi_dc, isMetro_cc, isMetro_dc, isPaymaya, isAub_cc, isGcash, isFoodpanda, isStreetby, isGrabfood, subTotalTrade, subTotalNonTrade };
 
@@ -412,7 +302,7 @@ const TransactionForm = () => {
                             rules={[{ required: true, message: 'Missing payment amount' }]}
                             style={{ width: '55%'}}
                         >
-                            <Input placeholder="Enter amount" />
+                            <InputNumber style={{ width: 'auto'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
                         </Form.Item>
                         <Button icon={<MinusCircleOutlined /> }  onClick={() => {
                             // setPaymentFieldCount((count) => count-1);
