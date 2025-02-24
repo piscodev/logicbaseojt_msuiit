@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       const [rows]: [Cashier[],FieldPacket[]] = await connection.query(
         'SELECT name FROM Cashier ORDER BY name ASC'
       ) as [Cashier[],FieldPacket[]];
-      
+      console.log('Result: ', rows);
       // Extract just the names from the result
       const cashiers = rows.map((row: Cashier) => row.name);
       

@@ -116,7 +116,9 @@ const TransactionForm = () => {
       ]);
     const fetchCashiers = async() => {
         try{
-            const response = await fetch(`/api/getCashiers`);
+            const response = await fetch(`/api/getCashiers`, {
+                method:"GET"
+            });
             if(!response.ok) throw new Error('Failed to fetch cashiers');
             const data = await response.json();
             const cashierName = data.map((cashier:Cashier) => ({
