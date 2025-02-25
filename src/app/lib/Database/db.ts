@@ -16,14 +16,14 @@ const pool = mysql.createPool({
   queueLimit: 0,
   connectTimeout: 60000,
   timezone: '+08:00',
-  ssl: {
-    rejectUnauthorized: false // Required for Vercel
-  },
-  authPlugins: {
-    mysql_clear_password: () => () => {
-      return Buffer.from(process.env.DB_PASSWORD + '\0');
-    }
-  },
+  // ssl: {
+  //   rejectUnauthorized: false // Required for Vercel
+  // },
+  // authPlugins: {
+  //   mysql_clear_password: () => () => {
+  //     return Buffer.from(process.env.DB_PASSWORD + '\0');
+  //   }
+  // },
 });
 
 export const getConnection = promisify(pool.getConnection).bind(pool);
