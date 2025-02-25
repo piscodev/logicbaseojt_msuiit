@@ -13,46 +13,6 @@ interface DataType {
   gross_total: number;
   net_total:number;
 }
-// shifts
-// : 
-// AM
-// : 
-// cashier
-// : 
-// "Cherry"
-// date
-// : 
-// "2025-02-23T16:00:00.000Z"
-// grossTotal
-// : 
-// 12500
-// netTotal
-// : 
-// 12500
-// particular
-// : 
-// Array(1)
-// 0
-// : 
-// amount
-// : 
-// "12500.00"
-// name
-// : 
-// "Cash"
-// netAmount
-// : 
-// 12500
-
-const originData = Array.from({ length: 100 }).map<DataType>((_, i) => ({
-  key: i.toString(),
-  particular: `Edward ${i}`,
-  am: 32,
-  mid: 0,
-  pm: 0,
-  gross_total: 0,
-  net_total:0
-}));
 
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
@@ -98,7 +58,7 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
 
 const TestTable: React.FC = () => {
   const [form] = Form.useForm();
-  const [data, setData] = useState<DataType[]>(originData);
+  const [data, setData] = useState<DataType[]>([]);
   const [editingKey, setEditingKey] = useState('');
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
