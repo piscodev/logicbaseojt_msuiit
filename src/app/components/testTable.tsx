@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
@@ -60,25 +60,39 @@ const TestTable: React.FC = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>([]);
   const [editingKey, setEditingKey] = useState('');
-  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
-  const fetchData = async (dateInput=dayjs()) => {
-    const response = await fetch('/api/getTransactionByDay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: dateInput })
-      })
-      if(!response.ok) throw new Error('Failed to fetch transactions');
-      const data = await response.json();
-      console.log('Transaction Data Retrieved: ', data);
-      setData(data.data);
-  };
-  if(!isMounted){
+  const [loading, setLoading] = useState<boolean>(false);
+  
+// Use useEffect for initial load and date changes
+  useEffect(() => {
     fetchData(currentDate);
-    setIsMounted(true);
-  }
+  }, [currentDate]);
+
+  const fetchData = async (dateInput=dayjs()) => {
+    try{
+        const response = await fetch('/api/getTransactionByDay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: dateInput })
+        })
+        if(!response.ok) throw new Error('Failed to fetch transactions');
+        const data = await response.json();
+        console.log('Transaction Data Retrieved: ', data);
+        setData(data.data);
+    } catch (error) {
+        console.error('Fetch error:', error);
+        console.error(loading);
+    } finally {
+        setLoading(false);
+    }
+    
+  };
+//   if(!isMounted){
+//     fetchData(currentDate);
+//     setIsMounted(true);
+//   }
  
-  const onChangeDate = async (date: Dayjs) => {
+  const onChangeDate = (date: Dayjs) => {
     if (date) {
         setCurrentDate(date)
         console.log('Date: ', date);
