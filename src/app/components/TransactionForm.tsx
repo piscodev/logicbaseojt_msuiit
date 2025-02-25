@@ -5,7 +5,7 @@ import { Alert, AutoComplete, Divider, Form, Input, Button, Space, Select, Check
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
 import { TransactionValuesState } from '../lib/Interface/route';
-
+export const dynamic = 'force-dynamic';
 interface Cashier{
     value: string
 }
