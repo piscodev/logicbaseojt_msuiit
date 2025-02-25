@@ -4,8 +4,9 @@ import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { TransactionValuesState } from '@/app/lib/Interface/route';
 import { DateTime } from "luxon";
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, {params}: {params: {date: string}}) {
     if (req.method === 'POST') {
+        const { date } = params;
         const {
             cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge//, sub_total_trade_POS, grand_total_trade_POS, z_reading_POS, short_over_POS
         }: TransactionValuesState = await req.json();
@@ -16,7 +17,8 @@ export async function POST(req: NextRequest) {
         }
   
         let connection;
-        const currentDate = DateTime.now().setZone('Asia/Manila').toFormat('yyyy-LL-dd')
+        const formattedDate = DateTime.fromFormat(date,"yyyy-MM-dd").setZone('Asia/Manila').toFormat('yyyy-LL-dd')
+        console.log("Adding transaction for date:", formattedDate)
         try {
             console.log('get connection')
             connection = await pool.getConnection();
@@ -29,7 +31,7 @@ export async function POST(req: NextRequest) {
                 FROM Transaction t
                 JOIN Shift s ON t.shift_id = s.id
                 WHERE t.date = ? AND s.name = ?`,
-                [currentDate, shift]
+                [formattedDate, shift]
             ) as [TransactionValuesState[], FieldPacket[]];
             console.log('existing shift data: ', existingShift[0])
             if (existingShift[0].length > 0) {
@@ -42,9 +44,9 @@ export async function POST(req: NextRequest) {
                 VALUES (
                 (SELECT id FROM Cashier WHERE name = ?),
                 (SELECT id FROM Shift WHERE name = ?),
-                NOW()
+                ?
                 )`,
-                [cashier_name, shift]
+                [cashier_name, shift, formattedDate]
             ) as [ResultSetHeader, FieldPacket[]];
         
             const txId = txResult.insertId;

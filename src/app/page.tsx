@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Breadcrumb, Layout, Menu, ConfigProvider, Col, Row, Card } from "antd";
-import TransactionForm from "./components/TransactionForm";
+import { Breadcrumb, Layout, Menu, ConfigProvider,// Col, Row,
+   Card } from "antd";
+// import TransactionForm from "./components/TransactionForm";
 // import TransactionTable from "./components/TransactionTable";
 import TestTable from "@/app/components/testTable"
 const { Header, Content, Footer } = Layout;
@@ -42,18 +43,18 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
-          <Row>
-            <Col span={18} push={6} className="p-3">
+          {/* <Row>
+            <Col span={30} push={6} className="p-3"> */}
               <Card title="Transactions Log">
                 <TestTable />
               </Card>
-            </Col>
-            <Col span={6} pull={18} className="p-3">
+            {/* </Col> */}
+            {/* <Col span={6} pull={18} className="p-3">
               <Card title="Transaction Form">
                 <TransactionForm />
               </Card>
-            </Col>
-          </Row>
+            </Col> */}
+          {/* </Row> */}
         </Content>
         <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()}
