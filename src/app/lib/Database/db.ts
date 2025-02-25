@@ -25,7 +25,7 @@ const pool = mysql.createPool({
   //   }
   // },
 });
-
+console.log("Established database connection pool");
 export const getConnection = promisify(pool.getConnection).bind(pool);
 
 // Function to query the database
