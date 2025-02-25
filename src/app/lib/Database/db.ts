@@ -4,18 +4,26 @@ import { promisify } from 'util';
 import { FieldPacket } from 'mysql2';
 dotenv.config();
 
-const db_port : number = process.env.DB_PORT as unknown as number
 // Create a pool with proper configuration
 const pool = mysql.createPool({
   host: process.env.DB_HOST, // "mysql-9f132e1-tcmc-62a0.l.aivencloud.com"
   user: process.env.DB_USER, // "avnadmin"
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME, // "logicbase_ojt_db"
-  port: db_port,
+  port: Number(process.env.DB_PORT),
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   connectTimeout: 60000,
+  
+  ssl: {
+    rejectUnauthorized: false // Required for Vercel
+  },
+  authPlugins: {
+    mysql_clear_password: () => () => {
+      return Buffer.from(process.env.DB_PASSWORD + '\0');
+    }
+  },
 });
 
 export const getConnection = promisify(pool.getConnection).bind(pool);
