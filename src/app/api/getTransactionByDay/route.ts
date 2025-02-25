@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
           p.name AS particular,
           s.name AS shift,
           SUM(td.amount) AS amount,
-          c.name AS cashier
+          MAX(c.name) AS cashier
         FROM Transaction t
         JOIN Shift AS s ON t.shift_id = s.id
         JOIN Cashier AS c ON t.cashier_id = c.id
