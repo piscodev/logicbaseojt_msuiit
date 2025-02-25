@@ -15,7 +15,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   connectTimeout: 60000,
-  
+  timezone: '+08:00',
   ssl: {
     rejectUnauthorized: false // Required for Vercel
   },
