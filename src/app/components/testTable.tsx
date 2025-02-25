@@ -3,7 +3,7 @@ import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
-
+export const dynamic = 'force-dynamic';
 interface DataType {
   key: string;
   particular: string;
