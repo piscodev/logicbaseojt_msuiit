@@ -2,21 +2,58 @@ import React, { useState } from 'react';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
+import { Dayjs } from 'dayjs';
 
 interface DataType {
   key: string;
-  name: string;
-  age: number;
-  address: string;
+  particular: string;
+  am: number | string;
+  mid: number | string;
+  pm: number | string;
+  gross_total: number;
+  net_total:number;
 }
+// shifts
+// : 
+// AM
+// : 
+// cashier
+// : 
+// "Cherry"
+// date
+// : 
+// "2025-02-23T16:00:00.000Z"
+// grossTotal
+// : 
+// 12500
+// netTotal
+// : 
+// 12500
+// particular
+// : 
+// Array(1)
+// 0
+// : 
+// amount
+// : 
+// "12500.00"
+// name
+// : 
+// "Cash"
+// netAmount
+// : 
+// 12500
 
 const originData = Array.from({ length: 100 }).map<DataType>((_, i) => ({
   key: i.toString(),
-  name: `Edward ${i}`,
-  age: 32,
-  address: `London Park no. ${i}`,
+  particular: `Edward ${i}`,
+  am: 32,
+  mid: 0,
+  pm: 0,
+  gross_total: 0,
+  net_total:0
 }));
+
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
@@ -63,11 +100,50 @@ const TestTable: React.FC = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>(originData);
   const [editingKey, setEditingKey] = useState('');
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
+  const fetchData = async (dateInput=dayjs()) => {
+    const response = await fetch('/api/getTransactionByDay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateInput })
+      })
+      if(!response.ok) throw new Error('Failed to fetch transactions');
+      const data = await response.json();
+      console.log('Transaction Data Retrieved: ', data);
+      setData(data.data);
+  };
+  if(!isMounted){
+    fetchData(currentDate);
+    setIsMounted(true);
+  }
+ 
+  const onChangeDate = async (date: Dayjs) => {
+    if (date) {
+        setCurrentDate(date)
+        console.log('Date: ', date);
+        fetchData(currentDate);
+    } else {
+        console.log('Clear');
+    }
+  };
+  const CustomDatePicker = () => (
+    <DatePicker
+        onChange={onChangeDate}
+        defaultValue={currentDate}
+        presets={[
+            { label: 'Yesterday', value: dayjs().add(-1, 'd') },
+            { label: 'Last Week', value: dayjs().add(-7, 'd') },
+            { label: 'Last Month', value: dayjs().add(-1, 'month') },
+        ]}
+    />
+  );
+  
 
   const isEditing = (record: DataType) => record.key === editingKey;
 
   const edit = (record: Partial<DataType> & { key: React.Key }) => {
-    form.setFieldsValue({ name: '', age: '', address: '', ...record });
+    form.setFieldsValue({ name: '', am: '', mid: '', ...record });
     setEditingKey(record.key);
   };
 
@@ -101,22 +177,40 @@ const TestTable: React.FC = () => {
 
   const columns = [
     {
-      title: 'name',
-      dataIndex: 'name',
-      width: '25%',
+      title: 'PARTICULARS',
+      dataIndex: 'particular',
+      width: '18%',
       editable: true,
     },
     {
-      title: 'age',
-      dataIndex: 'age',
+      title: 'AM',
+      dataIndex: 'am',
       width: '15%',
       editable: true,
     },
     {
-      title: 'address',
-      dataIndex: 'address',
-      width: '40%',
+      title: 'MID',
+      dataIndex: 'mid',
+      width: '15%',
       editable: true,
+    },
+    {
+        title: 'PM',
+        dataIndex: 'pm',
+        width: '15%',
+        editable: true,
+    },
+    {
+        title: 'GROSS TOTAL',
+        dataIndex: 'gross_total',
+        width: '18%',
+        editable: false,
+    },
+    {
+        title: 'NET TOTAL',
+        dataIndex: 'net_total',
+        width: '18%',
+        editable: false,
     },
     {
       title: 'operation',
@@ -149,40 +243,14 @@ const TestTable: React.FC = () => {
       ...col,
       onCell: (record: DataType) => ({
         record,
-        inputType: col.dataIndex === 'age' ? 'number' : 'text',
+        inputType: col.dataIndex === 'am' ? 'number' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record),
       }),
     };
   });
-  const presentDate = dayjs();
-  const onChangeDate = async (date: Dayjs) => {
-    if (date) {
-      console.log('Date: ', date);
-      const response = await fetch('/api/getTransactionByDay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: presentDate })
-      })
-      if(!response.ok) throw new Error('Failed to fetch cashiers');
-      const data = await response.json();
-      console.log('Transaction Data Retrieved: ', data);
-    } else {
-      console.log('Clear');
-    }
-  };
-  const CustomDatePicker = () => (
-    <DatePicker
-        onChange={onChangeDate}
-        defaultValue={presentDate}
-        presets={[
-            { label: 'Yesterday', value: dayjs().add(-1, 'd') },
-            { label: 'Last Week', value: dayjs().add(-7, 'd') },
-            { label: 'Last Month', value: dayjs().add(-1, 'month') },
-        ]}
-    />
-  );
+  
 
   return (
     <Form form={form} component={false}>
@@ -195,6 +263,7 @@ const TestTable: React.FC = () => {
         title={() => <CustomDatePicker/>}
         columns={mergedColumns}
         rowClassName="editable-row"
+        pagination={false}
         // pagination={{ onChange: cancel }}
       />
     </Form>
