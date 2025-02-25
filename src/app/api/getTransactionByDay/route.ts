@@ -1,157 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import { NextRequest } from 'next/server';
-// import pool from '../../lib/Database/db';
-// import { FieldPacket } from 'mysql2';
-// import { DateTime } from 'luxon';
-// interface RowData {
-//   shift: 'AM' | 'MID' | 'PM';
-//   particular: string | null;
-//   amount: number | null;
-//   fee_percent: number | null;
-//   cashier: string;
-// }
-
-
-// export interface TransactionRow {
-//   key: string;
-//   particular: string;
-//   am: number | string;  // Allow string for cashier name
-//   mid: number | string;
-//   pm: number | string;
-//   gross_total: number;
-//   net_total: number;
-// }
-
-// export async function POST(req: NextRequest) {
-//   if (req.method === 'POST') {
-//     let connection;
-//     try {
-//       const { date } = await req.json();
-//       if (!date || typeof date !== 'string') {
-//         return NextResponse.json(
-//           { error: "Valid date is required" },
-//           { status: 400 }
-//         );
-//       }
-
-//       connection = await pool.getConnection();
-      
-//       const currentDate = DateTime.fromISO(date).setZone('Asia/Manila').toFormat('yyyy-LL-dd');
-//       const [rows]: [RowData[], FieldPacket[]] = await connection.query(`
-//         SELECT 
-//           s.name AS shift,
-//           p.name AS particular,
-//           td.amount,
-//           p.fee_percent,
-//           c.name AS cashier
-//         FROM Transaction t
-//         JOIN Shift s ON t.shift_id = s.id
-//         JOIN Cashier c ON t.cashier_id = c.id
-//         LEFT JOIN TransactionDetail td ON t.id = td.transaction_id
-//         LEFT JOIN Particular p ON td.particular_id = p.id
-//         WHERE t.date = ?
-//         ORDER BY s.id ASC, p.name ASC
-//       `, [currentDate]) as  [RowData[], FieldPacket[]];
-
-//       // Collect cashiers per shift
-//       const cashiers: Record<string, string> = {
-//         AM: '',
-//         MID: '',
-//         PM: ''
-//       };
-
-//       const particularsMap = new Map<string, {
-//         particular: string;
-//         am: number;
-//         mid: number;
-//         pm: number;
-//         feePercent: number;
-//       }>();
-
-//       rows.forEach((row) => {
-//         // Store cashier for each shift
-//         if (!cashiers[row.shift]) {
-//           cashiers[row.shift] = row.cashier;
-//         }
-
-//         // Process amounts
-//         if (row.particular && row.amount !== null) {
-//           const current = particularsMap.get(row.particular) || {
-//             particular: row.particular,
-//             am: 0,
-//             mid: 0,
-//             pm: 0,
-//             feePercent: row.fee_percent || 0
-//           };
-
-//           switch (row.shift) {
-//             case 'AM':
-//               current.am += Number(row.amount);
-//               break;
-//             case 'MID':
-//               current.mid += Number(row.amount);
-//               break;
-//             case 'PM':
-//               current.pm += Number(row.amount);
-//               break;
-//           }
-
-//           particularsMap.set(row.particular, current);
-//         }
-//       });
-
-//       // Create cashier row
-//       const cashierRow: TransactionRow = {
-//         key: '0',
-//         particular: 'Cashier',
-//         am: cashiers.AM,
-//         mid: cashiers.MID,
-//         pm: cashiers.PM,
-//         gross_total: 0,
-//         net_total: 0
-//       };
-
-//       // Convert particulars to array
-//       const particulars = Array.from(particularsMap.values())
-//         .map((item, index) => {
-//           const gross = Number(item.am) + Number(item.mid) + Number(item.pm);
-//           const net = gross * Number((1 - (item.feePercent / 100)));
-          
-//           return {
-//             key: (index + 1).toString(), // Start keys from 1
-//             particular: item.particular,
-//             am: item.am,
-//             mid: item.mid,
-//             pm: item.pm,
-//             gross_total: gross,
-//             net_total: net
-//           };
-//         });
-
-//       // Combine cashier row with particulars
-//       const result = [cashierRow, ...particulars];
-
-//       return NextResponse.json(
-//         { data: result },
-//         { status: 200 }
-//       );
-
-//     } catch (error) {
-//       console.error('Database error:', error);
-//       return NextResponse.json(
-//         { error: 'Failed to fetch transactions' },
-//         { status: 500 }
-//       );
-//     } finally {
-//       if (connection) connection.release();
-//     }
-//   }
-
-//   return NextResponse.json(
-//     { error: 'Method not allowed' },
-//     { status: 405 }
-//   );
-// }
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import pool from '../../lib/Database/db';
@@ -248,7 +94,7 @@ export async function POST(req: NextRequest) {
       // Create cashier row
       const cashierRow: TransactionRow = {
         key: '0',
-        particular: 'Cashier',
+        particular: 'CASHIER',
         am: cashiers.AM || '',
         mid: cashiers.MID || '',
         pm: cashiers.PM || '',
@@ -269,6 +115,11 @@ export async function POST(req: NextRequest) {
       let netTradeTotal: number = 0;
       let grossNonTradeTotal: number = 0;
       let netNonTradeTotal: number = 0;
+      let grandPOSAM: number = 0;
+      let grandPOSMID: number = 0;
+      let grandPOSPM: number = 0;
+      let grandPOSGross: number = 0;
+      let grandPOSNet: number = 0;
       particulars.forEach((particular, index) => {
         const txData = transactionMap.get(particular.name) || {};
         const amNum = Number(txData.AM?.amount)
@@ -283,27 +134,27 @@ export async function POST(req: NextRequest) {
         const numericValues = [Number(txData.AM?.amount), Number(txData.MID?.amount), Number(txData.PM?.amount)]
           .filter(v => typeof v === 'number');
         
-        const gross = numericValues.reduce((sum, v) => sum + (v || 0), 0);
+        const gross = numericValues.reduce((sum, v) => Number(sum) + (Number(v) || 0), 0);
         const net = gross * Number((1 - (particular.fee_percent / 100)));
         let currentKey;
         if(particular.type === 'Trade'){
             currentKey = (index + 1).toString();
-            grossTradeTotal += gross;
-            netTradeTotal += net;
+            grossTradeTotal += Number(gross);
+            netTradeTotal += Number(net);
         } else {
             currentKey = (index + 2).toString();
-            grossNonTradeTotal += gross;
-            netNonTradeTotal += net;
+            grossNonTradeTotal += Number(gross);
+            netNonTradeTotal += Number(net);
         }
         // console.log(`Current key: ${currentKey} ; current index: ${index} ; current type: ${particular.type}`)
         const row: TransactionRow = {
           key: currentKey,
-          particular: particular.name,
+          particular: particular.name.toUpperCase(),
           am: am === '' ? '' : Number(am),
           mid: mid === '' ? '' : Number(mid),
           pm: pm === '' ? '' : Number(pm),
-          gross_total: gross,
-          net_total: net
+          gross_total: gross.toFixed(2),
+          net_total: net.toFixed(2)
         };
         
         if (particular.type === 'Trade') {
@@ -321,18 +172,24 @@ export async function POST(req: NextRequest) {
                     am: subTotalTradeAM,
                     mid: subTotalTradeMID,
                     pm: subTotalTradePM,
-                    gross_total: grossTradeTotal,
-                    net_total: netTradeTotal,
+                    gross_total: grossTradeTotal.toFixed(2),
+                    net_total: netTradeTotal.toFixed(2),
                 }
+                grandPOSAM = subTotalTradeAM;
+                grandPOSMID = subTotalTradeMID;
+                grandPOSPM = subTotalTradePM;
+                grandPOSGross = grossTradeTotal;
+                grandPOSNet = netTradeTotal;
+
                 tradeRows.push(tradeTotal);
             }
         } else {
-            if(am !== '')
-            subTotalNonTradeAM += Number(amNum)
-            if(mid !== '')
-            subTotalNonTradeMID += Number(midNum)
-            if(pm !== '')
-            subTotalNonTradePM += Number(pmNum)
+            if(am !== '' && txData.AM?.amount)
+            subTotalNonTradeAM += Number(txData.AM?.amount)
+            if(mid !== '' && txData.MID?.amount)
+            subTotalNonTradeMID += Number(txData.MID?.amount)
+            if(pm !== '' && txData.PM?.amount)
+            subTotalNonTradePM += Number(txData.PM?.amount)
             
             nonTradeRows.push(row);
             if(index==17){
@@ -346,6 +203,21 @@ export async function POST(req: NextRequest) {
                     net_total: netNonTradeTotal
                 };
                 nonTradeRows.push(nonTrade)
+                grandPOSAM += subTotalNonTradeAM
+                grandPOSMID += subTotalNonTradeMID;
+                grandPOSPM += subTotalNonTradePM;
+                grandPOSGross += grossNonTradeTotal;
+                grandPOSNet += netNonTradeTotal;
+                const grandTotalPosRow:TransactionRow = {
+                    key: '21',
+                    particular: 'GRAND TOTAL POS',
+                    am: grandPOSAM,
+                    mid: grandPOSMID,
+                    pm: grandPOSPM,
+                    gross_total: grandPOSGross.toFixed(2),
+                    net_total: grandPOSNet.toFixed(2)
+                };
+                nonTradeRows.push(grandTotalPosRow)
             }
         }
       });

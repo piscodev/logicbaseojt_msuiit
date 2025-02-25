@@ -1,17 +1,21 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { AutoCompleteProps, StatisticProps, InputNumberProps } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, AutoComplete, Divider, Form, Input, Button, Space, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
+import { Alert, AutoComplete, DatePicker, Divider, Form, Input, Button, Space, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
 import { TransactionValuesState } from '../lib/Interface/route';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 export const dynamic = 'force-dynamic';
 interface Cashier{
     value: string
 }
+
 const TransactionForm = () => {
     const [form] = Form.useForm();
     const [isMounted, setIsMounted] = useState(false);
+    const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const fetchCashiers = async() => {
         try{
@@ -142,7 +146,6 @@ const TransactionForm = () => {
             else if(values.other_expenses[i]?.payment === 'FOOD CHARGES') isFoodCharges = true
             if(values.other_expenses[i]?.payment_amount !== undefined)
                 subTotalNonTrade += parseFloat(values.other_expenses[i]?.payment_amount)
-
         }
     if(values?._expense !== undefined)
         subTotalNonTrade += parseFloat(values._expense_amount)
@@ -153,7 +156,7 @@ const TransactionForm = () => {
     const { 
         isMMHO = false, isMMCom = false, isMMRM = false, isMMDM = false, isMMKM = false, isMM__ = false, isFoodCharges = false,
         isCash = false, isCheck = false, isBpi_cc = false, isBpi_dc = false, isMetro_cc = false, isMetro_dc = false, isPaymaya = false, isAub_cc = false, isGcash = false, isFoodpanda = false, isStreetby = false, isGrabfood = false, subTotalTrade = 0, subTotalNonTrade = 0} = watchResult || {}
-    const [componentDisabled, setComponentDisabled] = useState(true);
+    const [componentEnabled, setcomponentEnabled] = useState(false);
     const [isFilled, setIsFilled] = useState(true);
     const addTransaction = useTransactionStore((state) => state.addTransaction);
     const finalValues = useTransactionStore((state) => state.finalValues);
@@ -168,13 +171,21 @@ const TransactionForm = () => {
         _expense_amount?: number;
         other_expenses?: { payment: string; payment_amount: string }[];
     }
+    const onChangeDate = (date: Dayjs) => {
+        if (date) {
+          console.log('Date: ', date);
+          setCurrentDate(date);
+        } else {
+          console.log('Clear');
+        }
+    };
 
     const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
         
         const data : TransactionValuesState = finalValues() as TransactionValuesState;
         try{
-            const response = await fetch(`/api/addTransaction`, {
+            const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
                method: 'POST',
                headers: {
                 'Content-Type': 'application/json',
@@ -191,7 +202,6 @@ const TransactionForm = () => {
         // Reset the form fields
         form.resetFields();
     };
-
     return (
         <Form
         name="transaction_form"
@@ -200,40 +210,57 @@ const TransactionForm = () => {
         onFinish={onFinish}
         initialValues={{
             '_payment': "CASH",
-            '_expense': "FOOD CHARGES"
+            '_expense': "FOOD CHARGES",
+            'date':currentDate
         }}
-        style={{ maxWidth: 400 }} // optional styling
+        style={{ maxWidth: '100%' }} // optional styling
         autoComplete="off"
         >   
-            <Space  size={50} style={{ display: 'flex', marginBottom: 8 }} align='baseline' >
+            {/* <Space  size={50} style={{ display: 'flex', marginBottom: 8 }} align='baseline' > */}
+            <Form.Item
+            label="Cashier Name"
+            name="cashier_name"
+            rules={[{ required: true, message: 'Please input the cashier name!' }]}
+            >
+                {/* <Input placeholder="e.g. Cherry" /> */}
+                <AutoComplete
+                    options={cashiers}
+                    // style={{ width: 200 }}
+                    // onSelect={onSelect}
+                    // onSearch={(text) => setOptions(getPanelValue(text))}
+                    placeholder="e.g. Cherry"
+                />
+                {/* <SelectFetch/> */}
+            </Form.Item>
+                
+            {/* </Space> */}
+            <Space.Compact style={{ display: 'flex'}} >
                 <Form.Item
-                label="Cashier Name"
-                name="cashier_name"
-                rules={[{ required: true, message: 'Please input the cashier name!' }]}
-                >
-                    {/* <Input placeholder="e.g. Cherry" /> */}
-                    <AutoComplete
-                        options={cashiers}
-                        // style={{ width: 200 }}
-                        // onSelect={onSelect}
-                        // onSearch={(text) => setOptions(getPanelValue(text))}
-                        placeholder="e.g. Cherry"
-                    />
-                    {/* <SelectFetch/> */}
+                    label="Shift"
+                    name="shift"
+                    style={{ width: '65%'}}
+                    rules={[{ required: true, message: 'Please select a shift time!' }]}
+                    >
+                        <Select placeholder="Select Shift">
+                            <Select.Option value="AM">AM</Select.Option>
+                            <Select.Option value="MID">MID</Select.Option>
+                            <Select.Option value="PM">PM</Select.Option>
+                        </Select>
                 </Form.Item>
                 <Form.Item
-                label="Shift"
-                name="shift"
-                rules={[{ required: true, message: 'Please select a shift time!' }]}
-                >
-                    <Select placeholder="Select Shift">
-                        <Select.Option value="AM">AM</Select.Option>
-                        <Select.Option value="MID">MID</Select.Option>
-                        <Select.Option value="PM">PM</Select.Option>
-                    </Select>
-                    
+                    label="Date"
+                    name="date"
+                    >
+                    <DatePicker
+                        presets={[
+                            { label: 'Yesterday', value: dayjs().add(-1, 'd') },
+                            { label: 'Last Week', value: dayjs().add(-7, 'd') },
+                            { label: 'Last Month', value: dayjs().add(-1, 'month') },
+                        ]}
+                        onChange={onChangeDate}
+                        />
                 </Form.Item>
-            </Space>
+            </Space.Compact>
             <Form.Item
             label="Payments"
             rules={[{ required: true, message: 'Please select a payment category!' }]}
@@ -280,7 +307,6 @@ const TransactionForm = () => {
                             rules={[{ required: true, message: 'Missing payment category' }]}
                             style={{ width: '40%'}}
                         >
-                    
                             <Select placeholder="Select Category">
                                 {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
                                 {!isCheck && (<Select.Option value="CHECK">CHECK</Select.Option>)}
@@ -362,16 +388,16 @@ const TransactionForm = () => {
       
         <Form.Item>
             <Checkbox 
-            checked={componentDisabled}
-            onChange={(e) => setComponentDisabled(e.target.checked)}
+            checked={componentEnabled}
+            onChange={(e) => setcomponentEnabled(e.target.checked)}
             >
-            Internal Expenses (Non-Trade POS)
+             Internal Expenses{/* (Non-Trade POS) */}
             </Checkbox>
             <Tooltip title={`MM-HEAD OFFICE refers to any sales or charges that go directly to a "head office account". MM-COMMISSARY refers to purchases or reimbursements from the company (central kitchen).`}>
                 <Typography.Link href="#API">What is this?</Typography.Link>
             </Tooltip>
         </Form.Item>
-        { componentDisabled && (
+        { componentEnabled && (
             <>
             <Form.Item
             label="Internal Expenses"

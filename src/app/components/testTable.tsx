@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, Popconfirm, Table, Typography } from 'antd';
+import { DatePicker, Form, Input, InputNumber, Popconfirm, Space, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
+import TransactionFormDrawer from "@/app/components/drawer"
 export const dynamic = 'force-dynamic';
 interface DataType {
   key: string;
@@ -96,7 +97,7 @@ const TestTable: React.FC = () => {
     if (date) {
         setCurrentDate(date)
         console.log('Date: ', date);
-        fetchData(currentDate);
+        fetchData(date);
     } else {
         console.log('Clear');
     }
@@ -153,37 +154,37 @@ const TestTable: React.FC = () => {
     {
       title: 'PARTICULARS',
       dataIndex: 'particular',
-      width: '18%',
+      width: '25%',
       editable: true,
     },
     {
       title: 'AM',
       dataIndex: 'am',
-      width: '15%',
+      width: '12%',
       editable: true,
     },
     {
       title: 'MID',
       dataIndex: 'mid',
-      width: '15%',
+      width: '12%',
       editable: true,
     },
     {
         title: 'PM',
         dataIndex: 'pm',
-        width: '15%',
+        width: '12%',
         editable: true,
     },
     {
         title: 'GROSS TOTAL',
         dataIndex: 'gross_total',
-        width: '18%',
+        width: '15%',
         editable: false,
     },
     {
         title: 'NET TOTAL',
         dataIndex: 'net_total',
-        width: '18%',
+        width: '15%',
         editable: false,
     },
     {
@@ -234,11 +235,16 @@ const TestTable: React.FC = () => {
         }}
         bordered
         dataSource={data}
-        title={() => <CustomDatePicker/>}
+        title={() => 
+            <Space>
+                <CustomDatePicker/>
+                <TransactionFormDrawer/>
+            </Space>}
         columns={mergedColumns}
         rowClassName="editable-row"
         pagination={false}
-        // pagination={{ onChange: cancel }}
+        size="middle"
+        scroll={{ y: 105 * 5 }}
       />
     </Form>
   );
