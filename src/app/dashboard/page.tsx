@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { Breadcrumb, Layout, Menu, ConfigProvider, Col, Row, Card, Button, Tooltip } from "antd";
+import { Breadcrumb, Layout, Menu, ConfigProvider, Card, Button, Tooltip } from "antd";
 import { FaPowerOff } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import TransactionForm from "../components/TransactionForm";
-import TransactionTable from "../components/TransactionTable";
+import TestTable from "@/app/components/testTable";
 
 const { Header, Content, Footer } = Layout;
 
@@ -22,7 +21,7 @@ export default function Home() {
     try {
       const res = await fetch("/api/auth/logout", { method: "GET" });
       if (res.ok) {
-        router.push("/login"); // Redirect to the login page (assumed at "/")
+        router.push("/login"); // Redirect to login page
       } else {
         console.error("Logout failed");
       }
@@ -46,7 +45,7 @@ export default function Home() {
               minWidth: 0,
             }}
           />
-          {/* Enhanced Logout Power Button */}
+          {/* Logout Button with Tooltip */}
           <Tooltip title="Logout">
             <Button
               type="primary"
@@ -55,7 +54,7 @@ export default function Home() {
               onClick={handleLogout}
               style={{
                 marginLeft: 16,
-                backgroundColor: "#ff4d4f", // red for logout
+                backgroundColor: "#ff4d4f", // Red logout button
                 borderColor: "#ff4d4f",
               }}
             />
@@ -70,20 +69,9 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
-          <Row>
-            <Col span={18} push={6} className="p-3">
-              <Card title="Transactions Log">
-                col-18 col-push-6
-                <TransactionTable />
-              </Card>
-            </Col>
-            <Col span={6} pull={18} className="p-3">
-              <Card title="Transaction Form">
-                col-6 col-pull-18
-                <TransactionForm />
-              </Card>
-            </Col>
-          </Row>
+          <Card title="Transactions Log">
+            <TestTable />
+          </Card>
         </Content>
         <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()}
