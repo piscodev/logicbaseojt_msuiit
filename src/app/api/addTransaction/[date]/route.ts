@@ -17,7 +17,8 @@ export async function POST(req: NextRequest, {params}: {params: {date: string}})
         }
   
         let connection;
-        const formattedDate = DateTime.fromFormat(date,"yyyy-MM-dd").setZone('Asia/Manila').toFormat('yyyy-LL-dd')
+        const formattedDate = DateTime.fromFormat(date,"yyyy-MM-dd").setZone('Asia/Manila')
+        const formattedDateString = formattedDate.toFormat('yyyy-LL-dd')
         console.log("Adding transaction for date:", formattedDate)
         try {
             console.log('get connection')
@@ -31,12 +32,13 @@ export async function POST(req: NextRequest, {params}: {params: {date: string}})
                 FROM Transaction t
                 JOIN Shift s ON t.shift_id = s.id
                 WHERE t.date = ? AND s.name = ?`,
-                [formattedDate, shift]
+                [formattedDateString, shift]
             ) as [TransactionValuesState[], FieldPacket[]];
             console.log('existing shift data: ', existingShift[0])
             if (existingShift[0].length > 0) {
                 await connection.rollback();
-                return NextResponse.json({ error: `Shift report for ${shift} already exists for today` }, { status: 400 });
+                const errorMessage = DateTime.now().setZone('Asia/Manila').hasSame(formattedDate, 'day') ? `Shift report for ${shift} already exists for today` : `Shift report for ${shift} already exists for ${formattedDateString}`
+                return NextResponse.json({ error: errorMessage}, { status: 400 });
             }
             // 2. Create transaction
             const [txResult]: [ResultSetHeader, FieldPacket[]] = await connection.query(

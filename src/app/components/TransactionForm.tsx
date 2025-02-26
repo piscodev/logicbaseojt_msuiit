@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { AutoCompleteProps, StatisticProps, InputNumberProps } from 'antd';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, AutoComplete, DatePicker, Divider, Form, Input, Button, Space, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
+import { LoadingOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, AutoComplete, DatePicker, Divider, Form, Input, Button, Space, Spin, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
 import { TransactionValuesState } from '../lib/Interface/route';
@@ -14,13 +14,9 @@ interface Cashier{
     value: string
 }
 interface TransactionFormProps {
-    // statusTitle: string;
-    // statusMessage: string;
-    // statusType: string;
-    // onClose: () => void;
     onProcess: (type: NotificationType, message: string, drawerBool:boolean) => void;
     selectedDate: Dayjs
-  }
+}
 
 const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDate}) => {
     const [form] = Form.useForm();
@@ -28,6 +24,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     // const [messageApi, contextHolder] = message.useMessage();
     const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
+    const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
+    const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashiers`, {
@@ -41,7 +39,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
             }))
             
             setCashiers(cashierNames)
+            setIsCashierNotAllowed(false);
+            // console.log("CASHIERS after setting: ", cashierNames);
         }catch(error){
+            onProcess('error','Error fetching cashiers.', false)
             console.error('Error fetching users: ', error);
         }
     };
@@ -190,31 +191,44 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
           console.log('Clear');
         }
     };
+    const setSelectedCashierName = (name:string) => {
+        setSelectedCashier(name);
+        console.log("Selected: ", name);
+    };
 
     const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
         
         const data : TransactionValuesState = finalValues() as TransactionValuesState;
+        
         try{
-            onProcess('info','Processing Transaction Data.', false)
-            const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
-               method: 'POST',
-               headers: {
-                'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(data)
-            });
-            if(!response.ok){
-                onProcess('error','Failed to add transaction.', false)
-                throw new Error('Failed to add transaction');
+            const foundCashier = cashiers?.find(cashier => cashier.value === data.cashier_name);
+            if (foundCashier) {
+                onProcess('info','Processing Transaction Data.', true)
+                const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+                });
+                if(!response.ok){
+                    const errorMessage = await response.json()
+                    onProcess('error','Error adding transaction: ' + errorMessage.error, true)
+                    throw new Error(errorMessage);
+                }
+                onProcess('success','Transaction added succcessfully.', false)
+                console.log('Transaction added succcessfully');
+                 // Reset the form fields
+                form.resetFields();
+            } else {
+                onProcess('error','Error adding transaction. Please select a valid Cashier.', true)
+                console.log("Cashier not found.");
             }
-            onProcess('success','Transaction added succcessfully.', false)
-            console.log('Transaction added succcessfully');
         } catch (error){
             console.error('Error adding transaction: ', error);
         }
-        // Reset the form fields
-        form.resetFields();
+       
     };
     return (
         <Form
@@ -230,29 +244,29 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
         style={{ maxWidth: '100%' }} // optional styling
         autoComplete="off"
         >   
-            {/* <Space  size={50} style={{ display: 'flex', marginBottom: 8 }} align='baseline' > */}
+            <Spin spinning={isCashierNotAllowed} indicator={<LoadingOutlined spin />} tip="Fetching Cashiers...">
             <Form.Item
             label="Cashier Name"
             name="cashier_name"
             rules={[{ required: true, message: 'Please input the cashier name!' }]}
             >
-                {/* <Input placeholder="e.g. Cherry" /> */}
+                
                 <AutoComplete
                     options={cashiers}
                     // style={{ width: 200 }}
-                    // onSelect={onSelect}
+                    onSelect={setSelectedCashierName}
                     // onSearch={(text) => setOptions(getPanelValue(text))}
                     placeholder="e.g. Cherry"
+                    disabled={isCashierNotAllowed}
                 />
-                {/* <SelectFetch/> */}
-            </Form.Item>
                 
-            {/* </Space> */}
+            </Form.Item>
+            </Spin>
             <Space.Compact style={{ display: 'flex'}} >
                 <Form.Item
                     label="Shift"
                     name="shift"
-                    style={{ width: '65%'}}
+                    style={{ width: '55%'}}
                     rules={[{ required: true, message: 'Please select a shift time!' }]}
                     >
                         <Select placeholder="Select Shift">
@@ -283,7 +297,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                     <Form.Item
                     name={'_payment'}
                     rules={[{ required: true, message: 'Missing payment category' }]}
-                    style={{ width: '80%'}}
+                    style={{ width: '50%'}}
                     >
                         <Select placeholder="Select Category" >
                             {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
@@ -319,7 +333,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                             {...restField}
                             name={[name, 'payment']}
                             rules={[{ required: true, message: 'Missing payment category' }]}
-                            style={{ width: '40%'}}
+                            style={{ width: '60%'}}
                         >
                             <Select placeholder="Select Category">
                                 {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
@@ -344,11 +358,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                         >
                             <InputNumber style={{ width: 'auto'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
                         </Form.Item>
-                        <Button icon={<MinusCircleOutlined /> }  onClick={() => {
-                            // setPaymentFieldCount((count) => count-1);
-                            // setAvailableOptions("", form.getFieldValue(), fields.length)
-                            remove(name); }} />
-                        {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
+                        <Button icon={<MinusCircleOutlined /> }  onClick={() => { remove(name); }} />
                         </Space.Compact>
                     ))}
                     {(!isCash || !isCheck || !isBpi_cc || !isBpi_dc || !isMetro_cc || !isAub_cc || !isAub_cc || !isPaymaya || !isGcash || !isFoodpanda || !isStreetby || !isGrabfood ) && (<Form.Item>
@@ -360,7 +370,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                             if (fields.length === 0 ) {
                                 if (fields.length == 0 && form.getFieldValue(['_payment']) !== undefined && form.getFieldValue(['_payment_amount']) !== undefined) {
                                     setIsFilled(true);
-                                    // setPaymentFieldCount((count) => count+1);
                                     add();
                                 } else {
                                     setIsFilled(false)
@@ -369,12 +378,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                                 if(!values.other_payments[lastField.name]?.payment === undefined || values.other_payments[lastField.name]?.payment_amount === undefined){
                                     setIsFilled(false)
                                 } else {
-                                    
                                     const lastPaymentMethod = JSON.stringify(values.other_payments[lastField.name].payment);
                                     const lastPaymentAmount = JSON.stringify(values.other_payments[lastField.name].payment_amount);
                                     if(lastPaymentMethod !== undefined && lastPaymentAmount !== undefined && fields.length >= 1){
                                         setIsFilled(true);
-                                        // setPaymentFieldCount((count) => count+1);
                                         add();
                                     } else {
                                         setIsFilled(false)
@@ -392,11 +399,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                 </>
             )}
             </Form.List>
-            <Row gutter={16}>
-                <Col span={16}>
-                    <Statistic title="SUB TOTAL TRADE POS" value={subTotalTrade} precision={2} formatter={formatter_subTotalTradePos} />
-                </Col>
-            </Row>
+            
         </Form.Item>
         
       
@@ -407,7 +410,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
             >
              Internal Expenses{/* (Non-Trade POS) */}
             </Checkbox>
-            <Tooltip title={`MM-HEAD OFFICE refers to any sales or charges that go directly to a "head office account". MM-COMMISSARY refers to purchases or reimbursements from the company (central kitchen).`}>
+            <Tooltip placement="left" title={`Internal Expenses include costs allocated for operational purposes rather than being directly billed to customers—such as Food Charges and internal fees (e.g., MM-HEAD OFFICE, MM-COMMISSARY, etc.). These amounts are incorporated into your overall POS calculations.`}>
                 <Typography.Link href="#API">What is this?</Typography.Link>
             </Tooltip>
         </Form.Item>
@@ -421,7 +424,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                     <Form.Item
                     name={'_expense'}
                     rules={[{ required: true, message: 'Missing category' }]}
-                    style={{ width: '40%'}}
+                    style={{ width: '50%'}}
                     >
                         <Select placeholder="Select Category">
                             {!isMMHO && (<Select.Option value="MM-HEAD OFFICE" name="expense_category_MM-HEAD-OFFICE">MM-HEAD OFFICE</Select.Option>)}
@@ -450,7 +453,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                             {...restField}
                             name={[name, 'payment']}
                             rules={[{ required: true, message: 'Missing category' }]}
-                            style={{ width: '40%'}}
+                            style={{ width: '56%'}}
                         >
                     
                             <Select placeholder="Select Category">
@@ -480,11 +483,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                         Add More
                         </Button>
                     </Form.Item>)}
-                    <Row gutter={16}>
-                        <Col span={16}>
-                            <Statistic title="SUB TOTAL NON-TRADE POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-                        </Col>
-                    </Row>
+                    
                     </>
                 )}
                 </Form.List>
@@ -492,27 +491,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
             </Form.Item>
             </>
         )}
-
         <Form.Item>
             <Button type="primary" htmlType="submit">
             Add Transaction
             </Button>
         </Form.Item>
-        <Divider orientationMargin={'48'}>Summary</Divider>
+        <Divider orientationMargin={'48'}>SUB TOTAL</Divider>
         <Row gutter={16}>
-            <Col span={12}>
-                <Statistic title="GROSS TOTAL" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-            </Col>
-            <Col span={12}>
-                <Statistic title="NET TOTAL POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-            </Col>
-            
-        </Row>
-        <Row>
-            <Col span={16}>
-                <Statistic title="GRAND TOTAL POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-            </Col>
-        </Row>
+                <Col span={12}>
+                    <Statistic title="TRADE POS" value={subTotalTrade} precision={2} formatter={formatter_subTotalTradePos} />
+                </Col>
+                <Col span={12}>
+                    <Statistic title="NON-TRADE POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
+                </Col>
+            </Row>
         </Form>
         
     
