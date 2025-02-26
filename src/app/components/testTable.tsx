@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, Popconfirm, Space, Table, Typography } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, Popconfirm, Space, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from "@/app/components/drawer"
@@ -63,7 +63,7 @@ const TestTable: React.FC = () => {
   const [editingKey, setEditingKey] = useState('');
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
-  
+  const [messageApi, contextHolder] = message.useMessage();
 // Use useEffect for initial load and date changes
   useEffect(() => {
     fetchData(currentDate);
@@ -88,10 +88,6 @@ const TestTable: React.FC = () => {
     }
     
   };
-//   if(!isMounted){
-//     fetchData(currentDate);
-//     setIsMounted(true);
-//   }
  
   const onChangeDate = (date: Dayjs) => {
     if (date) {
@@ -113,7 +109,18 @@ const TestTable: React.FC = () => {
         ]}
     />
   );
-  
+  type NotificationType = 'success' | 'info' | 'warning' | 'error';
+  const handleTransactionProcess = async(type: NotificationType, message:string) => {
+    messageApi.open({
+        type:type,
+        content: message
+    });
+    console.log("TYPE:", type);
+    if(type==='success'){
+        console.log("SUCCESS")
+        fetchData(currentDate);
+    }
+  };
 
   const isEditing = (record: DataType) => record.key === editingKey;
 
@@ -228,6 +235,8 @@ const TestTable: React.FC = () => {
   
 
   return (
+    <>
+    {contextHolder}
     <Form form={form} component={false}>
       <Table<DataType>
         components={{
@@ -238,7 +247,7 @@ const TestTable: React.FC = () => {
         title={() => 
             <Space>
                 <CustomDatePicker/>
-                <TransactionFormDrawer/>
+                <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate}/>
             </Space>}
         columns={mergedColumns}
         rowClassName="editable-row"
@@ -247,6 +256,7 @@ const TestTable: React.FC = () => {
         scroll={{ y: 105 * 5 }}
       />
     </Form>
+    </>
   );
 };
 

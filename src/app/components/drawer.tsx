@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { Button, Drawer, Space } from 'antd';
 import TransactionForm from './TransactionForm';
-const TransactionFormDrawer: React.FC = () => {
+import { Dayjs } from 'dayjs';
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
+interface TransactionFormProps {
+    onSubmit: (type: NotificationType, message: string) => void
+    selectedDate: Dayjs
+}
+const TransactionFormDrawer: React.FC<TransactionFormProps> = ({onSubmit, selectedDate}) => {
   const [open, setOpen] = useState(false);
   const showDefaultDrawer = () => {
     setOpen(true);
   };
-
+  const handleProcessStatus = (type: NotificationType, message: string, drawerBool:boolean) => {
+    onSubmit(type, message)
+    setOpen(drawerBool)
+  }
 
 
   const onClose = () => {
@@ -24,6 +33,7 @@ const TransactionFormDrawer: React.FC = () => {
         title='Transaction Form'
         placement="left"
         size='default'
+        destroyOnClose={true}
         onClose={onClose}
         open={open}
         // extra={
@@ -35,7 +45,7 @@ const TransactionFormDrawer: React.FC = () => {
         //   </Space>
         // }
       >
-        <TransactionForm/>
+        <TransactionForm onProcess={handleProcessStatus} selectedDate={selectedDate}/>
       </Drawer>
     </>
   );

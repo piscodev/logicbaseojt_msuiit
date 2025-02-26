@@ -8,14 +8,25 @@ import { TransactionValuesState } from '../lib/Interface/route';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 export const dynamic = 'force-dynamic';
+
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
 interface Cashier{
     value: string
 }
+interface TransactionFormProps {
+    // statusTitle: string;
+    // statusMessage: string;
+    // statusType: string;
+    // onClose: () => void;
+    onProcess: (type: NotificationType, message: string, drawerBool:boolean) => void;
+    selectedDate: Dayjs
+  }
 
-const TransactionForm = () => {
+const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDate}) => {
     const [form] = Form.useForm();
     const [isMounted, setIsMounted] = useState(false);
-    const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
+    // const [messageApi, contextHolder] = message.useMessage();
+    const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const fetchCashiers = async() => {
         try{
@@ -185,6 +196,7 @@ const TransactionForm = () => {
         
         const data : TransactionValuesState = finalValues() as TransactionValuesState;
         try{
+            onProcess('info','Processing Transaction Data.', false)
             const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
                method: 'POST',
                headers: {
@@ -193,8 +205,10 @@ const TransactionForm = () => {
                body: JSON.stringify(data)
             });
             if(!response.ok){
+                onProcess('error','Failed to add transaction.', false)
                 throw new Error('Failed to add transaction');
             }
+            onProcess('success','Transaction added succcessfully.', false)
             console.log('Transaction added succcessfully');
         } catch (error){
             console.error('Error adding transaction: ', error);
@@ -500,6 +514,7 @@ const TransactionForm = () => {
             </Col>
         </Row>
         </Form>
+        
     
     );
 };
