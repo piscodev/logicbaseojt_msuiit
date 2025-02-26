@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
+import { FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -50,8 +50,8 @@ export default function AuthPage() {
         setEmail("");
         setPassword("");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

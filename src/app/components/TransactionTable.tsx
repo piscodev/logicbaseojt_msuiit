@@ -1,16 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Table, Button } from "antd";
 import { create } from "zustand";
+import type { TableProps } from 'antd';
 
-// const { Option } = Select;
+type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
 
-// Zustand store for managing POS data
-// type POSStore = {
-//   cashierData: {
-//     name: string;
-//     transactions: Transaction[];
-//   };
-// };
+// interface DataType {
+//   key: React.ReactNode;
+//   name: string;
+//   age: number;
+//   address: string;
+//   children?: DataType[];
+// }
 
 interface Transaction {
   particular: string;
@@ -20,116 +21,204 @@ interface Transaction {
 }
 
 interface Cashier {
+  cashier_id: number;
   name: string;
   transactions: Transaction[];
 }
 
 interface POSStore {
   cashiers: Cashier[];
+  setCashiers: (cashiers: Cashier[]) => void;
 }
 
-// const usePOSStore = create<POSStore>(() => ({
-//   cashiers: [
-//     {
-//       name: "Cherry",
-//       transactions: [
-//         { particular: "CASH", am: 63608, mid: 0, pm: 0 },
-//         { particular: "CHECK", am: 0, mid: 0, pm: 0 },
-//         { particular: "BPI CREDIT CARD", am: 5022, mid: 0, pm: 0 },
-//         { particular: "BPI DEBIT CARD", am: 0, mid: 0, pm: 0 },
-//         { particular: "METRO CREDIT CARD", am: 0, mid: 0, pm: 0 },
-//         { particular: "METRO DEBIT CARD", am: 0, mid: 0, pm: 0 },
-//         { particular: "PAYMAYA", am: 15510.67, mid: 0, pm: 0 },
-//         { particular: "AUB CREDIT CARD", am: 0, mid: 0, pm: 0 },
-//         { particular: "GCASH", am: 3108, mid: 0, pm: 0 },
-//         { particular: "FOOD PANDA", am: 0, mid: 0, pm: 0 },
-//         { particular: "STREEBY", am: 0, mid: 0, pm: 0 },
-//         { particular: "GRAB FOOD", am: 0, mid: 0, pm: 0 },
-//         { particular: "SUB TOTAL TRADE POS", am: 88248.67, mid: 0, pm: 0 },
-//         { particular: "GRAND TOTAL POS", am: 88248.67, mid: 0, pm: 0 },
-//       ],
-//     },
-//     {
-//       name: "Alex",
-//       transactions: [
-//         { particular: "CASH", am: 50000, mid: 0, pm: 10000 },
-//         { particular: "CHECK", am: 2000, mid: 0, pm: 0 },
-//         { particular: "BPI CREDIT CARD", am: 4000, mid: 0, pm: 5000 },
-//         { particular: "PAYMAYA", am: 8000, mid: 0, pm: 2000 },
-//         { particular: "GCASH", am: 5000, mid: 0, pm: 3000 },
-//         { particular: "GRAND TOTAL POS", am: 69000, mid: 0, pm: 20000 },
-//       ],
-//     },
-//   ],
-// }));
+const usePOSStore = create<POSStore>((set) => ({
+  cashiers: [],
+  setCashiers: (cashiers) => set({ cashiers }),
+}));
 
-// sampol data
-const usePOSStore = create<POSStore>(() => ({
-    cashiers: Array.from({ length: 100 }, (_, i) => ({
-      name: `Cashier ${i + 1}`,
-      transactions: [
-        { particular: "CASH", am: Math.random() * 100000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "CHECK", am: Math.random() * 5000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "BPI CREDIT CARD", am: Math.random() * 10000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "BPI DEBIT CARD", am: Math.random() * 10000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "METRO CREDIT CARD", am: Math.random() * 10000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "METRO DEBIT CARD", am: Math.random() * 10000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "PAYMAYA", am: Math.random() * 15000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "AUB CREDIT CARD", am: Math.random() * 10000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "GCASH", am: Math.random() * 8000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "FOOD PANDA", am: Math.random() * 5000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "STREEBY", am: Math.random() * 5000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "GRAB FOOD", am: Math.random() * 5000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "SUB TOTAL TRADE POS", am: Math.random() * 100000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-        { particular: "GRAND TOTAL POS", am: Math.random() * 100000, mid: Math.random() * 100000, pm: Math.random() * 100000 },
-      ],
-    })),
-  }))  
 
+const apiResponse = {
+  "cashiers": [
+    {
+      "name": "Tinapa",
+      "transactions": [
+        {
+          "id": 10,
+          "cashier_id": 1,
+          "shift_id": 1,
+          "shift": "am",
+          "date": "2025-02-24T16:00:00.000Z",
+          "transaction_id": 1,
+          "particular_id": 3,
+          "testong": {
+            "amount": 1,
+            "cash": 2,
+            "check_": 20,
+            "bpi_cc": 1,
+            "bpi_dc": 1,
+            "metro_cc": 1,
+            "metro_dc": 1,
+            "pay_maya": 1,
+            "aub_cc": 1,
+            "gcash": 1,
+            "foodpanda": 1,
+            "streetby": 1,
+            "grabfood": 1,
+            "mm_head": 0,
+            "mm_commisary": 0,
+            "mm_": 0,
+            "mm_rm": 0,
+            "mm_dm": 0,
+            "mm_km": 0,
+            "food_charge": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "Choki",
+      "transactions": [
+        {
+          "id": 10,
+          "cashier_id": 1,
+          "shift_id": 1,
+          "shift": "am",
+          "date": "2025-02-24T16:00:00.000Z",
+          "transaction_id": 1,
+          "particular_id": 3,
+          "testong": {
+            "amount": 1,
+            "cash": 2,
+            "check_": 20,
+            "bpi_cc": 1,
+            "bpi_dc": 1,
+            "metro_cc": 1,
+            "metro_dc": 1,
+            "pay_maya": 1,
+            "aub_cc": 1,
+            "gcash": 1,
+            "foodpanda": 1,
+            "streetby": 1,
+            "grabfood": 1,
+            "mm_head": 0,
+            "mm_commisary": 0,
+            "mm_": 0,
+            "mm_rm": 0,
+            "mm_dm": 0,
+            "mm_km": 0,
+            "food_charge": 0
+          }
+        }
+      ]
+    }
+  ]
+};
+
+// Function to process API response
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+function transformAPIResponse(apiResponse: any) {
+  const particularsMap: Record<string, string> = {
+    "CASH": "cash",
+    "CHECK": "check_",
+    "BPI CREDIT CARD": "bpi_cc",
+    "BPI DEBIT CARD": "bpi_dc",
+    "METRO CREDIT CARD": "metro_cc",
+    "METRO DEBIT CARD": "metro_dc",
+    "PAY MAYA": "pay_maya",
+    "AUB CREDIT CARD": "aub_cc",
+    "GCASH": "gcash",
+    "FOOD PANDA": "foodpanda",
+    "STREETBY": "streetby",
+    "GRAB FOOD": "grabfood"
+  }
+
+  const particulars = Object.keys(particularsMap).concat([
+    "MM_HEAD", "MM_COMMISARY", "MM_", "MM_RM", "MM_DM", "MM_KM", "FOOD_CHARGE"
+  ]);
+
+  return {
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    cashiers: apiResponse.cashiers.map((cashier: any, i: number) => {
+      console.log("Cashier:", cashier.name, "Transactions:", cashier.transactions);
+
+      return {
+        key: cashier.transactions[i].cashier_id,
+        name: cashier.name,
+        transactions: particulars.map((particular) => {
+          const lowerKey = particularsMap[particular] || particular.toLowerCase().replace(/ /g, "_");
+
+          return {
+            particular: particular, // Now using CAPSLOCK names
+            am: cashier.transactions
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+              .filter((tx: any) => tx.shift === "am")
+              .reduce((sum: number) => sum + (apiResponse.cashiers[i].transactions[i].testong[lowerKey] || 0), 0),
+            mid: cashier.transactions
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+              .filter((tx: any) => tx.shift === "mid")
+              .reduce((sum: number) => sum + (apiResponse.cashiers[i].transactions[i].testong[lowerKey] || 0), 0),
+            pm: cashier.transactions
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+              .filter((tx: any) => tx.shift === "pm")
+              .reduce((sum: number) => sum + (apiResponse.cashiers[i].transactions[i].testong[lowerKey] || 0), 0),
+          };
+        }).filter(a => a.particular !== 'AMOUNT'),
+      };
+    }),
+  };
+}
+
+const rowSelection: TableRowSelection<Cashier> = {
+  onChange: (selectedRowKeys, selectedRows) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+  },
+  onSelect: (record, selected, selectedRows) => {
+    console.log(record, selected, selectedRows);
+  },
+  onSelectAll: (selected, selectedRows, changeRows) => {
+    console.log(selected, selectedRows, changeRows);
+  },
+}
 
 const App = () =>
 {
-    const { cashiers } = usePOSStore()
-    // const [selectedShift, setSelectedShift] = useState("AM")
+    const { cashiers, setCashiers } = usePOSStore()
+
+    useEffect(() => {
+      const transformedData = transformAPIResponse(apiResponse);
+      setCashiers(transformedData.cashiers);
+    }, [setCashiers]);
 
     const columns: Array<{ title: string; dataIndex?: string; key: string; render?: (text: string, record: Cashier) => React.ReactNode }> = [
-    {
-        title: "Cashier Name",
-        dataIndex: "name",
-        key: "name",
-    },
-    {
-        title: "AM",
-        dataIndex: "am",
-        key: "am",
-        render: (_, record) => record.transactions.reduce((sum: number, t: Transaction) => sum + t.am, 0).toLocaleString(),
-    },
-    {
-        title: "MID",
-        dataIndex: "mid",
-        key: "mid",
-        render: (_, record) => record.transactions.reduce((sum: number, t: Transaction) => sum + t.mid, 0).toLocaleString(),
-    },
-    {
-        title: "PM",
-        dataIndex: "pm",
-        key: "pm",
-        render: (_, record) => record.transactions.reduce((sum: number, t: Transaction) => sum + t.pm, 0).toLocaleString(),
-    },
-    {
-        title: "Action",
-        key: "action",
-        render: () => <Button type="link">View</Button>,
-    },
-]
-
-// const dataSource = [
-//     {
-//         key: "1", // ID
-//         name: cashierData.name,
-//         transactions: cashierData.transactions,
-//     },
-// ]
+      {
+          title: "Cashier Name",
+          dataIndex: "name",
+          key: "name",
+      },
+      // {
+      //     title: "AM",
+      //     dataIndex: "am",
+      //     key: "am",
+      //     render: (_, record) => record.transactions.reduce((sum: number, t: Transaction) => sum + t.am, 0).toLocaleString(),
+      // },
+      // {
+      //     title: "MID",
+      //     dataIndex: "mid",
+      //     key: "mid",
+      //     render: (_, record) => record.transactions.reduce((sum: number, t: Transaction) => sum + t.mid, 0).toLocaleString(),
+      // },
+      // {
+      //     title: "PM",
+      //     dataIndex: "pm",
+      //     key: "pm",
+      //     render: (_, record) => record.transactions.reduce((sum: number, t: Transaction) => sum + t.pm, 0).toLocaleString(),
+      // },
+      {
+          title: "Action",
+          key: "action",
+          render: () => <Button type="link">View</Button>,
+      },
+    ]
 
   return (
     <Table
@@ -137,26 +226,17 @@ const App = () =>
       expandable={{
         expandedRowRender: (record) => (
           <>
-            {/* <Select
-              defaultValue={selectedShift}
-              onChange={(value: string) => setSelectedShift(value)}
-              style={{ marginBottom: 10 }}
-            >
-              <Option value="AM">AM</Option>
-              <Option value="MID">MID</Option>
-              <Option value="PM">PM</Option>
-            </Select> */}
             <Table
               columns={[
                 {
-                    title: "Particular",
-                    dataIndex: "particular",
-                    key: "particular",
-                    width: 'auto',
-                    ellipsis: true,
-                    onHeaderCell: (column) => ({
-                        style: { whiteSpace: "nowrap", minWidth: column.title ? String(column.title).length : 0 },
-                    })
+                  title: "Particular",
+                  dataIndex: "particular",
+                  key: "particular",
+                  width: 'auto',
+                  ellipsis: true,
+                  onHeaderCell: (column) => ({
+                      style: { whiteSpace: "nowrap", minWidth: column.title ? String(column.title).length : 0 },
+                  })
                 },
                 { // am
                   title: 'AM',
@@ -202,6 +282,7 @@ const App = () =>
           </>
         ),
       }}
+      rowSelection={{ ...rowSelection }}
       dataSource={cashiers.map((cashier, index) => ({ key: index, ...cashier }))}
       scroll={{ x: 1200 }}
     />

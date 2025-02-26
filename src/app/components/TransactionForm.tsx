@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useRef, useState, useEffect } from 'react';
 import type { AutoCompleteProps, StatisticProps, InputNumberProps } from 'antd';
 import { LoadingOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
@@ -205,12 +207,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
             const foundCashier = cashiers?.find(cashier => cashier.value === data.cashier_name);
             if (foundCashier) {
                 onProcess('info','Processing Transaction Data.', true)
-                const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
+                const response = await fetch(`/api/transactions/addTransaction`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify({data:data, date: currentDate.format('YYYY-MM-DD')})
                 });
                 if(!response.ok){
                     const errorMessage = await response.json()
