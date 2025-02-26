@@ -3,9 +3,10 @@ import { FieldPacket, ResultSetHeader } from "mysql2";
 import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { TransactionValuesState } from '@/app/lib/Interface/route';
-  
-export async function POST(req: NextRequest) {
+import { DateTime } from "luxon";
+export async function POST(req: NextRequest, {params}: {params: {date: string}}) {
     if (req.method === 'POST') {
+        const { date } = params;
         const {
             cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge//, sub_total_trade_POS, grand_total_trade_POS, z_reading_POS, short_over_POS
         }: TransactionValuesState = await req.json();
@@ -16,6 +17,9 @@ export async function POST(req: NextRequest) {
         }
   
         let connection;
+        const formattedDate = DateTime.fromFormat(date,"yyyy-MM-dd").setZone('Asia/Manila')
+        const formattedDateString = formattedDate.toFormat('yyyy-LL-dd')
+        console.log("Adding transaction for date:", formattedDate)
         try {
             console.log('get connection')
             connection = await pool.getConnection();
@@ -27,23 +31,24 @@ export async function POST(req: NextRequest) {
                 `SELECT t.id 
                 FROM Transaction t
                 JOIN Shift s ON t.shift_id = s.id
-                WHERE t.date = NOW() AND s.name = ?`,
-                [shift]
+                WHERE t.date = ? AND s.name = ?`,
+                [formattedDateString, shift]
             ) as [TransactionValuesState[], FieldPacket[]];
             console.log('existing shift data: ', existingShift[0])
             if (existingShift[0].length > 0) {
                 await connection.rollback();
-                return NextResponse.json({ error: `Shift report for ${shift} already exists for today` }, { status: 400 });
+                const errorMessage = DateTime.now().setZone('Asia/Manila').hasSame(formattedDate, 'day') ? `Shift report for ${shift} already exists for today` : `Shift report for ${shift} already exists for ${formattedDateString}`
+                return NextResponse.json({ error: errorMessage}, { status: 400 });
             }
             // 2. Create transaction
-            const [txResult]: [ ResultSetHeader, FieldPacket[]] = await connection.query(
+            const [txResult]: [ResultSetHeader, FieldPacket[]] = await connection.query(
                 `INSERT INTO Transaction (cashier_id, shift_id, date)
                 VALUES (
                 (SELECT id FROM Cashier WHERE name = ?),
                 (SELECT id FROM Shift WHERE name = ?),
-                NOW()
+                ?
                 )`,
-                [cashier_name, shift]
+                [cashier_name, shift, formattedDate]
             ) as [ResultSetHeader, FieldPacket[]];
         
             const txId = txResult.insertId;

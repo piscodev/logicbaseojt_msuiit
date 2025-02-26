@@ -1,119 +1,31 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { AutoCompleteProps, StatisticProps, InputNumberProps } from 'antd';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, AutoComplete, Divider, Form, Input, Button, Space, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
+import { LoadingOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, AutoComplete, DatePicker, Divider, Form, Input, Button, Space, Spin, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
 import { TransactionValuesState } from '../lib/Interface/route';
-// import debounce from 'lodash/debounce';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+export const dynamic = 'force-dynamic';
 
-// async function fetchUserList(username: string) {
-    // console.log('fetching user', username);
-    /** 
-     * TEMPORARY HARD CODED FETCH IMPLEMENTATION.
-     * REPLACE WITH ACTUAL API FETCH TO DATABASE
-     * **/
-    // const cashiers = [
-    //     { id: 1, name: 'John Doe' },
-    //     { id: 2, name: 'Jane Doe'  },
-    //     { id: 3, name: 'Bob Smith'  },
-    //     { id: 4, name: 'Alice Johnson' },
-    //     { id: 5, name: 'Mike Williams' },
-    //     { id: 6, name: 'Will Smith'  },
-    //     { id: 7, name: 'Marie Curry' },
-    //     { id: 8, name: 'Stephen Carlson' },
-    //     // add more cashiers here...
-    // ];
-    // const data = {results: cashiers.slice(0, 5)};
-    // return  data.results.map((cashier) => ({
-    //           label: `${cashier.name}`,
-    //           value: cashier.name,
-            // }));
-    // return fetch('http://localhost:5173/api/getCashiers?results=5')//get cashiers then slice and return only 5
-    //   .then((response) => {
-    //     if(!response.ok){
-    //         throw new Error(`HTTP error! status: ${response.status}`)
-    //     }
-    //     return response.json()})
-    //   .then((body) =>
-    //     body.results.map((cashier) => ({
-    //       label: `${cashier.name}`,
-    //       value: cashier.name,
-    //     })),
-    //   );
-//   }
-// interface DebounceSelectProps {
-//   fetchOptions: (value: string) => Promise<{ label: string; value: string }[]>;
-//   debounceTimeout?: number;
-//   [key: string]: any;
-// }
-
-// function DebounceSelect({ fetchOptions, debounceTimeout = 800, ...props }: DebounceSelectProps) {
-//     const [fetching, setFetching] = useState(false);
-//     const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
-//     const fetchRef = useRef(0);
-//     const debounceFetcher = useMemo(() => {
-//       const loadOptions = (value: string) => {
-//         fetchRef.current += 1;
-//         const fetchId = fetchRef.current;
-//         setOptions([]);
-//         setFetching(true);
-//         fetchOptions(value).then((newOptions) => {
-//           if (fetchId !== fetchRef.current) {
-//             // for fetch callback order
-//             return;
-//           }
-//           setOptions(newOptions);
-//           setFetching(false);
-//         });
-//       };
-//       return debounce(loadOptions, debounceTimeout);
-//     }, [fetchOptions, debounceTimeout]);
-//     return (
-//       <Select
-//         labelInValue
-//         filterOption={false}
-//         onSearch={debounceFetcher}
-//         notFoundContent={fetching ? <Spin size="small" /> : null}
-//         {...props}
-//         options={options}
-//       />
-//     );
-//   }
-
-// const SelectFetch = () => {
-//     const [value, setValue] = useState([]);
-//   return (
-//     <DebounceSelect
-//       mode="multiple"
-//       maxCount='1'
-//       value={value}
-//       placeholder="Select users"
-//       fetchOptions={fetchUserList}
-//       onChange={(newValue: React.SetStateAction<never[]>) => {
-//         setValue(newValue);
-//       }}
-//       style={{
-//         width: '100%',
-//       }}
-//     />
-//   );
-// };
-
-// const onFinish = (values: any) => {
-//     console.log('Received values of form:', values);
-// };
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
 interface Cashier{
     value: string
 }
-const TransactionForm = () => {
+interface TransactionFormProps {
+    onProcess: (type: NotificationType, message: string, drawerBool:boolean) => void;
+    selectedDate: Dayjs
+}
+
+const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDate}) => {
     const [form] = Form.useForm();
     const [isMounted, setIsMounted] = useState(false);
-    const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([
-        // { value: 'Marie' },
-        // { value: 'Cherry' },
-        // { value: 'John' },
-      ]);
+    // const [messageApi, contextHolder] = message.useMessage();
+    const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
+    const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
+    const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
+    // const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashiers`, {
@@ -121,16 +33,16 @@ const TransactionForm = () => {
             });
             if(!response.ok) throw new Error('Failed to fetch cashiers');
             const data = await response.json();
-            console.log('data: ', data.cashiers);//data:  (2) [{…}, {…}]0: value: "Cherry"[[Prototype]]: Object1: value: "John"[[Prototype]]: Objectlength: 2[[Prototype]]: Array(0)
-
-            // const cashierNames = data.cashiers;
             const cashierNames = data.cashiers.map((cashier:Cashier) => ({
                 ...cashier,
                 value: cashier.value
             }))
             
             setCashiers(cashierNames)
+            setIsCashierNotAllowed(false);
+            // console.log("CASHIERS after setting: ", cashierNames);
         }catch(error){
+            onProcess('error','Error fetching cashiers.', false)
             console.error('Error fetching users: ', error);
         }
     };
@@ -151,22 +63,20 @@ const TransactionForm = () => {
         
         return (
         
-            <CountUp start={startValue as number} end={value as number} separator="," decimals={2} onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number;}}/>
+            <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2}
+            onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number;}}
+            />
         );
     } 
     const formatter_subTotalNonTradePos: StatisticProps['formatter'] = (value) => {
         const startValue = prevValueSubTotalNonTradePosRef.current;
         
         return(
-        <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2} onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number; }}/>
+        <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2} onEnd={ () => {
+            prevValueSubTotalTradePosRef.current = value as number; }}/>
     );}
       const onChange: InputNumberProps['onChange'] = (value) => {
         console.log('changed', value);
-        // setCashiers([
-        //     { value: 'Marie' },
-        //     { value: 'Cherry' },
-        //     { value: 'John' },
-        //   ])
     };
     const watchResult = Form.useWatch((values) => {
     let subTotalTrade : number = prevValueSubTotalTradePosRef.current;
@@ -248,14 +158,9 @@ const TransactionForm = () => {
             else if(values.other_expenses[i]?.payment === 'FOOD CHARGES') isFoodCharges = true
             if(values.other_expenses[i]?.payment_amount !== undefined)
                 subTotalNonTrade += parseFloat(values.other_expenses[i]?.payment_amount)
-
         }
-    // subTotalNonTrade = subTotalTrade
     if(values?._expense !== undefined)
         subTotalNonTrade += parseFloat(values._expense_amount)
-    // console.log('_expense: ',values._expense)
-    // console.log('_expense_amount: ',values._expense_amount)
-    // console.log("Others: ", values)
     return { isMMHO, isMMCom, isMMRM, isMMDM, isMMKM, isMM__, isFoodCharges,
         isCash, isCheck, isBpi_cc, isBpi_dc, isMetro_cc, isMetro_dc, isPaymaya, isAub_cc, isGcash, isFoodpanda, isStreetby, isGrabfood, subTotalTrade, subTotalNonTrade };
 
@@ -263,7 +168,7 @@ const TransactionForm = () => {
     const { 
         isMMHO = false, isMMCom = false, isMMRM = false, isMMDM = false, isMMKM = false, isMM__ = false, isFoodCharges = false,
         isCash = false, isCheck = false, isBpi_cc = false, isBpi_dc = false, isMetro_cc = false, isMetro_dc = false, isPaymaya = false, isAub_cc = false, isGcash = false, isFoodpanda = false, isStreetby = false, isGrabfood = false, subTotalTrade = 0, subTotalNonTrade = 0} = watchResult || {}
-    const [componentDisabled, setComponentDisabled] = useState(true);
+    const [componentEnabled, setcomponentEnabled] = useState(false);
     const [isFilled, setIsFilled] = useState(true);
     const addTransaction = useTransactionStore((state) => state.addTransaction);
     const finalValues = useTransactionStore((state) => state.finalValues);
@@ -278,30 +183,53 @@ const TransactionForm = () => {
         _expense_amount?: number;
         other_expenses?: { payment: string; payment_amount: string }[];
     }
+    const onChangeDate = (date: Dayjs) => {
+        if (date) {
+          console.log('Date: ', date);
+          setCurrentDate(date);
+        } else {
+          console.log('Clear');
+        }
+    };
+    // const setSelectedCashierName = (name:string) => {
+    //     // setSelectedCashier(name);
+    //     console.log("Selected: ", name);
+    // };
 
     const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
         
         const data : TransactionValuesState = finalValues() as TransactionValuesState;
+        
         try{
-            const response = await fetch(`/api/addTransaction`, {
-               method: 'POST',
-               headers: {
-                'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(data)
-            });
-            if(!response.ok){
-                throw new Error('Failed to add transaction');
+            const foundCashier = cashiers?.find(cashier => cashier.value === data.cashier_name);
+            if (foundCashier) {
+                onProcess('info','Processing Transaction Data.', true)
+                const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+                });
+                if(!response.ok){
+                    const errorMessage = await response.json()
+                    onProcess('error','Error adding transaction: ' + errorMessage.error, true)
+                    throw new Error(errorMessage);
+                }
+                onProcess('success','Transaction added succcessfully.', false)
+                console.log('Transaction added succcessfully');
+                 // Reset the form fields
+                form.resetFields();
+            } else {
+                onProcess('error','Error adding transaction. Please select a valid Cashier.', true)
+                console.log("Cashier not found.");
             }
-            console.log('Transaction added succcessfully');
         } catch (error){
             console.error('Error adding transaction: ', error);
         }
-        // Reset the form fields
-        form.resetFields();
+       
     };
-
     return (
         <Form
         name="transaction_form"
@@ -310,40 +238,57 @@ const TransactionForm = () => {
         onFinish={onFinish}
         initialValues={{
             '_payment': "CASH",
-            '_expense': "FOOD CHARGES"
+            '_expense': "FOOD CHARGES",
+            'date':currentDate
         }}
-        style={{ maxWidth: 400 }} // optional styling
+        style={{ maxWidth: '100%' }} // optional styling
         autoComplete="off"
         >   
-            <Space  size={50} style={{ display: 'flex', marginBottom: 8 }} align='baseline' >
+            <Spin spinning={isCashierNotAllowed} indicator={<LoadingOutlined spin />} tip="Fetching Cashiers...">
+            <Form.Item
+            label="Cashier Name"
+            name="cashier_name"
+            rules={[{ required: true, message: 'Please input the cashier name!' }]}
+            >
+                
+                <AutoComplete
+                    options={cashiers}
+                    // style={{ width: 200 }}
+                    // onSelect={setSelectedCashierName}
+                    // onSearch={(text) => setOptions(getPanelValue(text))}
+                    placeholder="e.g. Cherry"
+                    disabled={isCashierNotAllowed}
+                />
+                
+            </Form.Item>
+            </Spin>
+            <Space.Compact style={{ display: 'flex'}} >
                 <Form.Item
-                label="Cashier Name"
-                name="cashier_name"
-                rules={[{ required: true, message: 'Please input the cashier name!' }]}
-                >
-                    {/* <Input placeholder="e.g. Cherry" /> */}
-                    <AutoComplete
-                        options={cashiers}
-                        // style={{ width: 200 }}
-                        // onSelect={onSelect}
-                        // onSearch={(text) => setOptions(getPanelValue(text))}
-                        placeholder="e.g. Cherry"
-                    />
-                    {/* <SelectFetch/> */}
+                    label="Shift"
+                    name="shift"
+                    style={{ width: '55%'}}
+                    rules={[{ required: true, message: 'Please select a shift time!' }]}
+                    >
+                        <Select placeholder="Select Shift">
+                            <Select.Option value="AM">AM</Select.Option>
+                            <Select.Option value="MID">MID</Select.Option>
+                            <Select.Option value="PM">PM</Select.Option>
+                        </Select>
                 </Form.Item>
                 <Form.Item
-                label="Shift"
-                name="shift"
-                rules={[{ required: true, message: 'Please select a shift time!' }]}
-                >
-                    <Select placeholder="Select Shift">
-                        <Select.Option value="AM">AM</Select.Option>
-                        <Select.Option value="MID">MID</Select.Option>
-                        <Select.Option value="PM">PM</Select.Option>
-                    </Select>
-                    
+                    label="Date"
+                    name="date"
+                    >
+                    <DatePicker
+                        presets={[
+                            { label: 'Yesterday', value: dayjs().add(-1, 'd') },
+                            { label: 'Last Week', value: dayjs().add(-7, 'd') },
+                            { label: 'Last Month', value: dayjs().add(-1, 'month') },
+                        ]}
+                        onChange={onChangeDate}
+                        />
                 </Form.Item>
-            </Space>
+            </Space.Compact>
             <Form.Item
             label="Payments"
             rules={[{ required: true, message: 'Please select a payment category!' }]}
@@ -352,7 +297,7 @@ const TransactionForm = () => {
                     <Form.Item
                     name={'_payment'}
                     rules={[{ required: true, message: 'Missing payment category' }]}
-                    style={{ width: '80%'}}
+                    style={{ width: '50%'}}
                     >
                         <Select placeholder="Select Category" >
                             {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
@@ -388,9 +333,8 @@ const TransactionForm = () => {
                             {...restField}
                             name={[name, 'payment']}
                             rules={[{ required: true, message: 'Missing payment category' }]}
-                            style={{ width: '40%'}}
+                            style={{ width: '60%'}}
                         >
-                    
                             <Select placeholder="Select Category">
                                 {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
                                 {!isCheck && (<Select.Option value="CHECK">CHECK</Select.Option>)}
@@ -412,13 +356,9 @@ const TransactionForm = () => {
                             rules={[{ required: true, message: 'Missing payment amount' }]}
                             style={{ width: '55%'}}
                         >
-                            <Input placeholder="Enter amount" />
+                            <InputNumber style={{ width: 'auto'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
                         </Form.Item>
-                        <Button icon={<MinusCircleOutlined /> }  onClick={() => {
-                            // setPaymentFieldCount((count) => count-1);
-                            // setAvailableOptions("", form.getFieldValue(), fields.length)
-                            remove(name); }} />
-                        {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
+                        <Button icon={<MinusCircleOutlined /> }  onClick={() => { remove(name); }} />
                         </Space.Compact>
                     ))}
                     {(!isCash || !isCheck || !isBpi_cc || !isBpi_dc || !isMetro_cc || !isAub_cc || !isAub_cc || !isPaymaya || !isGcash || !isFoodpanda || !isStreetby || !isGrabfood ) && (<Form.Item>
@@ -430,7 +370,6 @@ const TransactionForm = () => {
                             if (fields.length === 0 ) {
                                 if (fields.length == 0 && form.getFieldValue(['_payment']) !== undefined && form.getFieldValue(['_payment_amount']) !== undefined) {
                                     setIsFilled(true);
-                                    // setPaymentFieldCount((count) => count+1);
                                     add();
                                 } else {
                                     setIsFilled(false)
@@ -439,12 +378,10 @@ const TransactionForm = () => {
                                 if(!values.other_payments[lastField.name]?.payment === undefined || values.other_payments[lastField.name]?.payment_amount === undefined){
                                     setIsFilled(false)
                                 } else {
-                                    
                                     const lastPaymentMethod = JSON.stringify(values.other_payments[lastField.name].payment);
                                     const lastPaymentAmount = JSON.stringify(values.other_payments[lastField.name].payment_amount);
                                     if(lastPaymentMethod !== undefined && lastPaymentAmount !== undefined && fields.length >= 1){
                                         setIsFilled(true);
-                                        // setPaymentFieldCount((count) => count+1);
                                         add();
                                     } else {
                                         setIsFilled(false)
@@ -462,26 +399,22 @@ const TransactionForm = () => {
                 </>
             )}
             </Form.List>
-            <Row gutter={16}>
-                <Col span={16}>
-                    <Statistic title="SUB TOTAL TRADE POS" value={subTotalTrade} precision={2} formatter={formatter_subTotalTradePos} />
-                </Col>
-            </Row>
+            
         </Form.Item>
         
       
         <Form.Item>
             <Checkbox 
-            checked={componentDisabled}
-            onChange={(e) => setComponentDisabled(e.target.checked)}
+            checked={componentEnabled}
+            onChange={(e) => setcomponentEnabled(e.target.checked)}
             >
-            Internal Expenses (Non-Trade POS)
+             Internal Expenses{/* (Non-Trade POS) */}
             </Checkbox>
-            <Tooltip title={`MM-HEAD OFFICE refers to any sales or charges that go directly to a "head office account". MM-COMMISSARY refers to purchases or reimbursements from the company (central kitchen).`}>
+            <Tooltip placement="left" title={`Internal Expenses include costs allocated for operational purposes rather than being directly billed to customers—such as Food Charges and internal fees (e.g., MM-HEAD OFFICE, MM-COMMISSARY, etc.). These amounts are incorporated into your overall POS calculations.`}>
                 <Typography.Link href="#API">What is this?</Typography.Link>
             </Tooltip>
         </Form.Item>
-        { componentDisabled && (
+        { componentEnabled && (
             <>
             <Form.Item
             label="Internal Expenses"
@@ -491,7 +424,7 @@ const TransactionForm = () => {
                     <Form.Item
                     name={'_expense'}
                     rules={[{ required: true, message: 'Missing category' }]}
-                    style={{ width: '40%'}}
+                    style={{ width: '50%'}}
                     >
                         <Select placeholder="Select Category">
                             {!isMMHO && (<Select.Option value="MM-HEAD OFFICE" name="expense_category_MM-HEAD-OFFICE">MM-HEAD OFFICE</Select.Option>)}
@@ -520,7 +453,7 @@ const TransactionForm = () => {
                             {...restField}
                             name={[name, 'payment']}
                             rules={[{ required: true, message: 'Missing category' }]}
-                            style={{ width: '40%'}}
+                            style={{ width: '56%'}}
                         >
                     
                             <Select placeholder="Select Category">
@@ -550,11 +483,7 @@ const TransactionForm = () => {
                         Add More
                         </Button>
                     </Form.Item>)}
-                    <Row gutter={16}>
-                        <Col span={16}>
-                            <Statistic title="SUB TOTAL NON-TRADE POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-                        </Col>
-                    </Row>
+                    
                     </>
                 )}
                 </Form.List>
@@ -562,28 +491,22 @@ const TransactionForm = () => {
             </Form.Item>
             </>
         )}
-
         <Form.Item>
             <Button type="primary" htmlType="submit">
             Add Transaction
             </Button>
         </Form.Item>
-        <Divider orientationMargin={'48'}>Summary</Divider>
+        <Divider orientationMargin={'48'}>SUB TOTAL</Divider>
         <Row gutter={16}>
-            <Col span={12}>
-                <Statistic title="GROSS TOTAL" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-            </Col>
-            <Col span={12}>
-                <Statistic title="NET TOTAL POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-            </Col>
-            
-        </Row>
-        <Row>
-            <Col span={16}>
-                <Statistic title="GRAND TOTAL POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
-            </Col>
-        </Row>
+                <Col span={12}>
+                    <Statistic title="TRADE POS" value={subTotalTrade} precision={2} formatter={formatter_subTotalTradePos} />
+                </Col>
+                <Col span={12}>
+                    <Statistic title="NON-TRADE POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
+                </Col>
+            </Row>
         </Form>
+        
     
     );
 };
