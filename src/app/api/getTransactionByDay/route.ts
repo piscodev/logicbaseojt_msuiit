@@ -199,8 +199,8 @@ export async function POST(req: NextRequest) {
                     am: subTotalNonTradeAM,
                     mid: subTotalNonTradeMID,
                     pm: subTotalNonTradePM,
-                    gross_total: grossNonTradeTotal,
-                    net_total: netNonTradeTotal
+                    gross_total: grossNonTradeTotal.toFixed(2),
+                    net_total: netNonTradeTotal.toFixed(2),
                 };
                 nonTradeRows.push(nonTrade)
                 grandPOSAM += subTotalNonTradeAM
