@@ -25,7 +25,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
-    const [selectedCashier, setSelectedCashier] = useState<string>('');
+    // const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashiers`, {
@@ -191,10 +191,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
           console.log('Clear');
         }
     };
-    const setSelectedCashierName = (name:string) => {
-        setSelectedCashier(name);
-        console.log("Selected: ", name);
-    };
+    // const setSelectedCashierName = (name:string) => {
+    //     // setSelectedCashier(name);
+    //     console.log("Selected: ", name);
+    // };
 
     const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
@@ -254,7 +254,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                 <AutoComplete
                     options={cashiers}
                     // style={{ width: 200 }}
-                    onSelect={setSelectedCashierName}
+                    // onSelect={setSelectedCashierName}
                     // onSearch={(text) => setOptions(getPanelValue(text))}
                     placeholder="e.g. Cherry"
                     disabled={isCashierNotAllowed}

@@ -61,7 +61,7 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
 const TestTable: React.FC = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>([]);
-  const [editingKey, setEditingKey] = useState('');
+//   const [editingKey, setEditingKey] = useState('');
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(true);
   const [messageApi, contextHolder] = message.useMessage();
@@ -131,40 +131,40 @@ const TestTable: React.FC = () => {
     }
   };
   const { Text } = Typography;
-  const isEditing = (record: DataType) => record.key === editingKey;
+//   const isEditing = (record: DataType) => record.key === editingKey;
 
-  const edit = (record: Partial<DataType> & { key: React.Key }) => {
-    form.setFieldsValue({ name: '', am: '', mid: '', ...record });
-    setEditingKey(record.key);
-  };
+//   const edit = (record: Partial<DataType> & { key: React.Key }) => {
+//     form.setFieldsValue({ name: '', am: '', mid: '', ...record });
+//     setEditingKey(record.key);
+//   };
 
-  const cancel = () => {
-    setEditingKey('');
-  };
+//   const cancel = () => {
+//     setEditingKey('');
+//   };
 
-  const save = async (key: React.Key) => {
-    try {
-      const row = (await form.validateFields()) as DataType;
+//   const save = async (key: React.Key) => {
+//     try {
+//       const row = (await form.validateFields()) as DataType;
 
-      const newData = [...data];
-      const index = newData.findIndex((item) => key === item.key);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
-          ...item,
-          ...row,
-        });
-        setData(newData);
-        setEditingKey('');
-      } else {
-        newData.push(row);
-        setData(newData);
-        setEditingKey('');
-      }
-    } catch (errInfo) {
-      console.log('Validate Failed:', errInfo);
-    }
-  };
+//       const newData = [...data];
+//       const index = newData.findIndex((item) => key === item.key);
+//       if (index > -1) {
+//         const item = newData[index];
+//         newData.splice(index, 1, {
+//           ...item,
+//           ...row,
+//         });
+//         setData(newData);
+//         setEditingKey('');
+//       } else {
+//         newData.push(row);
+//         setData(newData);
+//         setEditingKey('');
+//       }
+//     } catch (errInfo) {
+//       console.log('Validate Failed:', errInfo);
+//     }
+//   };
 
   const columns = [
     {
@@ -269,7 +269,7 @@ const TestTable: React.FC = () => {
         inputType: col.dataIndex === 'am' ? 'number' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
-        editing: isEditing(record) && (!record.particular.startsWith('SUB TOTAL') && !record.particular.startsWith('CASHIER') && !record.particular.startsWith('GRAND TOTAL')),
+        // editing: isEditing(record) && (!record.particular.startsWith('SUB TOTAL') && !record.particular.startsWith('CASHIER') && !record.particular.startsWith('GRAND TOTAL')),
         
       }),
     };
