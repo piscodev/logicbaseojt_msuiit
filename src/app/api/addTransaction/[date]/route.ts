@@ -48,7 +48,7 @@ export async function POST(req: NextRequest, {params}: {params: {date: string}})
                 (SELECT id FROM Shift WHERE name = ?),
                 ?
                 )`,
-                [cashier_name, shift, formattedDate]
+                [cashier_name, shift, formattedDateString]
             ) as [ResultSetHeader, FieldPacket[]];
         
             const txId = txResult.insertId;
