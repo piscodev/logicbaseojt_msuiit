@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import pool from "@/app/lib/Database/db.ts";
+import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     const { email, password } = await req.json();
 
     // Fetch user by email
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     const [rows]: any = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
 
     if (rows.length === 0) {

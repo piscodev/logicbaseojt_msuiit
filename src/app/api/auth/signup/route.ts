@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import pool from "@/app/lib/Database/db.ts";
+import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     await pool.getConnection().then(() => console.log("✅ Database Connected!"));
 
     // ✅ Check if email already exists
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     const [existingUser]: any = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
     if (Array.isArray(existingUser) && existingUser.length > 0) {
       return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // ✅ Insert new user
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     const [result]: any = await pool.query(
       "INSERT INTO users (email, password, registeredAt) VALUES (?, ?, NOW())",
       [email, hashedPassword]

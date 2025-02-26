@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, message, /*Popconfirm,*/ Space, Spin, Table, Typography } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { DatePicker, Form, Input, InputNumber, message, Space, /*Popconfirm,*/ Table, Typography } from 'antd';
+const { Text } = Typography;
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
-import TransactionFormDrawer from "@/app/components/drawer"
+import TransactionFormDrawer from './drawer';
 export const dynamic = 'force-dynamic';
 interface DataType {
   key: string;
@@ -61,10 +61,10 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
 const TestTable: React.FC = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>([]);
-//   const [editingKey, setEditingKey] = useState('');
+// const [editingKey,] = useState('');
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
-  const [loading, setLoading] = useState<boolean>(true);
-  const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [messageApi,] = message.useMessage();
 // Use useEffect for initial load and date changes
   useEffect(() => {
     fetchData(currentDate);
@@ -90,12 +90,16 @@ const TestTable: React.FC = () => {
     }
     
   };
+//   if(!isMounted){
+//     fetchData(currentDate);
+//     setIsMounted(true);
+//   }
  
   const onChangeDate = (date: Dayjs) => {
     if (date) {
         setCurrentDate(date)
         console.log('Date: ', date);
-        fetchData(date);
+        fetchData(currentDate);
     } else {
         console.log('Clear');
     }
@@ -113,25 +117,18 @@ const TestTable: React.FC = () => {
   );
   type NotificationType = 'success' | 'info' | 'warning' | 'error';
   const handleTransactionProcess = async(type: NotificationType, message:string) => {
-    if(type==='error'){
-        messageApi.open({
-            type:type,
-            content: message,
-            duration: 5
-        });
-    } else {
-        messageApi.open({
-            type:type,
-            content: message
-        });
-        if(type==='success'){
-            console.log("SUCCESS")
-            fetchData(currentDate);
-        }
+    messageApi.open({
+        type:type,
+        content: message
+    });
+    console.log("TYPE:", type);
+    if(type==='success'){
+        console.log("SUCCESS")
+        fetchData(currentDate);
     }
   };
-  const { Text } = Typography;
-//   const isEditing = (record: DataType) => record.key === editingKey;
+
+  // const isEditing = (record: DataType) => record.key === editingKey;
 
 //   const edit = (record: Partial<DataType> & { key: React.Key }) => {
 //     form.setFieldsValue({ name: '', am: '', mid: '', ...record });
@@ -171,17 +168,12 @@ const TestTable: React.FC = () => {
       title: 'PARTICULARS',
       dataIndex: 'particular',
       width: '25%',
-      editable: false,
-      render:(_: unknown, record: DataType)=>(
-      <>
-        {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.particular}</Text>) : (<Text>{record.particular}</Text>)}
-      </>
-      )
+      editable: true,
     },
     {
       title: 'AM',
       dataIndex: 'am',
-      width: '12%',
+      width: '15%',
       editable: true,
       render:(_: unknown, record: DataType)=>(
         <>
@@ -192,7 +184,7 @@ const TestTable: React.FC = () => {
     {
       title: 'MID',
       dataIndex: 'mid',
-      width: '12%',
+      width: '15%',
       editable: true,
       render:(_: unknown, record: DataType)=>(
         <>
@@ -204,7 +196,7 @@ const TestTable: React.FC = () => {
     {
         title: 'PM',
         dataIndex: 'pm',
-        width: '12%',
+        width: '15%',
         editable: true,
         render:(_: unknown, record: DataType)=>(
             <>
@@ -215,7 +207,7 @@ const TestTable: React.FC = () => {
     {
         title: 'GROSS TOTAL',
         dataIndex: 'gross_total',
-        width: '15%',
+        width: '18%',
         editable: false,
         render:(_: unknown, record: DataType)=>(
             <>
@@ -226,7 +218,7 @@ const TestTable: React.FC = () => {
     {
         title: 'NET TOTAL',
         dataIndex: 'net_total',
-        width: '15%',
+        width: '18%',
         editable: false,
         render:(_: unknown, record: DataType)=>(
             <>
@@ -277,30 +269,25 @@ const TestTable: React.FC = () => {
   
 
   return (
-    <>
-    {contextHolder}
     <Form form={form} component={false}>
-        <Spin spinning={loading} indicator={<LoadingOutlined spin />} tip="Fetching Data..." size='large'>
-            <Table<DataType>
-                components={{
-                body: { cell: EditableCell },
-                }}
-                bordered
-                dataSource={data}
-                title={() => 
-                    <Space>
-                        <CustomDatePicker/>
-                        <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate}/>
-                    </Space>}
-                columns={mergedColumns}
-                rowClassName="editable-row"
-                pagination={false}
-                size="middle"
-                scroll={{ y: 105 * 5 }}
-            />
-        </Spin>
+      <Table<DataType>
+        components={{
+          body: { cell: EditableCell },
+        }}
+        bordered
+        dataSource={data}
+        title={() => 
+            <Space>
+                <CustomDatePicker/>
+                <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate}/>
+            </Space>}
+        columns={mergedColumns}
+        rowClassName="editable-row"
+        pagination={false}
+        size="middle"
+        scroll={{ y: 105 * 5 }}
+      />
     </Form>
-    </>
   );
 };
 
