@@ -1,61 +1,61 @@
 "use client";
 
 import React from "react";
-import { Breadcrumb, Layout, Menu, ConfigProvider, Col, Row, Card } from "antd";
-import TransactionForm from "./components/TransactionForm";
-import TransactionTable from "./components/TransactionTable";
+import { Layout, Menu, Button, Typography, ConfigProvider } from "antd";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { FaArrowRight } from "react-icons/fa";
 
 const { Header, Content, Footer } = Layout;
+const { Title, Paragraph } = Typography;
 
-const items = new Array(3).fill(null).map((_, index) => ({
-  key: String(index + 1),
-  label: `nav ${index + 1}`,
-}));
+export default function LandingPage() {
+  const router = useRouter();
 
-export default function Home() {
-  // const {
-  //   token: { colorBgContainer, borderRadiusLG },
-  // } = theme.useToken();
+  const handleLogin = () => {
+    // Redirect to your login page. Adjust the path as needed.
+    router.push("/login");
+  };
 
   return (
     <ConfigProvider>
-      <Layout>
-        <Header>
-          <div className="demo-logo" />
+      <Layout style={{ minHeight: "100vh" }}>
+        <Header style={{ display: "flex", alignItems: "center", background: "#001529" }}>
+          <div style={{ color: "white", fontSize: "1.5rem", fontWeight: "bold", marginRight: 20 }}>
+            Something App
+          </div>
           <Menu
             theme="dark"
             mode="horizontal"
-            defaultSelectedKeys={["2"]}
-            items={items}
-            style={{
-              flex: 1,
-              minWidth: 0,
-            }}
+            defaultSelectedKeys={["1"]}
+            items={[
+              { key: "1", label: "Home" },
+              { key: "2", label: "About" },
+              { key: "3", label: "Contact" }
+            ]}
+            style={{ flex: 1 }}
           />
         </Header>
-        <Content style={{ padding: "0 48px", margin: "16px 0" }}>
-          <Breadcrumb
-            style={{ margin: "16px 0" }}
-            items={[
-              { title: "Root" },
-              { title: "Page" },
-              { title: "Current Page" },
-            ]}
-          />
-          <Row>
-            <Col span={18} push={6} className="p-3">
-              <Card title="Transactions Log">
-                col-18 col-push-6
-                <TransactionTable />
-              </Card>
-            </Col>
-            <Col span={6} pull={18} className="p-3">
-              <Card title="Transaction Form">
-                col-6 col-pull-18
-                <TransactionForm />
-              </Card>
-            </Col>
-          </Row>
+        <Content style={{ padding: "50px", textAlign: "center", background: "#f0f2f5" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+          >
+            <Title style={{ color: "#001529" }}>Welcome</Title>
+            <Paragraph style={{ fontSize: "1.2rem", color: "#595959" }}>
+              Experience a seamless and intuitive interface with our modern application.
+            </Paragraph>
+            <Button
+              type="primary"
+              size="large"
+              icon={<FaArrowRight />}
+              onClick={handleLogin}
+              style={{ marginTop: 20, borderRadius: 8 }}
+            >
+              Login
+            </Button>
+          </motion.div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()}
