@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, message, Popconfirm, Space, Table, Typography } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, /*Popconfirm,*/ Space, Spin, Table, Typography } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from "@/app/components/drawer"
@@ -62,7 +63,7 @@ const TestTable: React.FC = () => {
   const [data, setData] = useState<DataType[]>([]);
   const [editingKey, setEditingKey] = useState('');
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [messageApi, contextHolder] = message.useMessage();
 // Use useEffect for initial load and date changes
   useEffect(() => {
@@ -71,6 +72,7 @@ const TestTable: React.FC = () => {
 
   const fetchData = async (dateInput=dayjs()) => {
     try{
+        setLoading(true);
         const response = await fetch('/api/getTransactionByDay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -111,17 +113,24 @@ const TestTable: React.FC = () => {
   );
   type NotificationType = 'success' | 'info' | 'warning' | 'error';
   const handleTransactionProcess = async(type: NotificationType, message:string) => {
-    messageApi.open({
-        type:type,
-        content: message
-    });
-    console.log("TYPE:", type);
-    if(type==='success'){
-        console.log("SUCCESS")
-        fetchData(currentDate);
+    if(type==='error'){
+        messageApi.open({
+            type:type,
+            content: message,
+            duration: 5
+        });
+    } else {
+        messageApi.open({
+            type:type,
+            content: message
+        });
+        if(type==='success'){
+            console.log("SUCCESS")
+            fetchData(currentDate);
+        }
     }
   };
-
+  const { Text } = Typography;
   const isEditing = (record: DataType) => record.key === editingKey;
 
   const edit = (record: Partial<DataType> & { key: React.Key }) => {
@@ -162,60 +171,92 @@ const TestTable: React.FC = () => {
       title: 'PARTICULARS',
       dataIndex: 'particular',
       width: '25%',
-      editable: true,
+      editable: false,
+      render:(_: unknown, record: DataType)=>(
+      <>
+        {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.particular}</Text>) : (<Text>{record.particular}</Text>)}
+      </>
+      )
     },
     {
       title: 'AM',
       dataIndex: 'am',
       width: '12%',
       editable: true,
+      render:(_: unknown, record: DataType)=>(
+        <>
+          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.am}</Text>) : (<Text>{record.am}</Text>)}
+        </>
+      )
     },
     {
       title: 'MID',
       dataIndex: 'mid',
       width: '12%',
       editable: true,
+      render:(_: unknown, record: DataType)=>(
+        <>
+          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.mid}</Text>) : (<Text>{record.mid}</Text>)}
+        </>
+      ),
+      
     },
     {
         title: 'PM',
         dataIndex: 'pm',
         width: '12%',
         editable: true,
+        render:(_: unknown, record: DataType)=>(
+            <>
+              {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.pm}</Text>) : (<Text>{record.pm}</Text>)}
+            </>
+          )
     },
     {
         title: 'GROSS TOTAL',
         dataIndex: 'gross_total',
         width: '15%',
         editable: false,
+        render:(_: unknown, record: DataType)=>(
+            <>
+                {(<Text strong>{record.gross_total}</Text>)}
+            </>
+        )
     },
     {
         title: 'NET TOTAL',
         dataIndex: 'net_total',
         width: '15%',
         editable: false,
+        render:(_: unknown, record: DataType)=>(
+            <>
+              {(<Text strong>{record.net_total}</Text>)}
+            </>
+        )
     },
-    {
-      title: 'operation',
-      dataIndex: 'operation',
-      render: (_: unknown, record: DataType) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <Typography.Link onClick={() => save(record.key)} style={{ marginInlineEnd: 8 }}>
-              Save
-            </Typography.Link>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <a>Cancel</a>
-            </Popconfirm>
-          </span>
-        ) : (
-          <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
-            Edit
-          </Typography.Link>
-        );
-      },
-    },
+    // {
+    //   title: 'operation',
+    //   dataIndex: 'operation',
+    //   render: (_: unknown, record: DataType) => {
+    //     const editable = isEditing(record);
+    //     return editable ? (
+    //       <span>
+    //         <Typography.Link onClick={() => save(record.key)} style={{ marginInlineEnd: 8 }}>
+    //           Save
+    //         </Typography.Link>
+    //         <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+    //           <a>Cancel</a>
+    //         </Popconfirm>
+    //       </span>
+    //     ) : (
+    //       <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
+    //         Edit
+    //       </Typography.Link>
+    //     );
+    //   },
+    // },
   ];
+
 
   const mergedColumns: TableProps<DataType>['columns'] = columns.map((col) => {
     if (!col.editable) {
@@ -228,7 +269,8 @@ const TestTable: React.FC = () => {
         inputType: col.dataIndex === 'am' ? 'number' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
-        editing: isEditing(record),
+        editing: isEditing(record) && (!record.particular.startsWith('SUB TOTAL') && !record.particular.startsWith('CASHIER') && !record.particular.startsWith('GRAND TOTAL')),
+        
       }),
     };
   });
@@ -238,23 +280,25 @@ const TestTable: React.FC = () => {
     <>
     {contextHolder}
     <Form form={form} component={false}>
-      <Table<DataType>
-        components={{
-          body: { cell: EditableCell },
-        }}
-        bordered
-        dataSource={data}
-        title={() => 
-            <Space>
-                <CustomDatePicker/>
-                <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate}/>
-            </Space>}
-        columns={mergedColumns}
-        rowClassName="editable-row"
-        pagination={false}
-        size="middle"
-        scroll={{ y: 105 * 5 }}
-      />
+        <Spin spinning={loading} indicator={<LoadingOutlined spin />} tip="Fetching Data..." size='large'>
+            <Table<DataType>
+                components={{
+                body: { cell: EditableCell },
+                }}
+                bordered
+                dataSource={data}
+                title={() => 
+                    <Space>
+                        <CustomDatePicker/>
+                        <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate}/>
+                    </Space>}
+                columns={mergedColumns}
+                rowClassName="editable-row"
+                pagination={false}
+                size="middle"
+                scroll={{ y: 105 * 5 }}
+            />
+        </Spin>
     </Form>
     </>
   );
