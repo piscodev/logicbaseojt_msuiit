@@ -27,14 +27,22 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
+    const [message, setMessage] = useState('')
+
     // const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashierNames`, {
                 method:"GET"
             });
-            if(!response.ok) throw new Error('Failed to fetch cashiers');
+
             const data = await response.json();
+            if(!response.ok)
+            {
+                setMessage(data.error)
+                throw new Error('Failed to fetch cashiers');
+            }
+
             const cashierNames = data.cashiers.map((cashier:Cashier) => ({
                 ...cashier,
                 value: cashier.value
@@ -212,6 +220,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                 });
                 if(!response.ok){
                     const errorMessage = await response.json()
+                    setMessage(errorMessage.error)
                     onProcess('error','Error adding transaction: ' + errorMessage.error, true)
                     throw new Error(errorMessage);
                 }
@@ -220,15 +229,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                  // Reset the form fields
                 form.resetFields();
             } else {
+                setMessage("Error adding transaction. Please select a valid Cashier!")
                 onProcess('error','Error adding transaction. Please select a valid Cashier.', true)
                 console.log("Cashier not found.");
             }
         } catch (error){
             console.error('Error adding transaction: ', error);
         }
-       
     };
     return (
+        <>
+        { message ? <Alert message={message} type="error" showIcon closable /> : '' }
         <Form
         name="transaction_form"
         form={form}
@@ -504,8 +515,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                 </Col>
             </Row>
         </Form>
+
         
-    
+        </>
     );
 };
 

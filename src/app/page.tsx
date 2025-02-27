@@ -26,24 +26,24 @@ export default function LandingPage()
           <Nav/>
           <Content style={{ padding: "50px", textAlign: "center", background: "#f0f2f5" }}>
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1 }}
-            >
-              <Title style={{ color: "#001529" }}>Welcome</Title>
-              <Paragraph style={{ fontSize: "1.2rem", color: "#595959" }}>
-                Experience a seamless and intuitive interface with our modern application.
-              </Paragraph>
-              <Button
-                type="primary"
-                size="large"
-                icon={<FaArrowRight />}
-                onClick={handleLogin}
-                style={{ marginTop: 20, borderRadius: 8 }}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
               >
-                Login
-              </Button>
-          </motion.div>
+                <Title style={{ color: "#001529" }}>Welcome</Title>
+                <Paragraph style={{ fontSize: "1.2rem", color: "#595959" }}>
+                  Experience a seamless and intuitive interface with our modern application.
+                </Paragraph>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<FaArrowRight />}
+                  onClick={handleLogin}
+                  style={{ marginTop: 20, borderRadius: 8 }}
+                >
+                  Login
+                </Button>
+            </motion.div>
           </Content>
           <Footer style={{ textAlign: "center" }}>
             Ant Design ©{new Date().getFullYear()}
