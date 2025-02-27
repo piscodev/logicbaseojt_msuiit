@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/Database/db";
-import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Cashier } from "@/app/lib/Interface/route";
