@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
+    "@react-pdf/renderer": "^4.2.2",
     "@types/jsonwebtoken": "^9.0.9",
     "antd-style": "^3.7.1",
     "bcryptjs": "^3.0.2",

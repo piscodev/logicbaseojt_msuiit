@@ -8,6 +8,7 @@ import type  { TabsProps } from 'antd';
 import TestTable from "@/app/components/testTable"
 import DataTable from "../components/DataTableTest";
 import Nav from "../components/NavigationBar";
+import StatsCard from "../components/StatsCard";
 const { Content, Footer } = Layout;
 const tabItems: TabsProps['items'] = [
   { key: 'daily', label: 'Daily', children:<TestTable/>},
@@ -28,6 +29,7 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
+          <StatsCard />
           <Card title="Transactions Log">
             <Tabs defaultActiveKey="daily" items={tabItems}/>;
           </Card>

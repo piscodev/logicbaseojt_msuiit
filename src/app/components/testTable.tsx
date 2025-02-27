@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
@@ -5,7 +7,13 @@ const { Text } = Typography;
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from './drawer';
+import PDFDocument from './PDFConverter';
+import { pdf } from '@react-pdf/renderer';
+
+
 export const dynamic = 'force-dynamic';
+
+
 interface DataType {
   key: string;
   particular: string;
@@ -56,7 +64,7 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
       )}
     </td>
   );
-};
+}
 
 const TestTable: React.FC = () => {
   const [form] = Form.useForm();
@@ -127,41 +135,6 @@ const TestTable: React.FC = () => {
     }
   };
 
-  // const isEditing = (record: DataType) => record.key === editingKey;
-
-//   const edit = (record: Partial<DataType> & { key: React.Key }) => {
-//     form.setFieldsValue({ name: '', am: '', mid: '', ...record });
-//     setEditingKey(record.key);
-//   };
-
-//   const cancel = () => {
-//     setEditingKey('');
-//   };
-
-//   const save = async (key: React.Key) => {
-//     try {
-//       const row = (await form.validateFields()) as DataType;
-
-//       const newData = [...data];
-//       const index = newData.findIndex((item) => key === item.key);
-//       if (index > -1) {
-//         const item = newData[index];
-//         newData.splice(index, 1, {
-//           ...item,
-//           ...row,
-//         });
-//         setData(newData);
-//         setEditingKey('');
-//       } else {
-//         newData.push(row);
-//         setData(newData);
-//         setEditingKey('');
-//       }
-//     } catch (errInfo) {
-//       console.log('Validate Failed:', errInfo);
-//     }
-//   };
-
   const columns = [
     {
       title: 'PARTICULARS',
@@ -225,27 +198,6 @@ const TestTable: React.FC = () => {
             </>
         )
     },
-    // {
-    //   title: 'operation',
-    //   dataIndex: 'operation',
-    //   render: (_: unknown, record: DataType) => {
-    //     const editable = isEditing(record);
-    //     return editable ? (
-    //       <span>
-    //         <Typography.Link onClick={() => save(record.key)} style={{ marginInlineEnd: 8 }}>
-    //           Save
-    //         </Typography.Link>
-    //         <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-    //           <a>Cancel</a>
-    //         </Popconfirm>
-    //       </span>
-    //     ) : (
-    //       <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
-    //         Edit
-    //       </Typography.Link>
-    //     );
-    //   },
-    // },
   ];
 
 
@@ -260,11 +212,55 @@ const TestTable: React.FC = () => {
         inputType: col.dataIndex === 'am' ? 'number' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
-        // editing: isEditing(record) && (!record.particular.startsWith('SUB TOTAL') && !record.particular.startsWith('CASHIER') && !record.particular.startsWith('GRAND TOTAL')),
-        
       }),
     };
   });
+
+  const exportToCSV = () => {
+    if (data.length === 0) {
+      message.warning("No data to export.");
+      return;
+    }
+
+    const headers = ["Particulars", "AM", "MID", "PM", "Gross Total", "Net Total"];
+    
+    const csvRows = data.map((row) => [
+      row.particular,
+      row.am,
+      row.mid,
+      row.pm,
+      row.gross_total,
+      row.net_total,
+    ]);
+
+    // Convert to CSV format
+    const csvString = [headers, ...csvRows]
+      .map((row) => row.map((cell) => `"${cell || 0}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob(["\ufeff" + csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `transactions_${dayjs().format("YYYY-MM-DD")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // to pdf
+  const generatePDF = async () =>
+  {
+    const blob = await pdf(<PDFDocument data={data} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transactions_${dayjs().format("YYYY-MM-DD")}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   
 
   return (
@@ -275,16 +271,31 @@ const TestTable: React.FC = () => {
         }}
         bordered
         dataSource={data}
+        loading={loading}
         title={() => 
           <Space style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
           {/* Left Section */}
           <Space>
             <CustomDatePicker />
+            <Button onClick={() => fetchData(currentDate)}>Refresh Data</Button>
             <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate} />
           </Space>
         
           {/* Right Section */}
-          <Button>Export</Button>
+          {/* <PDFDownloadLink
+              document={<PDFDocument data={data} />}
+              fileName={`transactions_${dayjs().format("YYYY-MM-DD")}.pdf`}
+            >
+              {({ loading }) =>
+              {
+                return (
+                  <> */}
+                    <Button type="primary" onClick={exportToCSV}>Export CSV</Button>
+                    <Button type="primary" onClick={generatePDF}>Export PDF</Button> 
+                  {/* </>
+                )
+              }}
+            </PDFDownloadLink> */}
         </Space>}
         columns={mergedColumns}
         rowClassName="editable-row"
