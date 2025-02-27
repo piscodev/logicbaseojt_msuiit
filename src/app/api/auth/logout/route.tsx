@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
-  if(req.method === 'GET'){
-    // Create a JSON response to indicate logout
-    const response = NextResponse.json({ message: "Logged out successfully" });
-    // Clear the token by setting it to an empty value and expiring it immediately.
-    response.headers.set(
-      "Set-Cookie",
-      "token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"
-    );
-    return response;
-  } else {
-    console.error("Method not allowed: ", req.method);
-    return NextResponse.json({status:405})
+  // Ensure only GET requests are allowed
+  if (req.method !== "GET") {
+    console.error("Method not allowed:", req.method);
+    return NextResponse.json({ message: "Method Not Allowed" }, { status: 405 });
   }
+
+  // Create response
+  const response = NextResponse.json({ message: "Logged out successfully" });
+
+  // Properly clear the token
+  response.cookies.set("token", "", {
+    path: "/", 
+    httpOnly: true, 
+    secure: true, 
+    sameSite: "strict",
+    expires: new Date(0), // Expire the cookie immediately
+  });
+
+  return response;
 }
