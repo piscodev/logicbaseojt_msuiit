@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from './drawer';
 import PDFDocument from './PDFConverter';
-import { pdf, PDFDownloadLink } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 
 
 export const dynamic = 'force-dynamic';
