@@ -216,7 +216,7 @@ const PosForm = () =>
                       disabled
                       maxLength={50}
                       value={cname}
-                      onChange={(value) => updateField(particularsInName[1], value || "")}
+                      onChange={(e) => updateField(particularsInName[1], e.target.value || "")}
                       style={{ width: "100%" }}
                     />
                 </Form.Item>
