@@ -114,7 +114,6 @@ const apiResponse = {
   ]
 };
 
-// Function to process API response
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function transformAPIResponse(apiResponse: any) {
   const particularsMap: Record<string, string> = {

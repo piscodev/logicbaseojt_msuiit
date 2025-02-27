@@ -73,7 +73,7 @@ const TestTable: React.FC = () => {
   const fetchData = async (dateInput=dayjs()) => {
     try{
         setLoading(true);
-        const response = await fetch('/api/getTransactionByDay', {
+        const response = await fetch('/api/transactions/getTransactionByDay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ date: dateInput })
