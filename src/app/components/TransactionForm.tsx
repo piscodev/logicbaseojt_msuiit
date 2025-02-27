@@ -191,11 +191,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
           console.log('Clear');
         }
     };
-    // const setSelectedCashierName = (name:string) => {
-    //     // setSelectedCashier(name);
-    //     console.log("Selected: ", name);
-    // };
-
+    
     const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
         
@@ -205,12 +201,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
             const foundCashier = cashiers?.find(cashier => cashier.value === data.cashier_name);
             if (foundCashier) {
                 onProcess('info','Processing Transaction Data.', true)
-                const response = await fetch(`/api/addTransaction/${currentDate.format('YYYY-MM-DD')}`, {
+                const response = await fetch(`/api/addTransaction`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify({data:data, date:currentDate.format('YYYY-MM-DD')})
                 });
                 if(!response.ok){
                     const errorMessage = await response.json()
