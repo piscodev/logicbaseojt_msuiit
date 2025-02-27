@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [email, setEmail] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,7 +25,7 @@ export default function AuthPage() {
     try {
       // Use correct API endpoints based on login or sign-up mode.
       const url = isLogin ? "/api/auth/login" : "/api/auth/signup";
-      const body = { email, password };
+      const body = isLogin? { email, password }: {name, email, password};
 
       const res = await fetch(url, {
         method: "POST",
@@ -40,18 +41,22 @@ export default function AuthPage() {
       }
 
       if (isLogin) {
-        setSuccessMessage("Login successful! Redirecting...");
-        setTimeout(() => router.push("/dashboard"), 250);
+        router.push("/dashboard")
+        // setSuccessMessage("Login successful! Redirecting...");
+        // setTimeout(() => router.push("/dashboard"), 250);
       } else {
+        // router.push("/dashboard")
         // Sign-up branch: switch UI to login mode after a successful sign-up.
         setSuccessMessage("Account created successfully! Please log in.");
         setIsLogin(true);
         // Optionally clear the fields so the login form is blank.
         setEmail("");
         setPassword("");
+        setName("")
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+    } catch (error) {
+      // setError(error);
+      console.log("Auth error:", error);
     } finally {
       setLoading(false);
     }
@@ -92,7 +97,18 @@ export default function AuthPage() {
         )}
 
         <form onSubmit={handleAuth} className="space-y-5">
-          {/* Optionally, if you add a name field for sign-up later, include it here */}
+          {!isLogin && 
+          (<div className="relative">
+            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
+              required
+            />
+          </div>)}
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input

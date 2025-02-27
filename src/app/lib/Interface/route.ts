@@ -56,8 +56,10 @@ export interface TransactionValuesState {
 }
 
 export interface Cashier {
+    id: number
     name: string
     email: string
+    hashed_password: string
 }
 
 export interface CashiersTransaction
