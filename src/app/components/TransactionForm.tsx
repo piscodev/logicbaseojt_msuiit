@@ -1,453 +1,397 @@
-import React, {useMemo, useRef, useState, useCallback} from 'react';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Form, Input, Button, Space, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, Spin } from 'antd';
+'use client'
+
+import React, { useRef, useState, useEffect } from 'react';
+import type { AutoCompleteProps, StatisticProps, InputNumberProps } from 'antd';
+import { LoadingOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, AutoComplete, DatePicker, Divider, Form, Input, Button, Space, Spin, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
-import debounce from 'lodash/debounce';
+import { TransactionValuesState } from '../lib/Interface/route';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+export const dynamic = 'force-dynamic';
 
-const formatter = (value: number) => <CountUp end={value} separator="," decimals={2} />;
-async function fetchUserList(username: string) {
-    console.log('fetching user', username);
-    /** 
-     * TEMPORARY HARD CODED DETCH IMPLEMENTATION.
-     * REPLACE WITH ACTUAL API FETCH TO DATABASE
-     * **/
-    const cashiers = [
-        { id: 1, name: 'John Doe' },
-        { id: 2, name: 'Jane Doe'  },
-        { id: 3, name: 'Bob Smith'  },
-        { id: 4, name: 'Alice Johnson' },
-        { id: 5, name: 'Mike Williams' },
-        { id: 6, name: 'Will Smith'  },
-        { id: 7, name: 'Marie Curry' },
-        { id: 8, name: 'Stephen Carlson' },
-        // add more cashiers here...
-    ];
-    const data = {results: cashiers.slice(0, 5)};
-    return  data.results.map((cashier) => ({
-              label: `${cashier.name}`,
-              value: cashier.name,
-            }));
-    // return fetch('http://localhost:5173/api/getCashiers?results=5')//get cashiers then slice and return only 5
-    //   .then((response) => {
-    //     if(!response.ok){
-    //         throw new Error(`HTTP error! status: ${response.status}`)
-    //     }
-    //     return response.json()})
-    //   .then((body) =>
-    //     body.results.map((cashier) => ({
-    //       label: `${cashier.name}`,
-    //       value: cashier.name,
-    //     })),
-    //   );
-  }
-interface DebounceSelectProps {
-  fetchOptions: (value: string) => Promise<{ label: string; value: string }[]>;
-  debounceTimeout?: number;
-  [key: string]: any;
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
+interface Cashier{
+    value: string
+}
+interface TransactionFormProps {
+    onProcess: (type: NotificationType, message: string, drawerBool:boolean) => void;
+    selectedDate: Dayjs
 }
 
-function DebounceSelect({ fetchOptions, debounceTimeout = 800, ...props }: DebounceSelectProps) {
-    const [fetching, setFetching] = useState(false);
-    const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
-    const fetchRef = useRef(0);
-    const debounceFetcher = useMemo(() => {
-      const loadOptions = (value: string) => {
-        fetchRef.current += 1;
-        const fetchId = fetchRef.current;
-        setOptions([]);
-        setFetching(true);
-        fetchOptions(value).then((newOptions) => {
-          if (fetchId !== fetchRef.current) {
-            // for fetch callback order
-            return;
-          }
-          setOptions(newOptions);
-          setFetching(false);
-        });
-      };
-      return debounce(loadOptions, debounceTimeout);
-    }, [fetchOptions, debounceTimeout]);
-    return (
-      <Select
-        labelInValue
-        filterOption={false}
-        onSearch={debounceFetcher}
-        notFoundContent={fetching ? <Spin size="small" /> : null}
-        {...props}
-        options={options}
-      />
-    );
-  }
-
-// const SelectFetch = () => {
-//     const [value, setValue] = useState([]);
-//   return (
-//     <DebounceSelect
-//       mode="multiple"
-//       maxCount='1'
-//       value={value}
-//       placeholder="Select users"
-//       fetchOptions={fetchUserList}
-//       onChange={(newValue: React.SetStateAction<never[]>) => {
-//         setValue(newValue);
-//       }}
-//       style={{
-//         width: '100%',
-//       }}
-//     />
-//   );
-// };
-
-// const onFinish = (values: any) => {
-//     console.log('Received values of form:', values);
-// };
-
-const TransactionForm = () => {
-  const [form] = Form.useForm();
-  const [componentDisabled, setComponentDisabled] = useState(true);
-  const [isFilled, setIsFilled] = useState(true);
-  const addTransaction = useTransactionStore((state) => state.addTransaction);
-  const [grossAmount, setGrossAmount] = useState(0);
-  const [netAmount, setNetAmount] = useState(0);
-  const [paymentField, setPaymentField] = useState(0);
-  const [paymentFieldCount, setPaymentFieldCount] = useState(1);
-//   const [paymentCategories, setPaymentCategories] = useState([]);
-  const [isCashSelected, setCashSelected] = useState(true);
-  const [isCheckSelected, setCheckSelected] = useState(false);
-  const [isBPICCSelected, setBPICCSelected] = useState(false);
-  const [isBPIDCSelected, setBPIDCSelected] = useState(false);
-  const [isBDODCSelected, setBDODCSelected] = useState(false);
-  const [isMetroCCSelected, setMetroCCSelected] = useState(false);
-  const [isAUBCCSelected, setAUBCCSelected] = useState(false);
-  const [isPayMayaSelected, setPayMayaSelected] = useState(false);
-  const [isGCASHSelected, setGCASHSelected] = useState(false);
-  const [isFoodPandaSelected, setFoodPandaSelected] = useState(false);
-  const [isShopeeFoodSelected, setShopeeFoodSelected] = useState(false);
-  const [isGrabFoodSelected, setGrabFoodSelected] = useState(false);
-  const [isGCClaimedSelected, setGCClaimedSelected] = useState(false);
-
-    const setAvailableOptions = useCallback((value: string, other_values: { other_payments: { payment: string; }[]; }, length: number) => {
-        console.log('lenggthhhh: ', length);
-        // setCashSelected(false); 
-        setCheckSelected(false);
-        setBPICCSelected(false);
-        setBPIDCSelected(false);
-        setBDODCSelected(false)
-        setMetroCCSelected(false);
-        setAUBCCSelected(false);
-        setPayMayaSelected(false);
-        setGCASHSelected(false);
-        setFoodPandaSelected(false);
-        setShopeeFoodSelected(false);
-        setGrabFoodSelected(false);
-        setGCClaimedSelected(false);
-        if(length === 0){
-            if(value === 'Cash') {
-                setCashSelected(true); 
-            } 
-            if(value === 'Check'){
-                setCheckSelected(true);
-            } 
-            if(value === 'BPI Credit Card'){
-                setBPICCSelected(true);
-            }
-            if(value === 'BPI Debit Card'){
-                setBPIDCSelected(true);
-            }
-            if(value === 'BDO Debit Card'){
-                setBDODCSelected(true)
-            }
-            if(value === 'Metro Credit Card'){
-                setMetroCCSelected(true);
-            }
-            if(value === 'AUB Credit Card'){
-                setAUBCCSelected(true);
-            }
-            if(value === 'Pay Maya'){
-                setPayMayaSelected(true);
-            }
-            if(value === 'GCASH'){
-                setGCASHSelected(true);
-            }
-            if(value === 'Food Panda'){
-                setFoodPandaSelected(true);
-            }
-            if(value === 'Shopee Food'){
-                setShopeeFoodSelected(true);
-            }
-            if(value === 'Grab Food'){
-                setGrabFoodSelected(true);
-            }
-            if(value === 'GC Claimed'){
-                setGCClaimedSelected(true);
-            }
-        } else{
-            for (let i=0; i<length; i++){
-                const otherPayments = other_values.other_payments[i].payment;
-                // const lastPaymentMethod = JSON.stringify(other_values);
-                console.log('Other values: ', otherPayments);
-                
-                if(otherPayments === 'Cash') {
-                    setCashSelected(true); 
-                } 
-                if(otherPayments === 'Check'){
-                    setCheckSelected(true);
-                } 
-                if(otherPayments === 'BPI Credit Card'){
-                    setBPICCSelected(true);
-                }
-                if(otherPayments === 'BPI Debit Card'){
-                    setBPIDCSelected(true);
-                }
-                if(otherPayments === 'BDO Debit Card'){
-                    setBDODCSelected(true)
-                }
-                if(otherPayments === 'Metro Credit Card'){
-                    setMetroCCSelected(true);
-                }
-                if(otherPayments === 'AUB Credit Card'){
-                    setAUBCCSelected(true);
-                }
-                if(otherPayments === 'Pay Maya'){
-                    setPayMayaSelected(true);
-                }
-                if(otherPayments === 'GCASH'){
-                    setGCASHSelected(true);
-                }
-                if(otherPayments === 'Food Panda'){
-                    setFoodPandaSelected(true);
-                }
-                if(otherPayments === 'Shopee Food'){
-                    setShopeeFoodSelected(true);
-                }
-                if(otherPayments === 'Grab Food'){
-                    setGrabFoodSelected(true);
-                }
-                if(otherPayments === 'GC Claimed'){
-                    setGCClaimedSelected(true);
-                }
-            }
+const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDate}) => {
+    const [form] = Form.useForm();
+    const [isMounted, setIsMounted] = useState(false);
+    // const [messageApi, contextHolder] = message.useMessage();
+    const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
+    const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
+    const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
+    // const [selectedCashier, setSelectedCashier] = useState<string>('');
+    const fetchCashiers = async() => {
+        try{
+            const response = await fetch(`/api/getCashiers`, {
+                method:"GET"
+            });
+            if(!response.ok) throw new Error('Failed to fetch cashiers');
+            const data = await response.json();
+            const cashierNames = data.cashiers.map((cashier:Cashier) => ({
+                ...cashier,
+                value: cashier.value
+            }))
+            
+            setCashiers(cashierNames)
+            setIsCashierNotAllowed(false);
+            // console.log("CASHIERS after setting: ", cashierNames);
+        }catch(error){
+            onProcess('error','Error fetching cashiers.', false)
+            console.error('Error fetching users: ', error);
         }
-        // if(value === 'Cash') {
-        //    setCashSelected(true); 
-        // } 
-        // // else if(value !== 'Cash' && otherPayments !== 'Cash') {
-        // //     setCashSelected(false);
-        // // }
-        // if(value === 'Check'){
-        //     setCheckSelected(true);
-        // } 
-        // // else if(value !== 'Check' && otherPayments !== 'Check'){
-        // //     setCheckSelected(false);
-        // // }
-        // if(value === 'BPI CREDIT CARD'){
+    };
+    useEffect(() => {
+        if (!isMounted) {
+          setIsMounted(true);
+          fetchCashiers();
+          return;
+        }
+      }, [isMounted]);
+    
+    
+    const prevValueSubTotalTradePosRef = useRef<number | 0>(0)
+    const prevValueSubTotalNonTradePosRef = useRef<number | 0>(0)
+    const formatter_subTotalTradePos: StatisticProps['formatter'] = (value) => {
+        const startValue = prevValueSubTotalTradePosRef.current;
 
-        // }
-    }, [setCashSelected, setCheckSelected]);
-  // This function is called when the form is successfully submitted
-  interface TransactionFormValues {
-    cashier_name: string;
-    shift: string;
-    _payment: string;
-    _payment_amount: number;
-    other_payments?: { payment: string; payment_amount: number }[];
-    _expense?: string;
-    _expense_amount?: number;
-    other_expenses?: { payment: string; payment_amount: number }[];
-  }
+        
+        return (
+        
+            <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2}
+            onEnd={ () => {prevValueSubTotalTradePosRef.current = value as number;}}
+            />
+        );
+    } 
+    const formatter_subTotalNonTradePos: StatisticProps['formatter'] = (value) => {
+        const startValue = prevValueSubTotalNonTradePosRef.current;
+        
+        return(
+        <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2} onEnd={ () => {
+            prevValueSubTotalTradePosRef.current = value as number; }}/>
+    );}
+      const onChange: InputNumberProps['onChange'] = (value) => {
+        console.log('changed', value);
+    };
+    const watchResult = Form.useWatch((values) => {
+    let subTotalTrade : number = prevValueSubTotalTradePosRef.current;
+    let subTotalNonTrade : number = prevValueSubTotalNonTradePosRef.current;
+    let isCash : boolean = false;
+    let isCheck: boolean = false;
+    let isBpi_cc: boolean = false;
+    let isBpi_dc: boolean = false;
+    let isMetro_cc: boolean = false;
+    let isMetro_dc: boolean = false;
+    let isPaymaya: boolean = false;
+    let isAub_cc: boolean = false;
+    let isGcash: boolean = false;
+    let isFoodpanda: boolean = false;
+    let isStreetby: boolean = false;
+    let isGrabfood: boolean = false;
+    let isMMHO : boolean = false;
+    let isMMCom : boolean = false;
+    let isMMRM : boolean = false;
+    let isMMDM : boolean = false;
+    let isMMKM : boolean = false;
+    let isMM__ : boolean = false;
+    let isFoodCharges : boolean = false;
+    // let gc_claimed_oth: boolean
+    // let gc_claimed_own: boolean
+    // console.log('cashier_name: ',values.cashier_name)
+    // console.log('shift: ',values.shift)
+    // console.log('payment: ',values._payment)
+    if(values?._payment === 'CASH') isCash = true
+    else if(values?._payment === 'CHECK') isCheck = true
+    else if(values?._payment === 'BPI CREDIT CARD') isBpi_cc = true
+    else if(values?._payment === 'BPI DEBIT CARD') isBpi_dc = true
+    else if(values?._payment === 'METRO CREDIT CARD') isMetro_cc = true
+    else if(values?._payment === 'METRO DEBIT CARD') isMetro_dc = true
+    else if(values?._payment === 'PAY MAYA') isPaymaya = true
+    else if(values?._payment === 'AUB CREDIT CARD') isAub_cc = true
+    else if(values?._payment === 'GCASH') isGcash = true
+    else if(values?._payment === 'FOOD PANDA') isFoodpanda = true
+    else if(values?._payment === 'STREETBY') isStreetby = true
+    else if(values?._payment === 'GRAB FOOD') isGrabfood = true
 
-  const onFinish = (values: TransactionFormValues) => {
-    // values will be an object like:
-    // { cashier_name: '...', category: 'CASH', am: 100, mid: 50, pm: 75 }
-    addTransaction(values);
+    if(values?._expense === 'MM-HEAD OFFICE') isMMHO = true
+    else if(values?._expense === 'MM-COMMISARY') isMMCom = true
+    else if(values?._expense === 'MM-RM') isMMRM = true
+    else if(values?._expense === 'MM-DM') isMMDM = true
+    else if(values?._expense === 'MM-KM') isMMKM = true
+    else if(values?._expense === 'MM-___') isMM__ = true
+    else if(values?._expense === 'FOOD CHARGES') isFoodCharges = true
+    // console.log('payment_amount: ',values._payment_amount)
+    if(values?._payment_amount !== undefined)
+        subTotalTrade += parseFloat(values._payment_amount)
+    if(values.other_payments !== undefined)
+        for(let i=0; i<values.other_payments.length; i++){
+            // console.log('payment: ',values.other_payments[i]?.payment)
+            if(values.other_payments[i]?.payment === 'CASH') isCash = true
+            else if(values.other_payments[i]?.payment === 'CHECK') isCheck = true
+            else if(values.other_payments[i]?.payment === 'BPI CREDIT CARD') isBpi_cc = true
+            else if(values.other_payments[i]?.payment === 'BPI DEBIT CARD') isBpi_dc = true
+            else if(values.other_payments[i]?.payment === 'METRO CREDIT CARD') isMetro_cc = true
+            else if(values.other_payments[i]?.payment === 'METRO DEBIT CARD') isMetro_dc = true
+            else if(values.other_payments[i]?.payment === 'PAY MAYA') isPaymaya = true
+            else if(values.other_payments[i]?.payment === 'AUB CREDIT CARD') isAub_cc = true
+            else if(values.other_payments[i]?.payment === 'GCASH') isGcash = true
+            else if(values.other_payments[i]?.payment === 'FOOD PANDA') isFoodpanda = true
+            else if(values.other_payments[i]?.payment === 'STREETBY') isStreetby = true
+            else if(values.other_payments[i]?.payment === 'GRAB FOOD') isGrabfood = true
 
-    // Reset the form fields
-    form.resetFields();
-  };
+            if(values.other_payments[i]?.payment_amount !== undefined)
+            subTotalTrade += parseFloat(values.other_payments[i]?.payment_amount)
+        }
+    if(values.other_expenses !== undefined)
+        for(let i = 0; i<values.other_expenses.length; i++){
+            if(values.other_expenses[i]?.payment === 'MM-HEAD OFFICE') isMMHO = true
+            else if(values.other_expenses[i]?.payment === 'MM-COMMISARY') isMMCom = true
+            else if(values.other_expenses[i]?.payment === 'MM-RM') isMMRM = true
+            else if(values.other_expenses[i]?.payment === 'MM-DM') isMMDM = true
+            else if(values.other_expenses[i]?.payment === 'MM-KM') isMMKM = true
+            else if(values.other_expenses[i]?.payment === 'MM-___') isMM__ = true
+            else if(values.other_expenses[i]?.payment === 'FOOD CHARGES') isFoodCharges = true
+            if(values.other_expenses[i]?.payment_amount !== undefined)
+                subTotalNonTrade += parseFloat(values.other_expenses[i]?.payment_amount)
+        }
+    if(values?._expense !== undefined)
+        subTotalNonTrade += parseFloat(values._expense_amount)
+    return { isMMHO, isMMCom, isMMRM, isMMDM, isMMKM, isMM__, isFoodCharges,
+        isCash, isCheck, isBpi_cc, isBpi_dc, isMetro_cc, isMetro_dc, isPaymaya, isAub_cc, isGcash, isFoodpanda, isStreetby, isGrabfood, subTotalTrade, subTotalNonTrade };
 
-  return (
-    <Form
-    name="transaction_form"
-    form={form}
-    layout="vertical"
-    onFinish={onFinish}
-    initialValues={{
-        '_payment': "Cash",
-        '_expense': "Food Charges"
-        // 'checkbox-group': ['A', 'B'],
-        // rate: 3.5,
-        // 'color-picker': null,
-    }}
-    style={{ maxWidth: 400 }} // optional styling
-    autoComplete="off"
-    >   
-        <Space  size={50} style={{ display: 'flex', marginBottom: 8 }} align='baseline' >
+  }, form);
+    const { 
+        isMMHO = false, isMMCom = false, isMMRM = false, isMMDM = false, isMMKM = false, isMM__ = false, isFoodCharges = false,
+        isCash = false, isCheck = false, isBpi_cc = false, isBpi_dc = false, isMetro_cc = false, isMetro_dc = false, isPaymaya = false, isAub_cc = false, isGcash = false, isFoodpanda = false, isStreetby = false, isGrabfood = false, subTotalTrade = 0, subTotalNonTrade = 0} = watchResult || {}
+    const [componentEnabled, setcomponentEnabled] = useState(false);
+    const [isFilled, setIsFilled] = useState(true);
+    const addTransaction = useTransactionStore((state) => state.addTransaction);
+    const finalValues = useTransactionStore((state) => state.finalValues);
+    // const [paymentFieldCount, setPaymentFieldCount] = useState(1);
+    interface TransactionFormValues {
+        cashier_name: string;
+        shift: string;
+        _payment: string;
+        _payment_amount: number;
+        other_payments?: { payment: string; payment_amount: string }[];
+        _expense?: string;
+        _expense_amount?: number;
+        other_expenses?: { payment: string; payment_amount: string }[];
+    }
+    const onChangeDate = (date: Dayjs) => {
+        if (date) {
+          console.log('Date: ', date);
+          setCurrentDate(date);
+        } else {
+          console.log('Clear');
+        }
+    };
+    // const setSelectedCashierName = (name:string) => {
+    //     // setSelectedCashier(name);
+    //     console.log("Selected: ", name);
+    // };
+
+    const onFinish = async(values: TransactionFormValues) => {
+        addTransaction(values);
+        
+        const data : TransactionValuesState = finalValues() as TransactionValuesState;
+        
+        try{
+            const foundCashier = cashiers?.find(cashier => cashier.value === data.cashier_name);
+            if (foundCashier) {
+                onProcess('info','Processing Transaction Data.', true)
+                const response = await fetch(`/api/transactions/addTransaction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({data:data, date: currentDate.format('YYYY-MM-DD')})
+                });
+                if(!response.ok){
+                    const errorMessage = await response.json()
+                    onProcess('error','Error adding transaction: ' + errorMessage.error, true)
+                    throw new Error(errorMessage);
+                }
+                onProcess('success','Transaction added succcessfully.', false)
+                console.log('Transaction added succcessfully');
+                 // Reset the form fields
+                form.resetFields();
+            } else {
+                onProcess('error','Error adding transaction. Please select a valid Cashier.', true)
+                console.log("Cashier not found.");
+            }
+        } catch (error){
+            console.error('Error adding transaction: ', error);
+        }
+       
+    };
+    return (
+        <Form
+        name="transaction_form"
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{
+            '_payment': "CASH",
+            '_expense': "FOOD CHARGES",
+            'date':currentDate
+        }}
+        style={{ maxWidth: '100%' }} // optional styling
+        autoComplete="off"
+        >   
+            <Spin spinning={isCashierNotAllowed} indicator={<LoadingOutlined spin />} tip="Fetching Cashiers...">
             <Form.Item
             label="Cashier Name"
             name="cashier_name"
             rules={[{ required: true, message: 'Please input the cashier name!' }]}
             >
-                <Input placeholder="e.g. Cherry" />
-                {/* <SelectFetch/> */}
-            </Form.Item>
-            <Form.Item
-            label="Shift"
-            name="shift"
-            rules={[{ required: true, message: 'Please select a shift time!' }]}
-            >
-                <Select placeholder="Select Shift">
-                    <Select.Option value="AM">AM</Select.Option>
-                    <Select.Option value="MID">MID</Select.Option>
-                    <Select.Option value="PM">PM</Select.Option>
-                </Select>
+                
+                <AutoComplete
+                    options={cashiers}
+                    // style={{ width: 200 }}
+                    // onSelect={setSelectedCashierName}
+                    // onSearch={(text) => setOptions(getPanelValue(text))}
+                    placeholder="e.g. Cherry"
+                    disabled={isCashierNotAllowed}
+                />
                 
             </Form.Item>
-        </Space>
-        
-      
-        <Form.Item
-        label="Payments"
-        rules={[{ required: true, message: 'Please select a payment category!' }]}
-        >
+            </Spin>
             <Space.Compact style={{ display: 'flex'}} >
-                
                 <Form.Item
-                name={'_payment'}
-                rules={[{ required: true, message: 'Missing payment category' }]}
-                style={{ width: '40%'}}
-                >
-                    <Select placeholder="Select Category" 
-                        onChange={ (value) => {
-                            const values = form.getFieldsValue();
-                            // console.log('new value: ', form.getFieldValue().other_payments)
-                            console.log('my value: ', value);
-                            setAvailableOptions(value, values, paymentField)}}>
-                        {!isCashSelected && (<Select.Option value="Cash">Cash</Select.Option>)}
-                        {!isCheckSelected && (<Select.Option value="Check">Check</Select.Option>)}
-                        {!isBPICCSelected && (<Select.Option value="BPI Credit Card">BPI Credit Card</Select.Option>)}
-                        {!isBPIDCSelected && (<Select.Option value="BPI Debit Card">BPI Debit Card</Select.Option>)}
-                        {!isBDODCSelected && (<Select.Option value="BDO Debit Card">BDO Debit Card</Select.Option>)}
-                        {!isMetroCCSelected && (<Select.Option value="Metro Credit Card">Metro Credit Card</Select.Option>)}
-                        {!isAUBCCSelected && (<Select.Option value="AUB Credit Card">AUB Credit Card</Select.Option>)}
-                        {!isPayMayaSelected && (<Select.Option value="Pay Maya">Pay Maya</Select.Option>)}
-                        {!isGCASHSelected && (<Select.Option value="GCASH">GCash</Select.Option>)}
-                        {!isFoodPandaSelected && (<Select.Option value="Food Panda">Food Panda</Select.Option>)}
-                        {!isShopeeFoodSelected && (<Select.Option value="Shopee Food">Shopee Food</Select.Option>)}
-                        {!isGrabFoodSelected && (<Select.Option value="Grab Food">Grab Food</Select.Option>)}
-                        {!isGCClaimedSelected && (<Select.Option value="GC Claimed">GC Claimed</Select.Option>)}
-                    </Select>
-                </Form.Item>
-                <Form.Item
-                name={'_payment_amount'}
-                rules={[{ required: true, message: 'Missing payment amount' }]}
-                style={{ width: '60%'}}
-                >
-                    <Input placeholder="Enter amount" />
-                </Form.Item>
-                
-            </Space.Compact>
-            <Form.List name="other_payments">
-            {(fields, { add, remove }) => (
-                <>
-                
-                {fields.map(({ key, name, ...restField }) => (
-                    <Space.Compact key={key} style={{ display: 'flex', marginBottom: 8 }}>
-                    <Form.Item
-                        {...restField}
-                        name={[name, 'payment']}
-                        rules={[{ required: true, message: 'Missing payment category' }]}
-                        style={{ width: '40%'}}
+                    label="Shift"
+                    name="shift"
+                    style={{ width: '55%'}}
+                    rules={[{ required: true, message: 'Please select a shift time!' }]}
                     >
-                
-                        <Select placeholder="Select Category"
-                        onChange={ (value) => {
-                            const values = form.getFieldsValue();
-                            // console.log('new value: ', form.getFieldValue().other_payments)
-                            console.log('my value: ', value);
-                            setAvailableOptions(value, values, fields.length)}}>
-                            {/* {getAvailableOptions(fields, name)} */}
-                            {!isCashSelected && (<Select.Option value="Cash">Cash</Select.Option>)}
-                            {!isCheckSelected && (<Select.Option value="Check">Check</Select.Option>)}
-                            {!isBPICCSelected && (<Select.Option value="BPI Credit Card">BPI Credit Card</Select.Option>)}
-                            {!isBPIDCSelected && (<Select.Option value="BPI Debit Card">BPI Debit Card</Select.Option>)}
-                            {!isBDODCSelected && (<Select.Option value="BDO Debit Card">BDO Debit Card</Select.Option>)}
-                            {!isMetroCCSelected && (<Select.Option value="Metro Credit Card">Metro Credit Card</Select.Option>)}
-                            {!isAUBCCSelected && (<Select.Option value="AUB Credit Card">AUB Credit Card</Select.Option>)}
-                            {!isPayMayaSelected && (<Select.Option value="Pay Maya">Pay Maya</Select.Option>)}
-                            {!isGCASHSelected && (<Select.Option value="GCASH">GCash</Select.Option>)}
-                            {!isFoodPandaSelected && (<Select.Option value="Food Panda">Food Panda</Select.Option>)}
-                            {!isShopeeFoodSelected && (<Select.Option value="Shopee Food">Shopee Food</Select.Option>)}
-                            {!isGrabFoodSelected && (<Select.Option value="Grab Food">Grab Food</Select.Option>)}
-                            {!isGCClaimedSelected && (<Select.Option value="GC Claimed">GC Claimed</Select.Option>)}
+                        <Select placeholder="Select Shift">
+                            <Select.Option value="AM">AM</Select.Option>
+                            <Select.Option value="MID">MID</Select.Option>
+                            <Select.Option value="PM">PM</Select.Option>
+                        </Select>
+                </Form.Item>
+                <Form.Item
+                    label="Date"
+                    name="date"
+                    >
+                    <DatePicker
+                        presets={[
+                            { label: 'Yesterday', value: dayjs().add(-1, 'd') },
+                            { label: 'Last Week', value: dayjs().add(-7, 'd') },
+                            { label: 'Last Month', value: dayjs().add(-1, 'month') },
+                        ]}
+                        onChange={onChangeDate}
+                        />
+                </Form.Item>
+            </Space.Compact>
+            <Form.Item
+            label="Payments"
+            rules={[{ required: true, message: 'Please select a payment category!' }]}
+            >
+                <Space.Compact style={{ display: 'flex'}} >
+                    <Form.Item
+                    name={'_payment'}
+                    rules={[{ required: true, message: 'Missing payment category' }]}
+                    style={{ width: '50%'}}
+                    >
+                        <Select placeholder="Select Category" >
+                            {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
+                            {!isCheck && (<Select.Option value="CHECK">CHECK</Select.Option>)}
+                            {!isBpi_cc && (<Select.Option value="BPI CREDIT CARD">BPI CREDIT CARD</Select.Option>)}
+                            {!isBpi_dc && (<Select.Option value="BPI DEBIT CARD">BPI DEBIT CARD</Select.Option>)}
+                            {!isMetro_cc && (<Select.Option value="METRO CREDIT CARD">METRO CREDIT CARD</Select.Option>)}
+                            {!isMetro_dc && (<Select.Option value="METRO DEBIT CARD">METRO DEBIT CARD</Select.Option>)}
+                            {!isAub_cc && (<Select.Option value="AUB CREDIT CARD">AUB CREDIT CARD</Select.Option>)}
+                            {!isPaymaya && (<Select.Option value="PAY MAYA">PAY MAYA</Select.Option>)}
+                            {!isGcash && (<Select.Option value="GCASH">GCASH</Select.Option>)}
+                            {!isFoodpanda && (<Select.Option value="FOOD PANDA">FOOD PANDA</Select.Option>)}
+                            {!isStreetby && (<Select.Option value="STREETBY">STREETBY</Select.Option>)}
+                            {!isGrabfood && (<Select.Option value="GRAB FOOD">GRAB FOOD</Select.Option>)}
+                            {/* {!isGCClaimedSelected && (<Select.Option value="GC Claimed">GC Claimed</Select.Option>)} */}
                         </Select>
                     </Form.Item>
                     <Form.Item
-                        {...restField}
-                        name={[name, 'payment_amount']}
-                        rules={[{ required: true, message: 'Missing payment amount' }]}
-                        style={{ width: '55%'}}
-                    >
-                        <Input placeholder="Enter amount" />
+                    name={'_payment_amount'}
+                    rules={[{ required: true, message: 'Missing payment amount' }]}
+                    >   
+                        <InputNumber style={{ width: 'auto'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
+                        {/* <Input placeholder="Enter amount" /> */}
                     </Form.Item>
-                    <Button icon={<MinusCircleOutlined /> }  onClick={() => {
-                        setPaymentFieldCount((count) => count-1);
-                        // setAvailableOptions("", form.getFieldValue(), fields.length)
-                        remove(name); console.log("removed: ", form.getFieldValue(['other_payments']))}} />
-                    {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
-                    </Space.Compact>
-                ))}
-                {paymentFieldCount < 13 && (<Form.Item>
-                    <Button style={{color:'GrayText'}} type="dashed" onClick={() => {
-                        const lastField = fields[fields.length-1];
-                        
-                        console.log(`field length: ${fields.length}`)
-                        const values = form.getFieldsValue();
-                        if (fields.length === 0 ) {
-                            console.log(`last field value: ${JSON.stringify(form.getFieldValue(['_payment']))}`)
-                            console.log(`category value: ${JSON.stringify(values)}`)
-                            // console.log(`amount value: ${form.getFieldValue([lastField.name, 'payment_amount'])}`)
-                            if (fields.length == 0 && form.getFieldValue(['_payment']) !== undefined && form.getFieldValue(['_payment_amount']) !== undefined) {
-                                setGrossAmount((prev) => prev + parseFloat(form.getFieldValue(['_payment_amount'])))//123
-                                // grossAmount.current += form.getFieldValue(['_payment_amount']);
-                                setIsFilled(true);
-                                setPaymentFieldCount((count) => count+1);
-                                add();
-                            } else {
-                                setIsFilled(false)
-                                console.log('Please fill in the previous field');
-                            }
-                        } else if (fields.length > 0 ){
-                            setPaymentField(fields.length)
-                            console.log('name:', lastField.name);
-                            console.log('fields.length: ', fields.length);
-                            if(!values.other_payments[lastField.name]?.payment === undefined || values.other_payments[lastField.name]?.payment_amount === undefined){
-                                setIsFilled(false)
-                            } else {
-                                
-                                const lastPaymentMethod = JSON.stringify(values.other_payments[lastField.name].payment);
-                                const lastPaymentAmount = JSON.stringify(values.other_payments[lastField.name].payment_amount);
-                                console.log(`amount:`, form.getFieldsValue().other_payments[lastField.name].payment_amount)
-                                console.log(`lastPayment Method: ${lastPaymentMethod}`)
-                                console.log(`lastPayment Amount: ${lastPaymentAmount}`)
-                                if(lastPaymentMethod !== undefined && lastPaymentAmount !== undefined && fields.length >= 1){
-                                    setGrossAmount((prev) => prev + parseFloat(form.getFieldsValue().other_payments[lastField.name].payment_amount))//456
+                    
+                </Space.Compact>
+                <Form.List name="other_payments">
+                {(fields, { add, remove }) => (
+                    <>    
+                    {fields.map(({ key, name, ...restField }) => (
+                        <Space.Compact key={key} style={{ display: 'flex', marginBottom: 8 }}>
+                        <Form.Item
+                            {...restField}
+                            name={[name, 'payment']}
+                            rules={[{ required: true, message: 'Missing payment category' }]}
+                            style={{ width: '60%'}}
+                        >
+                            <Select placeholder="Select Category">
+                                {!isCash && (<Select.Option value="CASH">CASH</Select.Option>)}
+                                {!isCheck && (<Select.Option value="CHECK">CHECK</Select.Option>)}
+                                {!isBpi_cc && (<Select.Option value="BPI CREDIT CARD">BPI CREDIT CARD</Select.Option>)}
+                                {!isBpi_dc && (<Select.Option value="BPI DEBIT CARD">BPI DEBIT CARD</Select.Option>)}
+                                {!isMetro_cc && (<Select.Option value="METRO CREDIT CARD">METRO CREDIT CARD</Select.Option>)}
+                                {!isMetro_dc && (<Select.Option value="METRO DEBIT CARD">METRO DEBIT CARD</Select.Option>)}
+                                {!isAub_cc && (<Select.Option value="AUB CREDIT CARD">AUB CREDIT CARD</Select.Option>)}
+                                {!isPaymaya && (<Select.Option value="PAY MAYA">PAY MAYA</Select.Option>)}
+                                {!isGcash && (<Select.Option value="GCASH">GCASH</Select.Option>)}
+                                {!isFoodpanda && (<Select.Option value="FOOD PANDA">FOOD PANDA</Select.Option>)}
+                                {!isStreetby && (<Select.Option value="STREETBY">STREETBY</Select.Option>)}
+                                {!isGrabfood && (<Select.Option value="GRAB FOOD">GRAB FOOD</Select.Option>)}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            {...restField}
+                            name={[name, 'payment_amount']}
+                            rules={[{ required: true, message: 'Missing payment amount' }]}
+                            style={{ width: '55%'}}
+                        >
+                            <InputNumber style={{ width: 'auto'}}placeholder="Enter amount" min={0} max={1000000000} onChange={onChange} changeOnWheel />
+                        </Form.Item>
+                        <Button icon={<MinusCircleOutlined /> }  onClick={() => { remove(name); }} />
+                        </Space.Compact>
+                    ))}
+                    {(!isCash || !isCheck || !isBpi_cc || !isBpi_dc || !isMetro_cc || !isAub_cc || !isAub_cc || !isPaymaya || !isGcash || !isFoodpanda || !isStreetby || !isGrabfood ) && (<Form.Item>
+                        <Button style={{color:'GrayText'}} type="dashed" onClick={() => {
+                            const lastField = fields[fields.length-1];
+                            
+                            // console.log(`field length: ${fields.length}`)
+                            const values = form.getFieldsValue();
+                            if (fields.length === 0 ) {
+                                if (fields.length == 0 && form.getFieldValue(['_payment']) !== undefined && form.getFieldValue(['_payment_amount']) !== undefined) {
                                     setIsFilled(true);
-                                    setPaymentFieldCount((count) => count+1);
                                     add();
                                 } else {
                                     setIsFilled(false)
-                                    console.log('Please fill in the previous field');
                                 }
+                            } else if (fields.length > 0 ){
+                                if(!values.other_payments[lastField.name]?.payment === undefined || values.other_payments[lastField.name]?.payment_amount === undefined){
+                                    setIsFilled(false)
+                                } else {
+                                    const lastPaymentMethod = JSON.stringify(values.other_payments[lastField.name].payment);
+                                    const lastPaymentAmount = JSON.stringify(values.other_payments[lastField.name].payment_amount);
+                                    if(lastPaymentMethod !== undefined && lastPaymentAmount !== undefined && fields.length >= 1){
+                                        setIsFilled(true);
+                                        add();
+                                    } else {
+                                        setIsFilled(false)
+                                    }
+                                }
+                                
                             }
-                            
                         }
-                        
-
-                        
-                        
-                    }
-                    //add()
                     } block icon={<PlusOutlined />}>
                     Add Other Payment Category
                     </Button>
@@ -457,144 +401,116 @@ const TransactionForm = () => {
                 </>
             )}
             </Form.List>
-            {/* <Tooltip title="Useful information">
-                <Typography.Link href="#API">Need Help?</Typography.Link>
-            </Tooltip> */}
+            
         </Form.Item>
+        
       
         <Form.Item>
             <Checkbox 
-            checked={componentDisabled}
-            onChange={(e) => setComponentDisabled(e.target.checked)}
+            checked={componentEnabled}
+            onChange={(e) => setcomponentEnabled(e.target.checked)}
             >
-            Internal Expenses
+             Internal Expenses{/* (Non-Trade POS) */}
             </Checkbox>
-            <Tooltip title={`MM-HEAD OFFICE refers to any sales or charges that go directly to a "head office account". MM-COMMISSARY refers to purchases or reimbursements from the company (central kitchen).`}>
+            <Tooltip placement="left" title={`Internal Expenses include costs allocated for operational purposes rather than being directly billed to customers—such as Food Charges and internal fees (e.g., MM-HEAD OFFICE, MM-COMMISSARY, etc.). These amounts are incorporated into your overall POS calculations.`}>
                 <Typography.Link href="#API">What is this?</Typography.Link>
             </Tooltip>
         </Form.Item>
-        {/* <Space align='center' style={{display:'flex'}}>
-        
-            <Form
-            layout="vertical"
-            disabled={!componentDisabled}
-            style={{width:"100%"}}
-            >
-            
-            </Form>
-            
-            
-        </Space> */}
-        { componentDisabled && (
+        { componentEnabled && (
             <>
-                
-        
-      
-        <Form.Item
-        label="Internal Expenses"
-        rules={[{ required: true, message: 'Please select a payment category!' }]}
-        >
-            <Space.Compact style={{ display: 'flex'}} >
-                
-                <Form.Item
-                name={'_expense'}
-                rules={[{ required: true, message: 'Missing category' }]}
-                style={{ width: '40%'}}
-                >
-                    <Select placeholder="Select Category">
-                        <Select.Option value="MM-HEAD OFFICE" name="expense_category_MM-HEAD-OFFICE">MM-HEAD OFFICE</Select.Option>
-                        <Select.Option value="MM-COMMISARY" name= "expense_category_MM-COMMISARY">MM-COMMISARY</Select.Option>
-                        <Select.Option value="MM-RM" name= "expense_category_MM-RM">MM-RM</Select.Option>
-                        <Select.Option value="MM-KO" name= "expense_category_MM-KO">MM-KO</Select.Option>
-                        <Select.Option value="MM-HAQ" name= "expense_category_MM-HAQ">MM-HAQ</Select.Option>
-                        <Select.Option value="Food Charges" name= "expense_categor_food_harges">Food Charges</Select.Option>
-                    </Select>
-                </Form.Item>
-                <Form.Item
-                name={'_expense_amount'}
-                rules={[{ required: true, message: 'Missing expense amount' }]}
-                style={{ width: '60%'}}
-                >
-                    <Input placeholder="Enter amount" />
-                </Form.Item>
-                
-            </Space.Compact>
-            <Form.List name="other_expenses">
-            {(fields, { add, remove }) => (
-                <>
-                
-                {fields.map(({ key, name, ...restField }) => (
-                    <Space.Compact key={key} style={{ display: 'flex', marginBottom: 8 }}>
+            <Form.Item
+            label="Internal Expenses"
+            rules={[{ required: true, message: 'Please select a payment category!' }]}
+            >
+                <Space.Compact style={{ display: 'flex'}} >   
                     <Form.Item
-                        {...restField}
-                        name={[name, 'payment']}
-                        rules={[{ required: true, message: 'Missing category' }]}
-                        style={{ width: '40%'}}
+                    name={'_expense'}
+                    rules={[{ required: true, message: 'Missing category' }]}
+                    style={{ width: '50%'}}
                     >
-                
                         <Select placeholder="Select Category">
-                            {/* {getAvailableOptions(fields, name)} */}
-                            <Select.Option value="MM-HEAD OFFICE" name="expense_category_MM-HEAD-OFFICE">MM-HEAD OFFICE</Select.Option>
-                            <Select.Option value="MM-COMMISARY" name= "expense_category_MM-COMMISARY">MM-COMMISARY</Select.Option>
-                            <Select.Option value="MM-RM" name= "expense_category_MM-RM">MM-RM</Select.Option>
-                            <Select.Option value="MM-KO" name= "expense_category_MM-KO">MM-KO</Select.Option>
-                            <Select.Option value="MM-HAQ" name= "expense_category_MM-HAQ">MM-HAQ</Select.Option>
-                            <Select.Option value="Food Charges" name= "expense_categor_food_harges">Food Charges</Select.Option>
+                            {!isMMHO && (<Select.Option value="MM-HEAD OFFICE" name="expense_category_MM-HEAD-OFFICE">MM-HEAD OFFICE</Select.Option>)}
+                            {!isMMCom &&(<Select.Option value="MM-COMMISARY" name= "expense_category_MM-COMMISARY">MM-COMMISARY</Select.Option>)}
+                            {!isMMRM &&(<Select.Option value="MM-RM" name= "expense_category_MM-RM">MM-RM</Select.Option>)}
+                            {!isMMDM &&(<Select.Option value="MM-DM" name= "expense_category_MM-DM">MM-DM</Select.Option>)}
+                            {!isMMKM &&(<Select.Option value="MM-KM" name= "expense_category_MM-KM">MM-KM</Select.Option>)}
+                            {!isMM__ &&(<Select.Option value="MM-___" name= "expense_category_MM-___">MM-___</Select.Option>)}
+                            {!isFoodCharges &&(<Select.Option value="FOOD CHARGES" name= "expense_categor_food_charges">FOOD CHARGES</Select.Option>)}
                         </Select>
                     </Form.Item>
                     <Form.Item
-                        {...restField}
-                        name={[name, 'payment_amount']}
-                        rules={[{ required: true, message: 'Missing payment amount' }]}
-                        style={{ width: '55%'}}
+                    name={'_expense_amount'}
+                    rules={[{ required: true, message: 'Missing expense amount' }]}
+                    style={{ width: '60%'}}
                     >
                         <Input placeholder="Enter amount" />
-                    </Form.Item>
-                    <Button icon={<MinusCircleOutlined /> }  onClick={() => remove(name)} />
-                    {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
-                    </Space.Compact>
-                ))}
-                <Form.Item>
-                    <Button style={{color:'GrayText'}} type="dashed" onClick={() => {
-                        // const lastField = fields[fields.length - 1];
-                        // console.log(`field length: ${fields.length}`)
-                        // if (fields.length == 0 || lastField && form.getFieldValue([lastField.name, 'payment']) && form.getFieldValue([lastField.name, 'payment_amount'])) {
-                          add();
-                        // } else {
-                        //   console.log('Please fill in the previous field');
-                        // }
-                    }
-                    //add()
-                    } block icon={<PlusOutlined />}>
-                    Add More
-                    </Button>
-                </Form.Item>
-                </>
-            )}
-            </Form.List>
-            {/* <Tooltip title="Useful information">
-                <Typography.Link href="#API">Need Help?</Typography.Link>
-            </Tooltip> */}
-        </Form.Item>
+                    </Form.Item>    
+                </Space.Compact>
+                <Form.List name="other_expenses">
+                {(fields, { add, remove }) => (
+                    <>    
+                    {fields.map(({ key, name, ...restField }) => (
+                        <Space.Compact key={key} style={{ display: 'flex', marginBottom: 8 }}>
+                        <Form.Item
+                            {...restField}
+                            name={[name, 'payment']}
+                            rules={[{ required: true, message: 'Missing category' }]}
+                            style={{ width: '56%'}}
+                        >
+                    
+                            <Select placeholder="Select Category">
+                                {!isMMHO && (<Select.Option value="MM-HEAD OFFICE" name="expense_category_MM-HEAD-OFFICE">MM-HEAD OFFICE</Select.Option>)}
+                                {!isMMCom &&(<Select.Option value="MM-COMMISARY" name= "expense_category_MM-COMMISARY">MM-COMMISARY</Select.Option>)}
+                                {!isMMRM &&(<Select.Option value="MM-RM" name= "expense_category_MM-RM">MM-RM</Select.Option>)}
+                                {!isMMDM &&(<Select.Option value="MM-DM" name= "expense_category_MM-DM">MM-DM</Select.Option>)}
+                                {!isMMKM &&(<Select.Option value="MM-KM" name= "expense_category_MM-KM">MM-KM</Select.Option>)}
+                                {!isMM__ &&(<Select.Option value="MM-___" name= "expense_category_MM-___">MM-___</Select.Option>)}
+                                {!isFoodCharges &&(<Select.Option value="FOOD CHARGES" name= "expense_categor_food_charges">FOOD CHARGES</Select.Option>)}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            {...restField}
+                            name={[name, 'payment_amount']}
+                            rules={[{ required: true, message: 'Missing payment amount' }]}
+                            style={{ width: '55%'}}
+                        >
+                            <Input placeholder="Enter amount" />
+                        </Form.Item>
+                        <Button icon={<MinusCircleOutlined /> }  onClick={() => remove(name)} />
+                        {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
+                        </Space.Compact>
+                    ))}
+                    {(!isMMHO || !isMMCom || !isMMRM || !isMMDM || !isMMKM || !isMM__ || !isFoodCharges) &&(<Form.Item>
+                        <Button style={{color:'GrayText'}} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                        Add More
+                        </Button>
+                    </Form.Item>)}
+                    
+                    </>
+                )}
+                </Form.List>
+                
+            </Form.Item>
             </>
         )}
-
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Add Transaction
-        </Button>
-      </Form.Item>
-      <Row gutter={16}>
-    <Col span={12}>
-      <Statistic title="Gross Amount" value={grossAmount} precision={2} formatter={formatter}/>
-    </Col>
-    <Col span={12}>
-      <Statistic title="Net Amount" value={netAmount} precision={2} formatter={formatter} />
-    </Col>
-  </Row>
-    </Form>
+        <Form.Item>
+            <Button type="primary" htmlType="submit">
+            Add Transaction
+            </Button>
+        </Form.Item>
+        <Divider orientationMargin={'48'}>SUB TOTAL</Divider>
+        <Row gutter={16}>
+                <Col span={12}>
+                    <Statistic title="TRADE POS" value={subTotalTrade} precision={2} formatter={formatter_subTotalTradePos} />
+                </Col>
+                <Col span={12}>
+                    <Statistic title="NON-TRADE POS" value={subTotalNonTrade} precision={2} formatter={formatter_subTotalNonTradePos} />
+                </Col>
+            </Row>
+        </Form>
+        
     
-  );
+    );
 };
 
 export default TransactionForm;
