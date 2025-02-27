@@ -30,7 +30,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     // const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
-            const response = await fetch(`/api/getCashiers`, {
+            const response = await fetch(`/api/getCashierNames`, {
                 method:"GET"
             });
             if(!response.ok) throw new Error('Failed to fetch cashiers');

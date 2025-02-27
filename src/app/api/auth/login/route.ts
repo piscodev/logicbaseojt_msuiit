@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     // Compare provided password with the hashed password
     const isMatch = await bcrypt.compare(password, rows[0].hashed_password);
     if (!isMatch) {
-      const response = NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+      const response = NextResponse.json({ error: "Incorrect password" }, { status: 401 });
       // Clear any existing token
       response.headers.set("Set-Cookie", "token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0");
       return response;
