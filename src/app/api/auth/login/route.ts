@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Cashier } from "@/app/lib/Interface/route";
+import { Cashier } from "@/app/lib/Interface/interface";
 import { FieldPacket } from "mysql2";
 export async function POST(req: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const [rows]:[Cashier[], FieldPacket[]] = await pool.query("SELECT * FROM Cashier WHERE email = ?", [email]) as [Cashier[], FieldPacket[]];
 
     if (rows.length === 0) {
-      const response = NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+      const response = NextResponse.json({ error: "Email not found. Please sign up first." }, { status: 401 });
       // Clear any existing token
       response.headers.set("Set-Cookie", "token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0");
       return response;

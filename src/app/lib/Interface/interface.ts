@@ -75,3 +75,10 @@ export interface CashiersTransaction
     mid: number
     pm: number
 }
+
+export interface ParticularDefinition {
+    id: number;
+    name: string;
+    type: 'Trade' | 'Non-Trade';
+    fee_percent: number;
+  }

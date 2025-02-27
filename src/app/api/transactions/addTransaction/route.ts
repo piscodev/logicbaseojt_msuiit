@@ -2,7 +2,7 @@
 import { FieldPacket, ResultSetHeader } from "mysql2";
 import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { TransactionValuesState } from '@/app/lib/Interface/route';
+import { TransactionValuesState } from '@/app/lib/Interface/interface';
 import { DateTime } from "luxon";
 export async function POST(req: NextRequest) {
     if (req.method === 'POST') {

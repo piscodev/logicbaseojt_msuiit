@@ -1,15 +1,18 @@
 "use client";
 
 import React from "react";
-import { Breadcrumb, Layout, Tabs, ConfigProvider,// Col, Row,
-   Card } from "antd";
+import { Breadcrumb, Layout, Tabs, ConfigProvider, Card } from "antd";
+import type  { TabsProps } from 'antd'; 
 // import TransactionForm from "./components/TransactionForm";
 // import TransactionTable from "./components/TransactionTable";
 import TestTable from "@/app/components/testTable"
 import DataTable from "../components/DataTableTest";
 import Nav from "../components/NavigationBar";
 const { Content, Footer } = Layout;
-const { TabPane } = Tabs;
+const tabItems: TabsProps['items'] = [
+  { key: 'daily', label: 'Daily', children:<TestTable/>},
+  { key: 'per_cashier', label: 'Per Cashier', children:<DataTable/>},
+]
 
 export default function Home() {
   return (
@@ -26,14 +29,7 @@ export default function Home() {
             ]}
           />
           <Card title="Transactions Log">
-            <Tabs defaultActiveKey="daily">
-              <TabPane tab="Daily" key="daily">
-                <TestTable />
-              </TabPane>
-              <TabPane tab="Per Cashier" key="cashier">
-                <DataTable />
-              </TabPane>
-            </Tabs>;
+            <Tabs defaultActiveKey="daily" items={tabItems}/>;
           </Card>
         </Content>
         <Footer style={{ textAlign: "center" }}>

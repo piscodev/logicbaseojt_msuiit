@@ -98,8 +98,7 @@ const TestTable: React.FC = () => {
   const onChangeDate = (date: Dayjs) => {
     if (date) {
         setCurrentDate(date)
-        console.log('Date: ', date);
-        fetchData(currentDate);
+        fetchData(date);
     } else {
         console.log('Clear');
     }

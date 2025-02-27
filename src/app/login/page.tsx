@@ -5,10 +5,12 @@ import { FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Messenger from "../components/ActionsMessage";
+import { DateTime } from "luxon";
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [messageType, setMessageType] = useState<'success' | 'error' | 'warning'>('success');
   const [messageContent, setMessageContent] = useState('');
+  const [messageKey, setMesssageKey] = useState<string>('')
   const [email, setEmail] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -26,6 +28,7 @@ export default function AuthPage() {
     const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
       setMessageType(type);
       setMessageContent(content);
+      setMesssageKey(DateTime.now().setZone('Asia/Manila').toFormat('yyyy LLL dd'))
     };
     try {
       // Use correct API endpoints based on login or sign-up mode.
@@ -41,7 +44,7 @@ export default function AuthPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("Auth failed:", data);
+        showMessage('error', data.error)
         throw new Error(data.error);
       }
 
@@ -62,9 +65,8 @@ export default function AuthPage() {
         setPassword("");
         setName("")
       }
-    } catch (error:unknown) {
-      showMessage('error', error as unknown as string)
-      
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -72,7 +74,7 @@ export default function AuthPage() {
 
   return (
     <>
-    <Messenger messageType={messageType} messageContent={messageContent} />
+    <Messenger messageType={messageType} messageContent={messageContent} messageKey={messageKey}/>
     
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
     

@@ -1,19 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { DatePicker, Space, Table, TableProps } from "antd";
+import React, { useEffect, useState } from "react";
+import { Space, Table, TableProps } from "antd";
 import { create } from "zustand";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import CustomDatePicker from "./CustomDatePicker";
 
-const CustomDatePicker = () => (
-    <DatePicker
-        presets={[
-            { label: 'Yesterday', value: dayjs().add(-1, 'd') },
-            { label: 'Last Week', value: dayjs().add(-7, 'd') },
-            { label: 'Last Month', value: dayjs().add(-1, 'month') },
-        ]}
-    />
-  );
 
 type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
 
@@ -178,12 +170,38 @@ const generateTableData = (selectedCashiers: Cashier[]) => {
 const DataTable = () =>
 {
   const { cashiers, setCashiers } = usePOSStore()
+  // const [data, setData] = useState<Cashier[]>([]);
   const { selectedCashiers, setSelectedCashiers } = useCashierStore()
-
-  useEffect(() =>
-  {
-    setCashiers(transformAPIResponse(apiResponse));
-  }, [setCashiers])
+  const [ selectedDate, setSelectedDate ] = useState<Dayjs>(dayjs()); 
+  const [loading, setLoading] = useState<boolean>(false);
+  // useEffect(() =>
+  // {
+  //   setCashiers(transformAPIResponse(apiResponse));
+  // }, [setCashiers])
+  useEffect(() => {
+      fetchData(selectedDate);
+    }, [selectedDate]);
+  
+    const fetchData = async (dateInput=dayjs()) => {
+      try{
+          setLoading(true);
+          const response = await fetch('/api/transactions/getAllCashierTransactions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ date: dateInput })
+          })
+          if(!response.ok) throw new Error('Failed to fetch transactions');
+          const data = await response.json();
+          console.log('Transaction Data Retrieved: ', data);
+          // setData(data.data);
+          setCashiers(transformAPIResponse(apiResponse));
+      } catch (error) {
+          console.error('Fetch error:', error);
+      } finally {
+          setLoading(false);
+      }
+      
+    };
 
   const rowSelection: TableRowSelection<Cashier> = {
     onChange: (_, selectedRows) => {
@@ -206,21 +224,30 @@ const DataTable = () =>
     { title: "GROSS TOTAL", dataIndex: "grossTotal", key: "grossTotal" },
     { title: "NET TOTAL", dataIndex: "netTotal", key: "netTotal" },
   ]
+  const handleDateChange = (date: Dayjs) => {
+    if(date){
+      setSelectedDate(date);
+      fetchData(date);
+    } else {
+      console.log("No Selected Date");
+    }
+    
+  };
 
   return (
     <>
       <Table
+        title={() => 
+          <Space>
+              <CustomDatePicker currentDate={selectedDate} onChangeDate={handleDateChange}/>
+          </Space>}
         columns={columnsT1}
         rowSelection={{ ...rowSelection }}
         dataSource={cashiers}
         rowKey="cashier_id"
         pagination={false}
       />
-      <Table title={() => 
-            <Space>
-                <CustomDatePicker/>
-            </Space>}
-            columns={columnsT2} dataSource={tableData} pagination={false} />
+      <Table columns={columnsT2} dataSource={tableData} pagination={false} />
     </>
   )
 }

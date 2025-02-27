@@ -3,12 +3,7 @@ import { NextRequest } from 'next/server';
 import pool from '../../lib/Database/db';
 import { FieldPacket } from 'mysql2';
 import { DateTime } from 'luxon';
-interface ParticularDefinition {
-  id: number;
-  name: string;
-  type: 'Trade' | 'Non-Trade';
-  fee_percent: number;
-}
+import { ParticularDefinition } from '@/app/lib/Interface/interface';
 
 interface TransactionData {
   particular: string;
