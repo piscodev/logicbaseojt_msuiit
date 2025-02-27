@@ -1,14 +1,13 @@
 "use client";
 
 import React from "react";
-import { Layout, Menu, Button, Typography, ConfigProvider, Card, Breadcrumb } from "antd";
+import { Layout, Button, Typography, ConfigProvider } from "antd";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa";
-import DataTableTest from "./components/DataTableTest";
 import Nav from "./components/NavigationBar";
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
 
 export default function LandingPage()
