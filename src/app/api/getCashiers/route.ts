@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       
       // Query to get all cashier names
       const [rows]: [Cashier[],FieldPacket[]] = await connection.query(
-        'SELECT * FROM cashier as c LEFT JOIN transaction AS t ON t.cashier_id = c.id INNER JOIN transactiondetail AS td ON td.transaction_id = t.id ORDER BY name ASC'
+        'SELECT * FROM cashier ORDER BY name ASC'
       ) as [Cashier[],FieldPacket[]];
       console.log('Result: ', rows);
       // Extract just the names from the result
