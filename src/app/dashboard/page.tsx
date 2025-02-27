@@ -7,6 +7,7 @@ import DataTable from "../components/DataTableTest";
 import Nav from "../components/NavigationBar";
 import LogoutButton from "../components/LogoutButton"; // Import LogoutButton
 
+import StatsCard from "../components/StatsCard";
 const { Content, Footer } = Layout;
 
 export default function Home() {
@@ -42,14 +43,16 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
+          <StatsCard />
           <Card title="Transactions Log">
-            <Tabs
-              defaultActiveKey="daily"
-              items={[
-                { label: "Daily", key: "daily", children: <TestTable /> },
-                { label: "Per Cashier", key: "cashier", children: <DataTable /> },
-              ]}
-            />
+            <Tabs defaultActiveKey="daily">
+              <TabPane tab="Daily" key="daily">
+                <TestTable />
+              </TabPane>
+              <TabPane tab="Per Cashier" key="cashier">
+                <DataTable />
+              </TabPane>
+            </Tabs>
           </Card>
         </Content>
 

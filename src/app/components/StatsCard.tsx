@@ -19,7 +19,7 @@ const StatsCard: React.FC = () =>
     }, [])
 
   return (
-    <Space  direction="vertical" className="w-full p-3">
+    <Space  direction="vertical" className="w-full mb-3">
         <Row gutter={16} justify="center">
             {data.map((item, index) => (
                 <Col key={index} span={8}>
