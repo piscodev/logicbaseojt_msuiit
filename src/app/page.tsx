@@ -25,7 +25,7 @@ export default function LandingPage()
         <Layout style={{ minHeight: "100vh" }}>
           <Header style={{ display: "flex", alignItems: "center", background: "#001529" }}>
             <div style={{ color: "white", fontSize: "1.5rem", fontWeight: "bold", marginRight: 20 }}>
-              Something App
+              MoneyCacheHub
             </div>
             <Menu
               theme="dark"
@@ -59,30 +59,6 @@ export default function LandingPage()
                 Login
               </Button>
           </motion.div>
-          </Content>
-          <Content style={{ padding: "0 48px", margin: "16px 0" }}>
-            <Breadcrumb
-              style={{ margin: "16px 0" }}
-              items={[
-                { title: "Root" },
-                { title: "Page" },
-                { title: "Current Page" },
-              ]}
-            />
-            {/* <Row>
-              <Col span={30} push={6} className="p-3"> */}
-                <Card title="Transactions Log">
-                  {/* <TransactionTable /> */}
-                  {/* <TestTable /> */}
-                  <DataTableTest />
-                </Card>
-              {/* </Col> */}
-              {/* <Col span={6} pull={18} className="p-3">
-                <Card title="Transaction Form">
-                  <TransactionForm />
-                </Card>
-              </Col> */}
-            {/* </Row> */}
           </Content>
           <Footer style={{ textAlign: "center" }}>
             Ant Design ©{new Date().getFullYear()}
