@@ -61,3 +61,17 @@ export interface Cashier {
     email: string
     hashed_password: string
 }
+
+export interface CashiersTransaction
+{
+    id: number
+    cashier_id: number
+    shift_id: number
+    particular_id: number
+    transaction_id: number
+    particular: string
+    date: string
+    am: number
+    mid: number
+    pm: number
+}
