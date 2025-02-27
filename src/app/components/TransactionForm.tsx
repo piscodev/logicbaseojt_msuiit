@@ -30,7 +30,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     // const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
-            const response = await fetch(`/api/getCashiers`, {
+            const response = await fetch(`/api/getCashierNames`, {
                 method:"GET"
             });
             if(!response.ok) throw new Error('Failed to fetch cashiers');
@@ -193,11 +193,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
           console.log('Clear');
         }
     };
-    // const setSelectedCashierName = (name:string) => {
-    //     // setSelectedCashier(name);
-    //     console.log("Selected: ", name);
-    // };
-
+    
     const onFinish = async(values: TransactionFormValues) => {
         addTransaction(values);
         
@@ -212,7 +208,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({data:data, date: currentDate.format('YYYY-MM-DD')})
+                body: JSON.stringify({data:data, date:currentDate.format('YYYY-MM-DD')})
                 });
                 if(!response.ok){
                     const errorMessage = await response.json()

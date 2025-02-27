@@ -1,65 +1,21 @@
 "use client";
 
 import React from "react";
-import { Breadcrumb, Layout, Menu, ConfigProvider, Card, Button, Tooltip } from "antd";
-import { FaPowerOff } from "react-icons/fa";
-import { useRouter } from "next/navigation";
-import TestTable from "@/app/components/testTable";
-
-const { Header, Content, Footer } = Layout;
-
-const items = new Array(3).fill(null).map((_, index) => ({
-  key: String(index + 1),
-  label: `nav ${index + 1}`,
-}));
+import { Breadcrumb, Layout, Tabs, ConfigProvider,// Col, Row,
+   Card } from "antd";
+// import TransactionForm from "./components/TransactionForm";
+// import TransactionTable from "./components/TransactionTable";
+import TestTable from "@/app/components/testTable"
+import DataTable from "../components/DataTableTest";
+import Nav from "../components/NavigationBar";
+const { Content, Footer } = Layout;
+const { TabPane } = Tabs;
 
 export default function Home() {
-  const router = useRouter();
-
-  // Logout function
-  const handleLogout = async () => {
-    try {
-      const res = await fetch("/api/auth/logout", { method: "GET" });
-      if (res.ok) {
-        router.push("/login"); // Redirect to login page
-      } else {
-        console.error("Logout failed");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
-
   return (
     <ConfigProvider>
       <Layout>
-        <Header style={{ display: "flex", alignItems: "center" }}>
-          <div className="demo-logo" />
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            defaultSelectedKeys={["2"]}
-            items={items}
-            style={{
-              flex: 1,
-              minWidth: 0,
-            }}
-          />
-          {/* Logout Button with Tooltip */}
-          <Tooltip title="Logout">
-            <Button
-              type="primary"
-              shape="circle"
-              icon={<FaPowerOff />}
-              onClick={handleLogout}
-              style={{
-                marginLeft: 16,
-                backgroundColor: "#ff4d4f", // Red logout button
-                borderColor: "#ff4d4f",
-              }}
-            />
-          </Tooltip>
-        </Header>
+        <Nav/>
         <Content style={{ padding: "0 48px", margin: "16px 0" }}>
           <Breadcrumb
             style={{ margin: "16px 0" }}
@@ -70,7 +26,14 @@ export default function Home() {
             ]}
           />
           <Card title="Transactions Log">
-            <TestTable />
+            <Tabs defaultActiveKey="daily">
+              <TabPane tab="Daily" key="daily">
+                <TestTable />
+              </TabPane>
+              <TabPane tab="Per Cashier" key="cashier">
+                <DataTable />
+              </TabPane>
+            </Tabs>;
           </Card>
         </Content>
         <Footer style={{ textAlign: "center" }}>

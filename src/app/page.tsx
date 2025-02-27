@@ -1,13 +1,13 @@
 "use client";
 
 import React from "react";
-import { Layout, Menu, Button, Typography, ConfigProvider, Card, Breadcrumb } from "antd";
+import { Layout, Button, Typography, ConfigProvider } from "antd";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa";
-import DataTableTest from "./components/DataTableTest";
+import Nav from "./components/NavigationBar";
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
 
 export default function LandingPage()
@@ -23,22 +23,7 @@ export default function LandingPage()
     <>
       <ConfigProvider>
         <Layout style={{ minHeight: "100vh" }}>
-          <Header style={{ display: "flex", alignItems: "center", background: "#001529" }}>
-            <div style={{ color: "white", fontSize: "1.5rem", fontWeight: "bold", marginRight: 20 }}>
-              Something App
-            </div>
-            <Menu
-              theme="dark"
-              mode="horizontal"
-              defaultSelectedKeys={["1"]}
-              items={[
-                { key: "1", label: "Home" },
-                { key: "2", label: "About" },
-                { key: "3", label: "Contact" }
-              ]}
-              style={{ flex: 1 }}
-            />
-          </Header>
+          <Nav/>
           <Content style={{ padding: "50px", textAlign: "center", background: "#f0f2f5" }}>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -59,30 +44,6 @@ export default function LandingPage()
                 Login
               </Button>
           </motion.div>
-          </Content>
-          <Content style={{ padding: "0 48px", margin: "16px 0" }}>
-            <Breadcrumb
-              style={{ margin: "16px 0" }}
-              items={[
-                { title: "Root" },
-                { title: "Page" },
-                { title: "Current Page" },
-              ]}
-            />
-            {/* <Row>
-              <Col span={30} push={6} className="p-3"> */}
-                <Card title="Transactions Log">
-                  {/* <TransactionTable /> */}
-                  {/* <TestTable /> */}
-                  <DataTableTest />
-                </Card>
-              {/* </Col> */}
-              {/* <Col span={6} pull={18} className="p-3">
-                <Card title="Transaction Form">
-                  <TransactionForm />
-                </Card>
-              </Col> */}
-            {/* </Row> */}
           </Content>
           <Footer style={{ textAlign: "center" }}>
             Ant Design ©{new Date().getFullYear()}

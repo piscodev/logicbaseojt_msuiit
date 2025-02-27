@@ -4,10 +4,13 @@ import { useState } from "react";
 import { FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-
+import Messenger from "../components/ActionsMessage";
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [messageType, setMessageType] = useState<'success' | 'error' | 'warning'>('success');
+  const [messageContent, setMessageContent] = useState('');
   const [email, setEmail] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -20,11 +23,14 @@ export default function AuthPage() {
     setError("");
     setSuccessMessage("");
     setLoading(true);
-
+    const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
+      setMessageType(type);
+      setMessageContent(content);
+    };
     try {
       // Use correct API endpoints based on login or sign-up mode.
       const url = isLogin ? "/api/auth/login" : "/api/auth/signup";
-      const body = { email, password };
+      const body = isLogin? { email, password }: {name, email, password};
 
       const res = await fetch(url, {
         method: "POST",
@@ -36,29 +42,40 @@ export default function AuthPage() {
 
       if (!res.ok) {
         console.error("Auth failed:", data);
-        throw new Error(data.error || (isLogin ? "Login failed" : "Sign-up failed"));
+        throw new Error(data.error);
       }
 
+
       if (isLogin) {
-        setSuccessMessage("Login successful! Redirecting...");
-        setTimeout(() => router.push("/dashboard"), 250);
+        showMessage('success', "Login successful!")
+        router.push("/dashboard")
+        // setSuccessMessage("Login successful! Redirecting...");
+        // setTimeout(() => router.push("/dashboard"), 250);
       } else {
+        // router.push("/dashboard")
         // Sign-up branch: switch UI to login mode after a successful sign-up.
         setSuccessMessage("Account created successfully! Please log in.");
+        showMessage('success', "Account created successfully! Please log in.")
         setIsLogin(true);
         // Optionally clear the fields so the login form is blank.
         setEmail("");
         setPassword("");
+        setName("")
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+    } catch (error:unknown) {
+      showMessage('error', error as unknown as string)
+      
     } finally {
       setLoading(false);
     }
   };
 
   return (
+    <>
+    <Messenger messageType={messageType} messageContent={messageContent} />
+    
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -92,7 +109,18 @@ export default function AuthPage() {
         )}
 
         <form onSubmit={handleAuth} className="space-y-5">
-          {/* Optionally, if you add a name field for sign-up later, include it here */}
+          {!isLogin && 
+          (<div className="relative">
+            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
+              required
+            />
+          </div>)}
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -149,5 +177,6 @@ export default function AuthPage() {
         </p>
       </motion.div>
     </div>
+    </>
   );
 }

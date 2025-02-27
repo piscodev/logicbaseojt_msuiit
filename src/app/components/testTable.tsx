@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, message, Space, /*Popconfirm,*/ Table, Typography } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
 const { Text } = Typography;
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
@@ -277,10 +277,16 @@ const TestTable: React.FC = () => {
         bordered
         dataSource={data}
         title={() => 
-            <Space>
-                <CustomDatePicker/>
-                <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate}/>
-            </Space>}
+          <Space style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+          {/* Left Section */}
+          <Space>
+            <CustomDatePicker />
+            <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate} />
+          </Space>
+        
+          {/* Right Section */}
+          <Button>Export</Button>
+        </Space>}
         columns={mergedColumns}
         rowClassName="editable-row"
         pagination={false}
