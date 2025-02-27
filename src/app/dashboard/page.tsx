@@ -1,20 +1,22 @@
 "use client";
 
-import React from "react";
-import { Breadcrumb, Layout, Menu, ConfigProvider,// Col, Row,
+import React, {useState} from "react";
+import { Breadcrumb, Layout, Tabs, ConfigProvider,// Col, Row,
    Card } from "antd";
 // import TransactionForm from "./components/TransactionForm";
 // import TransactionTable from "./components/TransactionTable";
 import TestTable from "@/app/components/testTable"
+import DataTable from "../components/DataTableTest";
 import Nav from "../components/NavigationBar";
-const { Header, Content, Footer } = Layout;
-
+const { Content, Footer } = Layout;
+const { TabPane } = Tabs;
 const items = new Array(3).fill(null).map((_, index) => ({
   key: String(index + 1),
   label: `nav ${index + 1}`,
 }));
 
 export default function Home() {
+  const [tableMode, setTableMode] = useState<string | number>('Map');
   return (
     <ConfigProvider>
       <Layout>
@@ -28,10 +30,19 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
+          
           <Card title="Transactions Log">
-            <TestTable />
+            {/* <Segmented options={['Daily', 'Per Cashier']} value={tableMode} onChange={setTableMode} />
+            {tableMode==='Daily'?(<TestTable />):(<DataTable/>)} */}
+            <Tabs defaultActiveKey="daily">
+              <TabPane tab="Daily" key="daily">
+                <TestTable />
+              </TabPane>
+              <TabPane tab="Per Cashier" key="cashier">
+                <DataTable />
+              </TabPane>
+            </Tabs>;
           </Card>
-            
         </Content>
         <Footer style={{ textAlign: "center" }}>
           Ant Design ©{new Date().getFullYear()}
