@@ -12,7 +12,7 @@ const { Content, Footer } = Layout;
 
 const { TabPane } = Tabs;
 export default function Home() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

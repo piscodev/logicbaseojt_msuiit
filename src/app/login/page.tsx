@@ -51,7 +51,7 @@ export default function AuthPage() {
 
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    showMessage('', '');
+    showMessage('error', '');
     setLoading(true);
 
     try {
@@ -200,7 +200,7 @@ export default function AuthPage() {
               className="text-blue-500 font-medium hover:underline"
               onClick={() => {
                 setIsLogin(!isLogin);
-                showMessage('', '');
+                showMessage('error', '');
                 setEmail("");
                 setPassword("");
                 setName("");
