@@ -8,6 +8,7 @@ import { Breadcrumb, Layout, Tabs, ConfigProvider,// Col, Row,
 import TestTable from "@/app/components/testTable"
 import DataTable from "../components/DataTableTest";
 import Nav from "../components/NavigationBar";
+import StatsCard from "../components/StatsCard";
 const { Content, Footer } = Layout;
 const { TabPane } = Tabs;
 
@@ -25,6 +26,7 @@ export default function Home() {
               { title: "Current Page" },
             ]}
           />
+          <StatsCard />
           <Card title="Transactions Log">
             <Tabs defaultActiveKey="daily">
               <TabPane tab="Daily" key="daily">
@@ -33,7 +35,7 @@ export default function Home() {
               <TabPane tab="Per Cashier" key="cashier">
                 <DataTable />
               </TabPane>
-            </Tabs>;
+            </Tabs>
           </Card>
         </Content>
         <Footer style={{ textAlign: "center" }}>
