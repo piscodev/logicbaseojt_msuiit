@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa";
 import DataTableTest from "./components/DataTableTest";
+import Nav from "./components/NavigationBar";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
@@ -23,22 +24,7 @@ export default function LandingPage()
     <>
       <ConfigProvider>
         <Layout style={{ minHeight: "100vh" }}>
-          <Header style={{ display: "flex", alignItems: "center", background: "#001529" }}>
-            <div style={{ color: "white", fontSize: "1.5rem", fontWeight: "bold", marginRight: 20 }}>
-              MoneyCacheHub
-            </div>
-            <Menu
-              theme="dark"
-              mode="horizontal"
-              defaultSelectedKeys={["1"]}
-              items={[
-                { key: "1", label: "Home" },
-                { key: "2", label: "About" },
-                { key: "3", label: "Contact" }
-              ]}
-              style={{ flex: 1 }}
-            />
-          </Header>
+          <Nav/>
           <Content style={{ padding: "50px", textAlign: "center", background: "#f0f2f5" }}>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
