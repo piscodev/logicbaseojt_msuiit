@@ -8,8 +8,8 @@ dotenv.config();
 const pool = mysql.createPool({
   host: process.env.DB_HOST, // "mysql-9f132e1-tcmc-62a0.l.aivencloud.com"
   user: process.env.DB_USER, // "avnadmin"
-  // password: process.env.DB_PASSWORD,
-  password: "",
+  password: process.env.DB_PASSWORD,
+  // password: "",
   database: process.env.DB_NAME, // "logicbase_ojt_db"
   port: Number(process.env.DB_PORT),
   waitForConnections: true,
