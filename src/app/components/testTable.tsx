@@ -248,6 +248,9 @@ const TestTable: React.FC = () => {
   {
     const blob = await pdf(<PDFDocument data={data} />).toBlob();
     const url = URL.createObjectURL(blob);
+
+    // window.open(url, "blank");
+
     const link = document.createElement("a");
     link.href = url;
     link.download = `transactions_${currentDate.format("YYYY_MM_DD")}.pdf`;
