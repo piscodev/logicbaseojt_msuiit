@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { /*FaUser,*/ FaLock, FaEnvelope } from "react-icons/fa";
+import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Messenger from "../components/ActionsMessage";
@@ -161,7 +161,7 @@ export default function AuthPage() {
         <form onSubmit={handleAuth} className="space-y-5">
           {!isLogin && 
           (<div className="relative">
-            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={name}
@@ -171,42 +171,6 @@ export default function AuthPage() {
               required
             />
           </div>)}
-          <div className="relative">
-            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email Address"
-              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
-              required
-            />
-          </div>
-
-          <div className="relative">
-            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-all duration-300 shadow-md flex justify-center items-center"
-            disabled={loading}
-          />
-            {loading && (
-              <div className="flex items-center gap-2">
-                <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
-                {isLogin ? "Logging in..." : "Signing up..."}
-
-              </div>
-            )}
          
             <div className="relative">
               <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
