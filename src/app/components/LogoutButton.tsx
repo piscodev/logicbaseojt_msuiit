@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dropdown, Avatar, Button, Spin, Typography, Space, MenuProps } from "antd";
+import { Dropdown, Avatar, Button, Typography, Space, MenuProps } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
@@ -10,7 +10,7 @@ const { Text } = Typography;
 export default function LogoutButton() {
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Retrieve user details from sessionStorage or localStorage
@@ -24,7 +24,7 @@ export default function LogoutButton() {
         setUser({ name, email });
       }
     }
-    setLoading(false);
+    // setLoading(false);
   }, []);
 
   const handleLogout = async () => {
@@ -41,7 +41,7 @@ export default function LogoutButton() {
     }
   };
 
-  if (loading) return <Spin />; // Show loading spinner while fetching user data
+  // if (loading) return <Spin />; // Show loading spinner while fetching user data
 
   // Display actual name and email
   const userName = user?.name || "Guest";
@@ -69,12 +69,16 @@ export default function LogoutButton() {
   ];
 
   return (
-    <div style={{ position: "absolute", top: 20, right: 20 }}>
-      <Dropdown menu={{ items: menuItems }} placement="bottomRight">
-        <Button type="text">
-          <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
-        </Button>
-      </Dropdown>
-    </div>
+    user && (
+      <>
+      <div style={{ position: "absolute", top: 20, right: 20 }}>
+        <Dropdown menu={{ items: menuItems }} placement="bottomRight">
+          <Button type="text">
+            <Avatar style={{ backgroundColor: "#6ABD45" }} icon={<UserOutlined />} />
+          </Button>
+        </Dropdown>
+      </div>
+      </>
+    )
   );
 }
