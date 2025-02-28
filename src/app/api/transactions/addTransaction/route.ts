@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
 export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
         const bodyData = await req.json();
-        const { date } = bodyData.date;
+        const date = bodyData.date;
         const {
             cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge//, sub_total_trade_POS, grand_total_trade_POS, z_reading_POS, short_over_POS
         }: TransactionValuesState = bodyData.data;
