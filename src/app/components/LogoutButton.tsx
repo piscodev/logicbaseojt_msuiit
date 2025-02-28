@@ -69,12 +69,16 @@ export default function LogoutButton() {
   ];
 
   return (
-    <div style={{ position: "absolute", top: 20, right: 20 }}>
-      <Dropdown menu={{ items: menuItems }} placement="bottomRight">
-        <Button type="text">
-          <Avatar style={{ backgroundColor: "#6ABD45" }} icon={<UserOutlined />} />
-        </Button>
-      </Dropdown>
-    </div>
+    user && (
+      <>
+      <div style={{ position: "absolute", top: 20, right: 20 }}>
+        <Dropdown menu={{ items: menuItems }} placement="bottomRight">
+          <Button type="text">
+            <Avatar style={{ backgroundColor: "#6ABD45" }} icon={<UserOutlined />} />
+          </Button>
+        </Dropdown>
+      </div>
+      </>
+    )
   );
 }

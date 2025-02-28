@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography, notification } from 'antd';
 import { FilePdfOutlined, ExportOutlined } from '@ant-design/icons'
 const { Text } = Typography;
 import dayjs from 'dayjs';
@@ -72,6 +72,19 @@ const TestTable: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi,] = message.useMessage();
+  const [api, ] = notification.useNotification();
+
+  const openNotification = (pauseOnHover: boolean) => () => {
+    api.open({
+      message: 'Notification Title',
+      description:
+        'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
+      showProgress: true,
+      pauseOnHover,
+    });
+  };
+
+
 // Use useEffect for initial load and date changes
   useEffect(() => {
     fetchData(currentDate);
@@ -246,10 +259,15 @@ const TestTable: React.FC = () => {
   // to pdf
   const generatePDF = async () =>
   {
+    if (data.length === 0) {
+      openNotification(true)
+      return
+    }
+    
     const blob = await pdf(<PDFDocument data={data} />).toBlob();
     const url = URL.createObjectURL(blob);
 
-    // window.open(url, "blank");
+    // window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
 
     const link = document.createElement("a");
     link.href = url;
