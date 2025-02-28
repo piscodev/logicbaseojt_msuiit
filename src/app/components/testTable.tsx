@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
@@ -99,10 +97,6 @@ const TestTable: React.FC = () => {
     }
     
   };
-//   if(!isMounted){
-//     fetchData(currentDate);
-//     setIsMounted(true);
-//   }
  
   const onChangeDate = (date: Dayjs) => {
     if (date) {
@@ -243,7 +237,7 @@ const TestTable: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `transactions_${dayjs().format("YYYY-MM-DD")}.csv`);
+    link.setAttribute("download", `transactions_${currentDate.format("YYYY_MM_DD")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -256,7 +250,7 @@ const TestTable: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `transactions_${dayjs().format("YYYY-MM-DD")}.pdf`;
+    link.download = `transactions_${currentDate.format("YYYY_MM_DD")}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
