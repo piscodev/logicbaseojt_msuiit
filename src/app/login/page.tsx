@@ -5,11 +5,13 @@ import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Messenger from "../components/ActionsMessage";
+import { DateTime } from "luxon";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [messageType, setMessageType] = useState<'success' | 'error' | 'warning'>('success');
   const [messageContent, setMessageContent] = useState('');
+  const [messageKey, setMesssageKey] = useState<string>('')
   const [email, setEmail] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -53,7 +55,11 @@ export default function AuthPage() {
     e.preventDefault();
     showMessage('error', '');
     setLoading(true);
-
+    const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
+      setMessageType(type);
+      setMessageContent(content);
+      setMesssageKey(DateTime.now().setZone('Asia/Manila').toFormat('yyyy LLL dd'))
+    };
     try {
       const url = isLogin ? "/api/auth/login" : "/api/auth/signup";
       const body = isLogin ? { email, password } : { name, email, password };
@@ -72,7 +78,8 @@ export default function AuthPage() {
       console.log("Response received:", data);
 
       if (!res.ok) {
-        throw new Error(data.error || "Authentication failed.");
+        showMessage('error', data.error)
+        throw new Error(data.error);
       }
 
       if (isLogin) {
@@ -109,6 +116,8 @@ export default function AuthPage() {
         console.log("Unexpected error occurred.");
         showMessage('error', "An unexpected error occurred.");
       }
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -116,34 +125,89 @@ export default function AuthPage() {
 
   return (
     <>
-      <Messenger messageType={messageType} messageContent={messageContent} />
+    <Messenger messageType={messageType} messageContent={messageContent} messageKey={messageKey}/>
+    
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white bg-opacity-90 backdrop-blur-md p-8 rounded-lg shadow-lg w-full max-w-sm border border-gray-200"
+      >
+        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+          {isLogin ? "Welcome Back!" : "Create Your Account"}
+        </h2>
 
-      <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white bg-opacity-90 backdrop-blur-md p-8 rounded-lg shadow-lg w-full max-w-sm border border-gray-200"
-        >
-          <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-            {isLogin ? "Welcome Back!" : "Create Your Account"}
-          </h2>
+        {/* Success Message */}
+        {successMessage && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-green-600 bg-green-100 p-3 rounded-md text-sm text-center mb-3"
+          >
+            {successMessage}
+          </motion.p>
+        )}
 
-          <form onSubmit={handleAuth} className="space-y-5">
-            {!isLogin && (
-              <div className="relative">
-                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => {
-                    console.log("Name input changed:", e.target.value);
-                    setName(e.target.value);
-                  }}
-                  placeholder="Enter your name"
-                  className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
-                  required
-                />
+        {/* Error Message */}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-red-600 bg-red-100 p-3 rounded-md text-sm text-center mb-3"
+          >
+            {error}
+          </motion.p>
+        )}
+
+        <form onSubmit={handleAuth} className="space-y-5">
+          {!isLogin && 
+          (<div className="relative">
+            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
+              required
+            />
+          </div>)}
+          <div className="relative">
+            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email Address"
+              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full bg-gray-100 border border-gray-300 pl-10 pr-3 py-2 rounded-md text-gray-800 focus:ring focus:ring-blue-300 outline-none transition-all"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-all duration-300 shadow-md flex justify-center items-center"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+                {isLogin ? "Logging in..." : "Signing up..."}
+
               </div>
             )}
 

@@ -2,12 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import { Breadcrumb, Layout, Tabs, ConfigProvider, Card, Spin } from "antd";
+import type  { TabsProps } from 'antd'; 
 import TestTable from "@/app/components/testTable";
+
 import DataTable from "../components/DataTableTest";
 import Nav from "../components/NavigationBar";
 import LogoutButton from "../components/LogoutButton"; // Import LogoutButton
 import StatsCard from "../components/StatsCard";
 const { Content, Footer } = Layout;
+
+const tabItems: TabsProps['items'] = [
+  { key: 'daily', label: 'Daily', children:<TestTable/>},
+  { key: 'per_cashier', label: 'Per Cashier', children:<DataTable/>},
+]
+
 
 
 const { TabPane } = Tabs;
@@ -46,14 +54,7 @@ export default function Home() {
           />
           <StatsCard />
           <Card title="Transactions Log">
-            <Tabs defaultActiveKey="daily">
-              <TabPane tab="Daily" key="daily">
-                <TestTable />
-              </TabPane>
-              <TabPane tab="Per Cashier" key="cashier">
-                <DataTable />
-              </TabPane>
-            </Tabs>
+            <Tabs defaultActiveKey="daily" items={tabItems}/>;
           </Card>
         </Content>
 

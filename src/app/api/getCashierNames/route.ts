@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import pool from '@/app/lib/Database/db';
-import { Cashier } from '@/app/lib/Interface/route';
+import { Cashier } from '@/app/lib/Interface/interface';
 import { FieldPacket } from 'mysql2';
 export async function GET(req: NextRequest) {
   if (req.method === 'GET') {

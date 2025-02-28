@@ -6,7 +6,7 @@ import { LoadingOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/
 import { Alert, AutoComplete, DatePicker, Divider, Form, Input, Button, Space, Spin, Select, Checkbox, Tooltip, Typography, Row, Col, Statistic, InputNumber } from 'antd';
 import useTransactionStore from '@/stores/useTransactionStore';
 import CountUp from 'react-countup';
-import { TransactionValuesState } from '../lib/Interface/route';
+import { TransactionValuesState } from '../lib/Interface/interface';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 export const dynamic = 'force-dynamic';

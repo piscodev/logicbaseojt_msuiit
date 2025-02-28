@@ -3,12 +3,7 @@ import { NextRequest } from 'next/server';
 import pool from '../../lib/Database/db';
 import { FieldPacket } from 'mysql2';
 import { DateTime } from 'luxon';
-interface ParticularDefinition {
-  id: number;
-  name: string;
-  type: 'Trade' | 'Non-Trade';
-  fee_percent: number;
-}
+import { ParticularDefinition } from '@/app/lib/Interface/interface';
 
 interface TransactionData {
   particular: string;
@@ -66,7 +61,7 @@ export async function POST(req: NextRequest) {
         WHERE t.date = ?
         GROUP BY p.name, s.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
-
+        
       // Create transaction map
       const transactionMap = new Map<string, {
         AM?: { amount: number, cashier: string },

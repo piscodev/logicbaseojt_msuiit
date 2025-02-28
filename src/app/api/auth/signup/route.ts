@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Cashier } from "@/app/lib/Interface/route";
+import { Cashier } from "@/app/lib/Interface/interface";
 import { FieldPacket, ResultSetHeader } from "mysql2";
 import { DateTime } from "luxon";
 export async function POST(req: Request) {

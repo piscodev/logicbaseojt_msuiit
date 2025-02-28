@@ -1,5 +1,5 @@
 import pool from "@/app/lib/Database/db";
-import { CashiersTransaction } from "@/app/lib/Interface/route";
+import { CashiersTransaction } from "@/app/lib/Interface/interface";
 import { FieldPacket, ResultSetHeader } from "mysql2";
 
 import { PoolConnection } from "mysql2/promise";

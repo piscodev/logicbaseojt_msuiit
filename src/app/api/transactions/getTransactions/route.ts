@@ -1,5 +1,5 @@
 import pool from "@/app/lib/Database/db"
-import { CashiersTransaction } from "@/app/lib/Interface/route";
+import { CashiersTransaction } from "@/app/lib/Interface/interface";
 import { FieldPacket } from "mysql2"
 import { NextResponse } from "next/server"
 

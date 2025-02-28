@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
+import { FilePdfOutlined, ExportOutlined } from '@ant-design/icons'
 const { Text } = Typography;
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
@@ -106,8 +107,7 @@ const TestTable: React.FC = () => {
   const onChangeDate = (date: Dayjs) => {
     if (date) {
         setCurrentDate(date)
-        console.log('Date: ', date);
-        fetchData(currentDate);
+        fetchData(date);
     } else {
         console.log('Clear');
     }
@@ -291,9 +291,12 @@ const TestTable: React.FC = () => {
               {
                 return (
                   <> */}
-                    <Button type="primary" onClick={exportToCSV}>Export CSV</Button>
-                    <Button type="primary" onClick={generatePDF}>Export PDF</Button> 
-                  {/* </>
+                    <Space>
+                      <Button type="primary" onClick={exportToCSV}>{<ExportOutlined />}Export as CSV</Button>
+                      <Button type="primary" onClick={generatePDF}>{<FilePdfOutlined />}Export as PDF</Button> 
+                  
+                    </Space>
+                    {/* </>
                 )
               }}
             </PDFDownloadLink> */}
