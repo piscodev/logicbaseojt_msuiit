@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '../../../lib/Database/db';
 import { FieldPacket } from 'mysql2';
 import { DateTime } from 'luxon';
@@ -27,11 +27,12 @@ export interface TransactionRow {
   net_total: string | number;
 }
 
-export async function GET()
+export async function POST(res: NextRequest)
 {
   let connection;
   try {
-    const date = "2025-02-27";
+    // const date = "2025-02-27";
+    const { date } = await res.json();
     if (!date || typeof date !== 'string') {
       return NextResponse.json(
         { error: "Valid date is required" },
@@ -93,15 +94,15 @@ export async function GET()
     });
 
     // Create cashier row
-    const cashierRow: TransactionRow = {
-      key: '0',
-      particular: 'CASHIER',
-      am: cashiers.AM || '',
-      mid: cashiers.MID || '',
-      pm: cashiers.PM || '',
-      gross_total: '',
-      net_total: ''
-    };
+    // const cashierRow: TransactionRow = {
+    //   key: '0',
+    //   particular: 'CASHIER',
+    //   am: cashiers.AM || '',
+    //   mid: cashiers.MID || '',
+    //   pm: cashiers.PM || '',
+    //   gross_total: '',
+    //   net_total: ''
+    // };
 
     // Generate rows for all particulars
     const tradeRows: TransactionRow[] = [];
