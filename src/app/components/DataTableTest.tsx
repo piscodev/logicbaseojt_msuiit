@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Space, Table } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import CustomDatePicker from "./CustomDatePicker";
@@ -144,7 +144,7 @@ const DataTable = () => {
         )}
         columns={columnsT1}
         rowSelection={{
-          type: 'radio',
+          type: 'checkbox',
           ...rowSelection
         }}
         dataSource={cashiers}

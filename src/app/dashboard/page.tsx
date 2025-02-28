@@ -16,9 +16,6 @@ const tabItems: TabsProps['items'] = [
   { key: 'per_cashier', label: 'Per Cashier', children:<DataTable/>},
 ]
 
-
-
-const { TabPane } = Tabs;
 export default function Home() {
   const [, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);

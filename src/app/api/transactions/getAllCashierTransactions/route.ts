@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/app/lib/Database/db';
-import { Cashier } from '@/app/lib/Interface/interface';
 import { FieldPacket } from 'mysql2';
 import { ParticularDefinition } from '@/app/lib/Interface/interface';
 import { DateTime } from 'luxon';
@@ -29,7 +28,7 @@ export async function POST(req: NextRequest){
     if(req.method === 'POST'){
         let connection;
         try{
-            const date = await req.json();
+            const { date } = await req.json();
             connection = await pool.getConnection()
             const currentDate = DateTime.fromISO(date).setZone('Asia/Manila').toFormat('yyyy-LL-dd');
             console.log('Current date: ', currentDate);
