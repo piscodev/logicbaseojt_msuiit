@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         WHERE t.date = ?
         GROUP BY p.name, s.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
-
+        
       // Create transaction map
       const transactionMap = new Map<string, {
         AM?: { amount: number, cashier: string },
