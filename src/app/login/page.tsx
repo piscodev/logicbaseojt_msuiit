@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
+import { /*FaUser,*/ FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Messenger from "../components/ActionsMessage";
@@ -53,7 +53,6 @@ export default function AuthPage() {
 
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    showMessage('error', '');
     setLoading(true);
     const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
       setMessageType(type);
@@ -116,8 +115,6 @@ export default function AuthPage() {
         console.log("Unexpected error occurred.");
         showMessage('error', "An unexpected error occurred.");
       }
-    } catch (error) {
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -140,7 +137,7 @@ export default function AuthPage() {
         </h2>
 
         {/* Success Message */}
-        {successMessage && (
+        {/* {successMessage && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,10 +145,10 @@ export default function AuthPage() {
           >
             {successMessage}
           </motion.p>
-        )}
+        )} */}
 
         {/* Error Message */}
-        {error && (
+        {/* {error && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,7 +156,7 @@ export default function AuthPage() {
           >
             {error}
           </motion.p>
-        )}
+        )} */}
 
         <form onSubmit={handleAuth} className="space-y-5">
           {!isLogin && 
@@ -202,15 +199,15 @@ export default function AuthPage() {
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-all duration-300 shadow-md flex justify-center items-center"
             disabled={loading}
-          >
-            {loading ? (
+          />
+            {loading && (
               <div className="flex items-center gap-2">
                 <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
                 {isLogin ? "Logging in..." : "Signing up..."}
 
               </div>
             )}
-
+         
             <div className="relative">
               <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
