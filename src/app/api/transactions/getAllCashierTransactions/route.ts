@@ -8,7 +8,11 @@ interface TransactionsData {
     cashier_name: string;
     shift: 'AM' | 'MID' | 'PM';
     particular: string;
+    particular_id: number
     amount: number;
+    trade_total: number;
+    non_trade_total: number;
+    grand_total: number
   }
   
   interface CashierResult {
@@ -18,9 +22,20 @@ interface TransactionsData {
       shift: string;
       transactions: {
         particular: string;
+        particular_id: number
         am: number;
         mid: number;
         pm: number;
+        total_trade_am: number;
+        total_trade_mid: number;
+        total_trade_pm: number;
+        total_non_trade_am: number;
+        total_non_trade_mid: number;
+        total_non_trade_pm: number;
+        grand_total_am: number;
+        grand_total_mid: number;
+        grand_total_pm: number;
+        fee_percent: number
       }[];
     }[];
   }
@@ -39,7 +54,11 @@ export async function POST(req: NextRequest){
                 c.name AS cashier_name,
                 s.name AS shift,
                 p.name AS particular,
-                COALESCE(SUM(td.amount), 0) AS amount
+                p.id AS id,
+                COALESCE(SUM(td.amount), 0) AS amount,
+                COALESCE(SUM(CASE WHEN p.id < 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
+                COALESCE(SUM(CASE WHEN p.id >= 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
+                COALESCE(SUM(CASE WHEN p.id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
                 FROM Transaction t
                 JOIN Cashier c ON t.cashier_id = c.id
                 JOIN Shift s ON t.shift_id = s.id
@@ -50,6 +69,8 @@ export async function POST(req: NextRequest){
                 HAVING SUM(td.amount) > 0
                 ORDER BY c.name, s.id, p.name
             `, [currentDate]) as [TransactionsData[], FieldPacket[]];
+            // COALESCE(SUM(CASE WHEN p.id < 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
+            // COALESCE(SUM(CASE WHEN p.id >= 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total
             console.log('transactions: ', transactions);
             // // Get all cashiers
             // const [cashiers]: [Cashier[],FieldPacket[]] = await connection.query(`
@@ -58,9 +79,9 @@ export async function POST(req: NextRequest){
 
             // Get all particulars
             const [particulars]:[ParticularDefinition[], FieldPacket[]] = await connection.query(`
-                SELECT id, name FROM Particular ORDER BY id ASC
+                SELECT id, name, fee_percent FROM Particular ORDER BY id ASC
             `) as [ParticularDefinition[], FieldPacket[]];
-
+            console.log("Particulars:", particulars)
 
             // Group transactions by cashier
             const cashierMap = new Map<number, CashierResult>();
@@ -82,9 +103,20 @@ export async function POST(req: NextRequest){
                         shift: transaction.shift,
                         transactions: particulars.map(p => ({
                         particular: p.name,
+                        particular_id: p.id,
                         am: 0,
                         mid: 0,
-                        pm: 0
+                        pm: 0,
+                        total_trade_am: 0,
+                        total_trade_mid: 0,
+                        total_trade_pm: 0,
+                        total_non_trade_am: 0,
+                        total_non_trade_mid: 0,
+                        total_non_trade_pm: 0,
+                        grand_total_am: 0,
+                        grand_total_mid: 0,
+                        grand_total_pm: 0,
+                        fee_percent: p.fee_percent
                         }))
                     };
                     cashier.shifts.push(shift);
@@ -94,72 +126,28 @@ export async function POST(req: NextRequest){
                     switch (transaction.shift) {
                         case 'AM':
                         transactionEntry.am = transaction.amount;
+                        transactionEntry.total_trade_am = transaction.trade_total
+                        transactionEntry.total_non_trade_am = transaction.non_trade_total
+                        transactionEntry.grand_total_am = transaction.grand_total
                         break;
                         case 'MID':
                         transactionEntry.mid = transaction.amount;
+                        transactionEntry.total_trade_mid = transaction.trade_total
+                        transactionEntry.total_non_trade_mid = transaction.non_trade_total
+                        transactionEntry.grand_total_mid = transaction.grand_total
                         break;
                         case 'PM':
                         transactionEntry.pm = transaction.amount;
+                        transactionEntry.total_trade_pm = transaction.trade_total
+                        transactionEntry.total_non_trade_pm = transaction.non_trade_total
+                        transactionEntry.grand_total_pm = transaction.grand_total
                         break;
                     }
                 }
+                console.log("Result Transaction entry: ", transactionEntry);
             });
             // Convert map to array
             const result = Array.from(cashierMap.values());
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // Structure the response
-            // const result = cashiers.map(cashier => {
-            //     const cashierTransactions = transactions.filter(t => t.cashier_id === cashier.id);
-                
-            //     const shifts = ['am', 'mid', 'pm'].map(shift => {
-            //     const shiftData = cashierTransactions.filter(t => t.shift.toLowerCase() === shift);
-                
-            //     const transactionMap = particulars.reduce((acc:Record<string, number>, particular) => {
-            //         const found = shiftData.find(t => t.particular === particular.name);
-            //         acc[particular.name] = found ? found.amount : 0;
-            //         return acc;
-            //     }, {});
-
-            //     return {
-            //         shift,
-            //         transactions: Object.entries(transactionMap).map(([particular, amount]) => ({
-            //         particular,
-            //         am: shift === 'am' ? amount : 0,
-            //         mid: shift === 'mid' ? amount : 0,
-            //         pm: shift === 'pm' ? amount : 0
-            //         }))
-            //     };
-            //     });
-
-            //     return {
-            //     cashier_id: cashier.id,
-            //     name: cashier.name,
-            //     shifts
-            //     };
-            // });
-
-
-            // console.log('Result: ', rows);
-            // Extract just the names from the result
-            // const cashiers = rows.map((row: Cashier) => ({
-            //     cashier_id: row.id,
-            //     name: row.name
-            // }));
             console.log('Result: ', result);
             
             return NextResponse.json(
