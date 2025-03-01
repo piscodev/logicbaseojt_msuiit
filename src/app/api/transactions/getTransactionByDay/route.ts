@@ -58,11 +58,11 @@ export async function POST(req: NextRequest) {
           s.name AS shift,
           SUM(td.amount) AS amount,
           MAX(c.name) AS cashier
-        FROM transaction t
-        JOIN shift AS s ON t.shift_id = s.id
-        JOIN cashier AS c ON t.cashier_id = c.id
-        LEFT JOIN transactiondetail AS td ON t.id = td.transaction_id
-        LEFT JOIN particular AS p ON td.particular_id = p.id
+        FROM Transaction t
+        JOIN Shift AS s ON t.shift_id = s.id
+        JOIN Cashier AS c ON t.cashier_id = c.id
+        LEFT JOIN TransactionDetail AS td ON t.id = td.transaction_id
+        LEFT JOIN Particular AS p ON td.particular_id = p.id
         WHERE t.date = ?
         GROUP BY p.name, s.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
