@@ -8,7 +8,9 @@ import TransactionFormDrawer from './drawer';
 import PDFDocument from './PDFConverter';
 import { pdf } from '@react-pdf/renderer';
 const { Text } = Typography;
-
+interface TestTableProps {
+  onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
+}
 export const dynamic = 'force-dynamic';
 
 
@@ -64,15 +66,19 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
   );
 }
 
-const TestTable: React.FC = () => {
+const TestTable: React.FC<TestTableProps> = ({onUpdateAmounts}) => {
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>([]);
-// const [editingKey,] = useState('');
+  const [tradeAmount, setTradeAmount] = useState<number>(0);
+  const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
+  const [grandTotal, setGrandTotal] = useState<number>(0);
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi,] = message.useMessage();
   const [api, ] = notification.useNotification();
-
+  useEffect(() => {
+    onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
+  }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
       message: 'Notification Title',
@@ -88,6 +94,24 @@ const TestTable: React.FC = () => {
   useEffect(() => {
     fetchData(currentDate);
   }, [currentDate]);
+  // Suppose `data` is your table data
+  useEffect(() => {
+    // setLoading(true)
+    // Find the GRAND TOTAL row and set the state
+    const grandRow = data.find((d) => d.particular.startsWith("GRAND"));
+    const tradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
+    const nonTradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
+    if (grandRow) {
+      setGrandTotal(Number(grandRow.net_total));
+    }
+    if (tradeRow) {
+      setTradeAmount(Number(tradeRow.net_total));
+    }
+    if (nonTradeRow) {
+      setNonTradeAmount(Number(nonTradeRow.net_total));
+    }
+    setLoading(false);
+  }, [data]);
 
   const fetchData = async (dateInput=dayjs()) => {
     try{
@@ -104,8 +128,8 @@ const TestTable: React.FC = () => {
     } catch (error) {
         console.error('Fetch error:', error);
         console.error(loading);
-    } finally {
-        setLoading(false);
+    // } finally {
+    //     setLoading(false);
     }
     
   };
