@@ -1,7 +1,7 @@
 import React from 'react';
 import { Divider, Tabs } from 'antd';
-import TestTable from './testTable';
-import DataTableTest from './DataTableTest';
+// import TestTable from './testTable';
+// import DataTableTest from './DataTableTest';
 
 const items = Array.from({ length: 2 }).map((_, i) =>
 {
@@ -9,7 +9,7 @@ const items = Array.from({ length: 2 }).map((_, i) =>
     return {
         label: `Tab ${id}`,
         key: id,
-        children: i === 0 ? <TestTable /> : <DataTableTest />,
+        children: i === 0 ? 1 :2,
     }
 })
 
