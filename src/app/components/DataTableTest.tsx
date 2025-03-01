@@ -54,7 +54,7 @@ const transformAPIResponse = (apiData: ResponseData): CashierShift[] => {
   return apiData.cashiers?.flatMap(cashier =>
       cashier.shifts.map(shift => {
         // Clone transactions array for this shift
-        let transactions: Transaction[] = [...shift.transactions];
+        const transactions: Transaction[] = [...shift.transactions];
 
         // Compute SUB TOTAL TRADE POS using only transactions with particular_id <= 12
         const tradeTotal: Transaction = {

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Avatar, Card, Col, Row, Space, Statistic } from 'antd';
+import { Card, Col, Row, Space, Statistic } from 'antd';
 import type { StatisticProps } from 'antd';
 import CountUp from 'react-countup';
 import Icon from '@ant-design/icons';
@@ -31,7 +31,7 @@ const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grand
               
                 <Card.Meta
                     avatar={
-                      <Icon component={Peso} style={{ fontSize: '66px' }} />
+                      <Icon component={Peso as React.FC<React.SVGProps<SVGSVGElement>>} style={{ fontSize: '66px' }} />
                     }
                     title={<p className="text-black">TRADE POS NET TOTAL</p>}
                     description={
@@ -46,7 +46,7 @@ const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grand
             <Card loading={loading}>
                 <Card.Meta
                     avatar={
-                      <Icon component={Peso} style={{ fontSize: '66px' }} />
+                      <Icon component={Peso as React.FC<React.SVGProps<SVGSVGElement>>} style={{ fontSize: '66px' }} />
                     }
                     title={<p className="text-black">NON TRADE POS NET TOTAL</p>}
                     description={
@@ -61,7 +61,7 @@ const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grand
             <Card loading={loading}>
                 <Card.Meta
                     avatar={
-                      <Icon component={Peso} style={{ fontSize: '66px' }} />
+                      <Icon component={Peso as React.FC<React.SVGProps<SVGSVGElement>>} style={{ fontSize: '66px' }} />
                     }
                     title={<p className="text-black">GRAND POS TOTAL</p>}
                     description={
