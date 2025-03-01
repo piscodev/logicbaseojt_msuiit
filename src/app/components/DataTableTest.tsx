@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Space, Table, Typography } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import CustomDatePicker from "./CustomDatePicker";
 
 const { Text } = Typography;
-
+interface DataTableProps {
+  onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
+}
 interface Transaction {
   particular: string;
   particular_id?: number;
@@ -242,12 +244,30 @@ const transformAPIResponse = (apiData: ResponseData): CashierShift[] => {
     ) || [];
 };
 
-const DataTable = () => {
+const DataTable: React.FC<DataTableProps> = ({ onUpdateAmounts }) => {
   const [cashiers, setCashiers] = useState<CashierShift[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
+  const [tradeAmount, setTradeAmount] = useState<number>(0);
+  const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
+  const [grandTotal, setGrandTotal] = useState<number>(0);
+  // Use useEffect for initial load and date changes
+  useEffect(() => {
+    fetchData(selectedDate);
+  }, [selectedDate]);
 
+  useEffect(() => {
+    onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
+  }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
+  useEffect(() => {
+    if(selectedRowKeys.length === 0){
+        setGrandTotal(0);
+        setTradeAmount(0);
+        setNonTradeAmount(0);
+        setLoading(false)
+    }
+  }, [selectedRowKeys])
   const fetchData = async (dateInput = dayjs()) => {
     try {
       setLoading(true);
@@ -430,6 +450,23 @@ const DataTable = () => {
     grossTotal: t.grossTotal,
     netTotal: t.netTotal
   }));
+  useEffect(() => {
+    setLoading(true)
+      // Find the GRAND TOTAL row and set the state
+      const grandRow = table2Data.find((d) => d.particular.startsWith("GRAND"));
+      const tradeRow = table2Data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
+      const nonTradeRow = table2Data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
+      if (grandRow) {
+        setGrandTotal(Number(grandRow.netTotal));
+      }
+      if (tradeRow) {
+        setTradeAmount(Number(tradeRow.netTotal));
+      }
+      if (nonTradeRow) {
+        setNonTradeAmount(Number(nonTradeRow.netTotal));
+      }
+      setLoading(false)
+    }, [table2Data]);
 
   return (
     <div>
