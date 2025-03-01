@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography, notification } from 'antd';
 import { FilePdfOutlined, ExportOutlined } from '@ant-design/icons'
-const { Text } = Typography;
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from './drawer';
 import PDFDocument from './PDFConverter';
 import { pdf } from '@react-pdf/renderer';
-
+const { Text } = Typography;
 
 export const dynamic = 'force-dynamic';
 

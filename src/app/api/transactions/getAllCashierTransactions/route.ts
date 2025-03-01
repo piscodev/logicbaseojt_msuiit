@@ -56,8 +56,8 @@ export async function POST(req: NextRequest){
                 p.name AS particular,
                 p.id AS id,
                 COALESCE(SUM(td.amount), 0) AS amount,
-                COALESCE(SUM(CASE WHEN p.id < 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
-                COALESCE(SUM(CASE WHEN p.id >= 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
+                COALESCE(SUM(CASE WHEN p.id <= 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
+                COALESCE(SUM(CASE WHEN p.id > 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
                 COALESCE(SUM(CASE WHEN p.id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
                 FROM Transaction t
                 JOIN Cashier c ON t.cashier_id = c.id
@@ -126,15 +126,15 @@ export async function POST(req: NextRequest){
                     switch (transaction.shift) {
                         case 'AM':
                         transactionEntry.am = transaction.amount;
-                        transactionEntry.total_trade_am = transaction.trade_total
-                        transactionEntry.total_non_trade_am = transaction.non_trade_total
-                        transactionEntry.grand_total_am = transaction.grand_total
+                        transactionEntry.total_trade_am = transaction.trade_total;
+                        transactionEntry.total_non_trade_am = transaction.non_trade_total;
+                        transactionEntry.grand_total_am = transaction.grand_total;
                         break;
                         case 'MID':
                         transactionEntry.mid = transaction.amount;
-                        transactionEntry.total_trade_mid = transaction.trade_total
-                        transactionEntry.total_non_trade_mid = transaction.non_trade_total
-                        transactionEntry.grand_total_mid = transaction.grand_total
+                        transactionEntry.total_trade_mid = transaction.trade_total;
+                        transactionEntry.total_non_trade_mid = transaction.non_trade_total;
+                        transactionEntry.grand_total_mid = transaction.grand_total;
                         break;
                         case 'PM':
                         transactionEntry.pm = transaction.amount;
