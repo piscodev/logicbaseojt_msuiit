@@ -5,13 +5,18 @@ import { Layout, Button, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa";
-
+import { useUserStore } from "@/stores/userStore";
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
 
 export default function LandingPage()
 {
   const router = useRouter();
+  const user = useUserStore((state)=> state.user)
+
+  if(user)
+    router.push('/dashboard');
+
 
   const handleLogin = () => {
     // Redirect to your login page. Adjust the path as needed.

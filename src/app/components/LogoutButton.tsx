@@ -1,39 +1,42 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { Dropdown, Button, Typography, Space, MenuProps } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { useUserStore } from "@/stores/userStore";
 
 const { Text } = Typography;
 
 export default function LogoutButton() {
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const user = useUserStore((state) => state.user)
+  const clearUser = useUserStore((state) => state.clearUser)
+  // const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   // const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Retrieve user details from sessionStorage or localStorage
-    const storedUser = sessionStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      const name = localStorage.getItem("name");
-      const email = localStorage.getItem("email");
-      if (name && email) {
-        setUser({ name, email });
-      }
-    }
-    // setLoading(false);
-  }, []);
+  // useEffect(() => {
+  //   // Retrieve user details from sessionStorage or localStorage
+  //   const storedUser = sessionStorage.getItem("user");
+  //   if (storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //   } else {
+  //     const name = localStorage.getItem("name");
+  //     const email = localStorage.getItem("email");
+  //     if (name && email) {
+  //       setUser({ name, email });
+  //     }
+  //   }
+  //   // setLoading(false);
+  // }, []);
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "GET", credentials: "include" });
-
-      sessionStorage.removeItem("user");
-      localStorage.removeItem("name");
-      localStorage.removeItem("email");
+      // await fetch("/api/auth/logout", { method: "GET", credentials: "include" });
+      clearUser();
+      // sessionStorage.removeItem("user");
+      // localStorage.removeItem("name");
+      // localStorage.removeItem("email");
 
       router.replace("/login"); // Redirect to login page
     } catch (error) {
