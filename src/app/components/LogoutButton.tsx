@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dropdown, Avatar, Button, Typography, Space, MenuProps } from "antd";
+import { Dropdown, Button, Typography, Space, MenuProps } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
@@ -73,9 +73,7 @@ export default function LogoutButton() {
       <>
       <div style={{ position: "absolute", top: 20, right: 20 }}>
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
-          <Button type="text">
-            <Avatar style={{ backgroundColor: "#6ABD45" }} icon={<UserOutlined />} />
-          </Button>
+          <Button shape='circle' icon={<UserOutlined />} />
         </Dropdown>
       </div>
       </>

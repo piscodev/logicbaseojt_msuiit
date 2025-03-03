@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useStatsStore } from '@/stores/statsStore';
 import type { TableProps } from 'antd';
 import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography, notification } from 'antd';
 import { FilePdfOutlined, ExportOutlined } from '@ant-design/icons'
@@ -7,9 +8,10 @@ import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from './drawer';
 import PDFDocument from './PDFConverter';
 import { pdf } from '@react-pdf/renderer';
+
 const { Text } = Typography;
 interface TestTableProps {
-  onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
+  onUpdateAmounts?: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
 }
 export const dynamic = 'force-dynamic';
 
@@ -66,19 +68,22 @@ const EditableCell: React.FC<React.PropsWithChildren<EditableCellProps>> = ({
   );
 }
 
-const TestTable: React.FC<TestTableProps> = ({onUpdateAmounts}) => {
+const TestTable: React.FC<TestTableProps> = ({
+  //onUpdateAmounts
+}) => {
+  const { setNetTotalTrade, setNetTotalNonTrade, setGrandTotalPos, setFetching, setSelectedDate } = useStatsStore();
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>([]);
-  const [tradeAmount, setTradeAmount] = useState<number>(0);
-  const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
-  const [grandTotal, setGrandTotal] = useState<number>(0);
+  // const [tradeAmount, setTradeAmount] = useState<number>(0);
+  // const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
+  // const [grandTotal, setGrandTotal] = useState<number>(0);
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi,] = message.useMessage();
   const [api, ] = notification.useNotification();
-  useEffect(() => {
-    onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
-  }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
+  // useEffect(() => {
+  //   onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
+  // }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
       message: 'Notification Title',
@@ -102,20 +107,25 @@ const TestTable: React.FC<TestTableProps> = ({onUpdateAmounts}) => {
     const tradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
     const nonTradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
     if (grandRow) {
-      setGrandTotal(Number(grandRow.net_total));
+      setGrandTotalPos(Number(grandRow.net_total));
+      //setGrandTotal(Number(grandRow.net_total));
     }
     if (tradeRow) {
-      setTradeAmount(Number(tradeRow.net_total));
+      setNetTotalTrade(Number(tradeRow.net_total));
+      //setTradeAmount(Number(tradeRow.net_total));
     }
     if (nonTradeRow) {
-      setNonTradeAmount(Number(nonTradeRow.net_total));
+      setNetTotalNonTrade(Number(nonTradeRow.net_total));
+      //setNonTradeAmount(Number(nonTradeRow.net_total));
     }
+    setFetching(false);
     setLoading(false);
   }, [data]);
 
   const fetchData = async (dateInput=dayjs()) => {
     try{
         setLoading(true);
+        setFetching(true);
         const response = await fetch('/api/transactions/getTransactionByDay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -137,6 +147,7 @@ const TestTable: React.FC<TestTableProps> = ({onUpdateAmounts}) => {
   const onChangeDate = (date: Dayjs) => {
     if (date) {
         setCurrentDate(date)
+        setSelectedDate(date)
         fetchData(date);
     } else {
         console.log('Clear');
