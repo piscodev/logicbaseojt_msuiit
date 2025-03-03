@@ -16,6 +16,7 @@ interface TransactionFormValues {
 export interface TransactionValuesState {
     addTransaction: (values:TransactionFormValues) => void;
     finalValues: () => TransactionFormValues;
+    clearItems: () => void;
     cashier_name: string;
     shift: string;
     _payment: string;
@@ -217,6 +218,46 @@ const useTransactionStore = create<TransactionValuesState>((set, get)=>({
           short_over_POS: state.short_over_POS,
         } as TransactionValuesState;
         return data;
-      }
+      },
+      clearItems: () =>
+        set(() => ({
+          cashier_name: '',
+          shift: '',
+          _payment: '',
+          _payment_amount: 0,
+          other_payments: [{ payment: '', payment_amount: '' }] as other[],
+          _expense: '',
+          _expense_amount: 0,
+          other_expenses: [{ payment: '', payment_amount: '' }] as other[],
+          /* POS Sales Transactions */
+          cash: 0,
+          check: 0,
+          bpi_cc: 0,
+          bpi_dc: 0,
+          metro_cc: 0,
+          metro_dc: 0,
+          pay_maya: 0,
+          aub_cc: 0,
+          gcash: 0,
+          foodpanda: 0,
+          streetby: 0,
+          grabfood: 0,
+          gc_claimed_oth: 0,
+          gc_claimed_own: 0,
+          /* Non POS Sales Transactions */
+          mm_head: 0,
+          mm_commisary: 0,
+          mm_: 0,
+          mm_rm: 0,
+          mm_dm: 0,
+          mm_km: 0,
+          food_charge: 0,
+          /* Transaction Total */
+          sub_total_trade_POS: 0,
+          grand_total_trade_POS: 0,
+          z_reading_POS: 0,
+          short_over_POS: 0,
+        })),
+      
 }))    
 export default useTransactionStore;

@@ -32,11 +32,7 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     try {
-      // await fetch("/api/auth/logout", { method: "GET", credentials: "include" });
       clearUser();
-      // sessionStorage.removeItem("user");
-      // localStorage.removeItem("name");
-      // localStorage.removeItem("email");
 
       router.replace("/login"); // Redirect to login page
     } catch (error) {
@@ -44,7 +40,9 @@ export default function LogoutButton() {
     }
   };
 
-  // if (loading) return <Spin />; // Show loading spinner while fetching user data
+  if(!user){
+    router.push('/')
+  }
 
   // Display actual name and email
   const userName = user?.name || "Guest";
@@ -74,9 +72,10 @@ export default function LogoutButton() {
   return (
     user && (
       <>
-      <div style={{ position: "absolute", top: 20, right: 20 }}>
+      <div //style={{ position: "absolute", top: 20, right: 20 }}
+      >
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
-          <Button shape='circle' icon={<UserOutlined />} />
+          <Button shape='circle' size='large' icon={<UserOutlined />} />
         </Dropdown>
       </div>
       </>

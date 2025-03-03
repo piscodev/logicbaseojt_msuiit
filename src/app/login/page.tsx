@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Messenger from "../components/ActionsMessage";
 import { DateTime } from "luxon";
 import { useUserStore } from "@/stores/userStore";
+import { useCashierStore } from "@/stores/cashierStore";
 
 export default function AuthPage() {
   const user = useUserStore((state) => state.user);
@@ -19,6 +20,7 @@ export default function AuthPage() {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const clearCashiers = useCashierStore((state)=>state.clearCashiers);
 
   const router = useRouter();
 
@@ -91,6 +93,7 @@ export default function AuthPage() {
       }
       if(!isLogin){
         setUser({name: name, email:email})
+        clearCashiers();// will fetch new data since a new cashier is added
         showMessage('success', "Redirecting to Dashboard...");
         setTimeout(() => {
           router.push("/dashboard");

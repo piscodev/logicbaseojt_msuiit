@@ -8,12 +8,11 @@ const styles = StyleSheet.create({
     padding: 12,  
     fontFamily: "Helvetica",
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
   },
 
   headerContainer: { 
     alignItems: "center", 
-    paddingVertical: 6,  
     backgroundColor: "white", 
     borderRadius: 4, 
     marginBottom: 0, 
@@ -25,15 +24,13 @@ const styles = StyleSheet.create({
   },
   // Increased logo size: width and height increased
   logoContainer: { 
-    width: 90, 
-    height: 90, 
-    borderRadius: 45, // half of width/height
+    width: 300, 
+    height: 70, 
     overflow: "hidden", 
-    marginRight: 5 
+    // marginRight: 5 
   },
   logoImage: { 
-    width: "100%", 
-    height: "100%" 
+    objectFit: 'contain'
   },
   // Updated font size for MoneyCache to 25
   headerTitle: { 
@@ -46,7 +43,7 @@ const styles = StyleSheet.create({
     width: "100%", 
     borderWidth: 1, 
     borderColor: "#ddd", 
-    borderRadius: 4, 
+    // borderRadius: 4, 
     overflow: "hidden", 
   },
 
@@ -111,16 +108,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   footerText: { 
-    fontSize: 8, 
+    fontSize: 11, 
     color: "#333333E6", 
     fontWeight: "bold" 
   },
   footerSubText: { 
-    fontSize: 7, 
+    fontSize: 9, 
     color: "#333333E6" 
   },
   footerDateTime: {
-    fontSize: 8,
+    fontSize: 11,
     color: "#333333E6",
   },
 });
@@ -157,23 +154,23 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data }) => {
         <View style={styles.headerContainer}>
           <View style={styles.headerContent}>
             <View style={styles.logoContainer}>
-              <Image src="/LogoIcon.png" style={styles.logoImage} />
+              <Image src="/Logo-whitebg2.png" style={styles.logoImage} />
             </View>
-            <Text style={styles.headerTitle}>
+            {/* <Text style={styles.headerTitle}>
               <Text style={{ color: "#6abd45" }}>Money</Text>
               <Text style={{ color: "#1669b2" }}>Cache</Text>
-            </Text>
+            </Text> */}
           </View>
         </View>
 
         <View style={styles.table}>
           <View style={[styles.row, styles.headerRow]}>
-            <Text style={[styles.headerCell, styles.particularHeader]}>Particulars</Text>
+            <Text style={[styles.headerCell, styles.particularHeader]}>PARTICULARS</Text>
             <Text style={styles.headerCell}>AM</Text>
             <Text style={styles.headerCell}>MID</Text>
             <Text style={styles.headerCell}>PM</Text>
-            <Text style={styles.headerCell}>Gross Total</Text>
-            <Text style={styles.headerCell}>Net Total</Text>
+            <Text style={styles.headerCell}>GROSS TOTAL</Text>
+            <Text style={styles.headerCell}>NET TOTAL</Text>
           </View>
 
           {data.map((row, index) => (
@@ -194,8 +191,8 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data }) => {
             <Text style={styles.footerSubText}>Confidential - Authorized Use Only</Text>
           </View>
           <View style={styles.footerRight}>
-            <Text style={styles.footerDateTime}>Report Date: {formattedDate}</Text>
-            <Text style={styles.footerDateTime}>Report Time: {formattedTime}</Text>
+            <Text style={styles.footerDateTime}>Date Retrieved: {formattedDate}</Text>
+            <Text style={styles.footerDateTime}>Time: {formattedTime}</Text>
           </View>
         </View>
       </Page>

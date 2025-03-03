@@ -5,7 +5,7 @@ import { Card, Col, Row, Space, Statistic } from 'antd';
 import type { StatisticProps } from 'antd';
 import CountUp from 'react-countup';
 import Icon from '@ant-design/icons';
-import Peso from "./../../../public/phillippine-peso-svgrepo-com.svg"
+import Peso from "./../../../public/pesos-svgrepo-blue.svg"
 import { useStatsStore } from '@/stores/statsStore';
 
 // interface StatsCardProps {
