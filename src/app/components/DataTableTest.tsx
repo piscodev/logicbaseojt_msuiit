@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import { Space, Table, Typography } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import CustomDatePicker from "./CustomDatePicker";
-
+import { useStatsStore } from "@/stores/statsStore";
 const { Text } = Typography;
-interface DataTableProps {
-  onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
-}
+// interface DataTableProps {
+//   onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
+// }
 interface Transaction {
   particular: string;
   particular_id?: number;
@@ -244,28 +244,31 @@ const transformAPIResponse = (apiData: ResponseData): CashierShift[] => {
     ) || [];
 };
 
-const DataTable: React.FC<DataTableProps> = ({ onUpdateAmounts }) => {
+const DataTable: React.FC = ({ 
+  //onUpdateAmounts 
+  }) => {
+  const { setNetTotalTrade, setNetTotalNonTrade, setGrandTotalPos, setFetching } = useStatsStore();
   const [cashiers, setCashiers] = useState<CashierShift[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
-  const [tradeAmount, setTradeAmount] = useState<number>(0);
-  const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
-  const [grandTotal, setGrandTotal] = useState<number>(0);
+  // const [tradeAmount, setTradeAmount] = useState<number>(0);
+  // const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
+  // const [grandTotal, setGrandTotal] = useState<number>(0);
   // Use useEffect for initial load and date changes
   useEffect(() => {
     fetchData(selectedDate);
-  }, [selectedDate]);
+  }, []);
 
-  useEffect(() => {
-    onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
-  }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
+  // useEffect(() => {
+  //   onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
+  // }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
   useEffect(() => {
     if(selectedRowKeys.length === 0){
-        setGrandTotal(0);
-        setTradeAmount(0);
-        setNonTradeAmount(0);
-        setLoading(false)
+      // setGrandTotal(0);
+      // setTradeAmount(0);
+      // setNonTradeAmount(0);
+      setLoading(false)
     }
   }, [selectedRowKeys])
   const fetchData = async (dateInput = dayjs()) => {
@@ -441,31 +444,96 @@ const DataTable: React.FC<DataTableProps> = ({ onUpdateAmounts }) => {
     });
   });
 
-  const table2Data = Array.from(transactionMap.values()).map(t => ({
-    key: t.particular,
-    particular: t.particular,
-    am: t.am,
-    mid: t.mid,
-    pm: t.pm,
-    grossTotal: t.grossTotal,
-    netTotal: t.netTotal
-  }));
+  const table2Data = React.useMemo(() => {
+    const transactionMap = new Map<
+      string,
+      {
+        particular: string;
+        am: number;
+        mid: number;
+        pm: number;
+        grossTotal: number;
+        totalFee: number;
+        netTotal: number;
+      }
+    >();
+  
+    // Compute selectedRecords from cashiers and selectedRowKeys
+    const selectedRecords = cashiers.filter(c =>
+      selectedRowKeys.includes(`${c.cashier_id}-${c.shift.toLowerCase()}`)
+    );
+  
+    selectedRecords.forEach(record => {
+      record.transactions.forEach(t => {
+        const key = t.particular;
+        const existing = transactionMap.get(key) || {
+          particular: key,
+          am: 0,
+          mid: 0,
+          pm: 0,
+          grossTotal: 0,
+          totalFee: 0,
+          netTotal: 0,
+        };
+  
+        let shiftAmount = 0;
+        switch (record.shift.toLowerCase()) {
+          case "am":
+            shiftAmount = Number(t.am) || 0;
+            existing.am += shiftAmount;
+            break;
+          case "mid":
+            shiftAmount = Number(t.mid) || 0;
+            existing.mid += shiftAmount;
+            break;
+          case "pm":
+            shiftAmount = Number(t.pm) || 0;
+            existing.pm += shiftAmount;
+            break;
+          default:
+            break;
+        }
+        existing.grossTotal += shiftAmount;
+        const fee = shiftAmount * (Number(t.fee_percent) / 100);
+        existing.totalFee += fee;
+        existing.netTotal = existing.grossTotal - existing.totalFee;
+  
+        transactionMap.set(key, existing);
+      });
+    });
+  
+    return Array.from(transactionMap.values()).map(t => ({
+      key: t.particular,
+      particular: t.particular,
+      am: t.am,
+      mid: t.mid,
+      pm: t.pm,
+      grossTotal: t.grossTotal,
+      netTotal: t.netTotal,
+    }));
+  }, [cashiers, selectedRowKeys]);
+  
   useEffect(() => {
     setLoading(true)
+    setFetching(true)
       // Find the GRAND TOTAL row and set the state
       const grandRow = table2Data.find((d) => d.particular.startsWith("GRAND"));
       const tradeRow = table2Data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
       const nonTradeRow = table2Data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
       if (grandRow) {
-        setGrandTotal(Number(grandRow.netTotal));
+        setGrandTotalPos(Number(grandRow.netTotal));
+        // setGrandTotal(Number(grandRow.netTotal));
       }
       if (tradeRow) {
-        setTradeAmount(Number(tradeRow.netTotal));
+        setNetTotalTrade(Number(tradeRow.netTotal));
+        // setTradeAmount(Number(tradeRow.netTotal));
       }
       if (nonTradeRow) {
-        setNonTradeAmount(Number(nonTradeRow.netTotal));
+        setNetTotalNonTrade(Number(nonTradeRow.netTotal));
+        // setNonTradeAmount(Number(nonTradeRow.netTotal));
       }
       setLoading(false)
+      setFetching(false);
     }, [table2Data]);
 
   return (

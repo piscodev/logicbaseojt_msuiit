@@ -6,14 +6,14 @@ import type { StatisticProps } from 'antd';
 import CountUp from 'react-countup';
 import Icon from '@ant-design/icons';
 import Peso from "./../../../public/phillippine-peso-svgrepo-com.svg"
+import { useStatsStore } from '@/stores/statsStore';
 
-
-interface StatsCardProps {
-  tradeAmount: number;
-  nonTradeAmount: number;
-  grandTotal: number;
-  loading: boolean
-}
+// interface StatsCardProps {
+//   tradeAmount: number;
+//   nonTradeAmount: number;
+//   grandTotal: number;
+//   loading: boolean
+// }
 
 const formatter: StatisticProps['formatter'] = (value) => {
   return (
@@ -21,13 +21,14 @@ const formatter: StatisticProps['formatter'] = (value) => {
   );
 } 
 // export default function StatsCard ({ params }: { params: any })
-const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grandTotal, loading}) =>
+const StatsCard: React.FC = () =>
 {
+  const { net_total_trade,net_total_non_trade, grand_total_pos, fetching } = useStatsStore();
   return (
     <Space  direction="vertical" className="w-full mb-3">
         <Row gutter={16} justify="center">
           <Col key='trade' span={8}>
-            <Card loading={loading}>
+            <Card loading={fetching}>
               
                 <Card.Meta
                     avatar={
@@ -36,14 +37,14 @@ const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grand
                     title={<p className="text-black">TRADE POS NET TOTAL</p>}
                     description={
                         <>
-                          <Statistic title="" value={Number(tradeAmount)} precision={2} formatter={formatter} />
+                          <Statistic title="" value={Number(net_total_trade)} precision={2} formatter={formatter} />
                         </>
                     }
                 />
             </Card>
           </Col>
           <Col key='NO-trade' span={8}>
-            <Card loading={loading}>
+            <Card loading={fetching}>
                 <Card.Meta
                     avatar={
                       <Icon component={Peso as React.FC<React.SVGProps<SVGSVGElement>>} style={{ fontSize: '66px' }} />
@@ -51,14 +52,14 @@ const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grand
                     title={<p className="text-black">NON TRADE POS NET TOTAL</p>}
                     description={
                         <>
-                          <Statistic title="" value={Number(nonTradeAmount)} precision={2} formatter={formatter} />
+                          <Statistic title="" value={Number(net_total_non_trade)} precision={2} formatter={formatter} />
                         </>
                     }
                 />
             </Card>
           </Col>
           <Col key='trade' span={8}>
-            <Card loading={loading}>
+            <Card loading={fetching}>
                 <Card.Meta
                     avatar={
                       <Icon component={Peso as React.FC<React.SVGProps<SVGSVGElement>>} style={{ fontSize: '66px' }} />
@@ -66,7 +67,7 @@ const StatsCard: React.FC<StatsCardProps> = ({tradeAmount, nonTradeAmount, grand
                     title={<p className="text-black">GRAND POS TOTAL</p>}
                     description={
                         <>
-                          <Statistic title="" value={Number(grandTotal)} precision={2} formatter={formatter} />
+                          <Statistic title="" value={Number(grand_total_pos)} precision={2} formatter={formatter} />
                         </>
                     }
                 />
