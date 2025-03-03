@@ -32,7 +32,7 @@ export const useStatsStore = create<StatsState>()(
     }),
     {
       name: "stats-store",
-    //   skipHydration: true,
+      skipHydration: true,
     }
   )
 );

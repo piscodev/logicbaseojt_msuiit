@@ -19,7 +19,7 @@ const Nav: React.FC = () => {
     const router = useRouter();
     return (
     <>
-        <Header style={{ display: "flex", alignItems: "center", background: "#1669B2" }}>
+        <Header style={{ display: "flex", alignItems: "center", justifyContent:'space-between', background: "#1669B2", height:'72px' }}>
             <Card
                 hoverable
                 onClick={()=>router.push("/")}
@@ -42,8 +42,9 @@ const Nav: React.FC = () => {
                 items={items}
                 style={{ flex: 1, background: "#1669B2" }}
             /> */}
+            <LogoutButton />
         </Header>
-        <LogoutButton />
+        
     </>
 )}
 

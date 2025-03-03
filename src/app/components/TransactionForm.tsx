@@ -9,6 +9,7 @@ import CountUp from 'react-countup';
 import { TransactionValuesState } from '../lib/Interface/interface';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
+import { useCashierStore } from '@/stores/cashierStore';
 export const dynamic = 'force-dynamic';
 
 type NotificationType = 'success' | 'info' | 'warning' | 'error';
@@ -22,14 +23,14 @@ interface TransactionFormProps {
 
 const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDate}) => {
     const [form] = Form.useForm();
-    const [isMounted, setIsMounted] = useState(false);
+    const cashiersStore = useCashierStore((state)=>state.cashiers)
+    const setCashiersStore = useCashierStore((state)=>state.setCashiers)
+    const clearItems = useTransactionStore((state)=>state.clearItems)
     // const [messageApi, contextHolder] = message.useMessage();
     const [currentDate, setCurrentDate] = useState<Dayjs>(selectedDate);
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
     const [message, setMessage] = useState('')
-
-    // const [selectedCashier, setSelectedCashier] = useState<string>('');
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashierNames`, {
@@ -37,32 +38,33 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
             });
 
             const data = await response.json();
+            console.log('Cashiers:', data)
             if(!response.ok)
             {
                 setMessage(data.error)
                 throw new Error('Failed to fetch cashiers');
             }
+            setCashiersStore(data.cashiers);
 
             const cashierNames = data.cashiers.map((cashier:Cashier) => ({
                 ...cashier,
                 value: cashier.value
             }))
-            
             setCashiers(cashierNames)
-            setIsCashierNotAllowed(false);
-            // console.log("CASHIERS after setting: ", cashierNames);
         }catch(error){
             onProcess('error','Error fetching cashiers.', false)
             console.error('Error fetching users: ', error);
         }
     };
     useEffect(() => {
-        if (!isMounted) {
-          setIsMounted(true);
+        if (!cashiersStore) {
           fetchCashiers();
           return;
+        } else {
+            setCashiers(cashiersStore)
         }
-      }, [isMounted]);
+        setIsCashierNotAllowed(false);
+      }, [cashiersStore]);
     
     
     const prevValueSubTotalTradePosRef = useRef<number | 0>(0)
@@ -228,6 +230,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                 console.log('Transaction added succcessfully');
                  // Reset the form fields
                 form.resetFields();
+                clearItems();
             } else {
                 setMessage("Error adding transaction. Please select a valid Cashier!")
                 onProcess('error','Error adding transaction. Please select a valid Cashier.', true)
@@ -396,7 +399,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
                                         setIsFilled(false)
                                     }
                                 }
-                                
                             }
                         }
                     } block icon={<PlusOutlined />}>

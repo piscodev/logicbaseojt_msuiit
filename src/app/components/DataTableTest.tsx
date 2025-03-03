@@ -258,6 +258,7 @@ const DataTable: React.FC = ({
   // Use useEffect for initial load and date changes
   useEffect(() => {
     fetchData(selectedDate);
+    useStatsStore.persist.rehydrate();
   }, []);
 
   // useEffect(() => {
@@ -265,9 +266,9 @@ const DataTable: React.FC = ({
   // }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
   useEffect(() => {
     if(selectedRowKeys.length === 0){
-      // setGrandTotal(0);
-      // setTradeAmount(0);
-      // setNonTradeAmount(0);
+      setGrandTotalPos(0);
+      setNetTotalTrade(0);
+      setNetTotalNonTrade(0);
       setLoading(false)
     }
   }, [selectedRowKeys])
@@ -317,7 +318,18 @@ const DataTable: React.FC = ({
   ];
 
   const columnsT2 = [
-    { title: "PARTICULARS", dataIndex: "particular", key: "particular" },
+    { title: "PARTICULARS", dataIndex: "particular", key: "particular", 
+      render: (_: unknown, record: Transaction) => (
+        <>
+          {(record.particular.startsWith("GRAND") ||
+            record.particular.startsWith("SUB TOTAL")) ? (
+            <Text strong>{record.particular}</Text>
+          ) : (
+             <Text>{record.particular}</Text>
+          )}
+        </>
+      )
+    },
     {
       title: "AM",
       dataIndex: "am",
@@ -326,9 +338,9 @@ const DataTable: React.FC = ({
         <>
           {(record.particular.startsWith("GRAND") ||
             record.particular.startsWith("SUB TOTAL")) ? (
-            <Text strong>{record.am}</Text>
+            <Text strong>{Number(record.am).toFixed(2)}</Text>
           ) : (
-            record.am > 0 && <Text>{record.am}</Text>
+            record.am > 0 && <Text>{Number(record.am).toFixed(2)}</Text>
           )}
         </>
       )
@@ -341,9 +353,9 @@ const DataTable: React.FC = ({
         <>
           {(record.particular.startsWith("GRAND") ||
             record.particular.startsWith("SUB TOTAL")) ? (
-            <Text strong>{record.mid}</Text>
+            <Text strong>{Number(record.mid).toFixed(2)}</Text>
           ) : (
-            record.mid > 0 && <Text>{record.mid}</Text>
+            record.mid > 0 && <Text>{Number(record.mid).toFixed(2)}</Text>
           )}
         </>
       )
@@ -356,9 +368,9 @@ const DataTable: React.FC = ({
         <>
           {(record.particular.startsWith("GRAND") ||
             record.particular.startsWith("SUB TOTAL")) ? (
-            <Text strong>{record.pm}</Text>
+            <Text strong>{Number(record.pm).toFixed(2)}</Text>
           ) : (
-            record.pm > 0 && <Text>{record.pm}</Text>
+            record.pm > 0 && <Text>{Number(record.pm).toFixed(2)}</Text>
           )}
         </>
       )
@@ -367,13 +379,13 @@ const DataTable: React.FC = ({
       title: "GROSS TOTAL",
       dataIndex: "grossTotal",
       key: "grossTotal",
-      render: (value: number) => Number(value).toFixed(2)
+      render: (value: number) => <><Text strong>{Number(value).toFixed(2)}</Text></>
     },
     {
       title: "NET TOTAL",
       dataIndex: "netTotal",
       key: "netTotal",
-      render: (value: number) => Number(value).toFixed(2)
+      render: (value: number) => <><Text strong>{Number(value).toFixed(2)}</Text></>
     }
   ];
 

@@ -191,7 +191,7 @@ const TestTable: React.FC<TestTableProps> = ({
       editable: true,
       render:(_: unknown, record: DataType)=>(
         <>
-          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.am}</Text>) : (<Text>{record.am}</Text>)}
+          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ) ? (<Text strong>{Number(record.am).toFixed(2)}</Text>) : (record.particular.startsWith('CASHIER')?<Text>{record.am}</Text>:Number(record.am)>0?<Text>{Number(record.am).toFixed(2)}</Text>:<Text>{''}</Text>)}
         </>
       )
     },
@@ -202,7 +202,7 @@ const TestTable: React.FC<TestTableProps> = ({
       editable: true,
       render:(_: unknown, record: DataType)=>(
         <>
-          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.mid}</Text>) : (<Text>{record.mid}</Text>)}
+          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ) ? (<Text strong>{Number(record.mid).toFixed(2)}</Text>) : (record.particular.startsWith('CASHIER')?<Text>{record.mid}</Text>:Number(record.mid)>0?<Text>{Number(record.mid).toFixed(2)}</Text>:<Text>{''}</Text>)}
         </>
       ),
       
@@ -213,10 +213,10 @@ const TestTable: React.FC<TestTableProps> = ({
         width: '15%',
         editable: true,
         render:(_: unknown, record: DataType)=>(
-            <>
-              {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') /*|| record.particular.startsWith('CASHIER')*/) ? (<Text strong>{record.pm}</Text>) : (<Text>{record.pm}</Text>)}
-            </>
-          )
+          <>
+            {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ) ? (<Text strong>{Number(record.pm).toFixed(2)}</Text>) : (record.particular.startsWith('CASHIER')?<Text>{record.pm}</Text>:Number(record.pm)>0?<Text>{Number(record.pm).toFixed(2)}</Text>:<Text>{''}</Text>)}
+          </>
+        )
     },
     {
         title: 'GROSS TOTAL',

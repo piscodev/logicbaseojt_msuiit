@@ -6,8 +6,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Messenger from "../components/ActionsMessage";
 import { DateTime } from "luxon";
+import { useUserStore } from "@/stores/userStore";
+import { useCashierStore } from "@/stores/cashierStore";
 
 export default function AuthPage() {
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser)
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [messageType, setMessageType] = useState<'success' | 'error' | 'warning'>('success');
   const [messageContent, setMessageContent] = useState('');
@@ -16,35 +20,42 @@ export default function AuthPage() {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const clearCashiers = useCashierStore((state)=>state.clearCashiers);
 
   const router = useRouter();
 
   // Retrieve user data from localStorage when the component mounts
-  useEffect(() => {
-    const storedEmail = localStorage.getItem("email") || "";
-    const storedName = localStorage.getItem("name") || "";
+  // useEffect(() => {
+  //   const storedEmail = localStorage.getItem("email") || "";
+  //   const storedName = localStorage.getItem("name") || "";
 
-    console.log("Retrieved from localStorage:");
-    console.log("Email:", storedEmail);
-    console.log("Name:", storedName);
+  //   console.log("Retrieved from localStorage:");
+  //   console.log("Email:", storedEmail);
+  //   console.log("Name:", storedName);
 
-    setEmail(storedEmail);
-    setName(storedName);
+  //   setEmail(storedEmail);
+  //   setName(storedName);
 
-    // Listen for storage changes (e.g., when login happens in another tab)
-    const updateUserData = () => {
-      const updatedEmail = localStorage.getItem("email") || "";
-      const updatedName = localStorage.getItem("name") || "";
-      console.log("Storage updated:");
-      console.log("Email:", updatedEmail);
-      console.log("Name:", updatedName);
-      setEmail(updatedEmail);
-      setName(updatedName);
-    };
+  //   // Listen for storage changes (e.g., when login happens in another tab)
+  //   const updateUserData = () => {
+  //     const updatedEmail = localStorage.getItem("email") || "";
+  //     const updatedName = localStorage.getItem("name") || "";
+  //     console.log("Storage updated:");
+  //     console.log("Email:", updatedEmail);
+  //     console.log("Name:", updatedName);
+  //     setEmail(updatedEmail);
+  //     setName(updatedName);
+  //   };
 
-    window.addEventListener("storage", updateUserData);
-    return () => window.removeEventListener("storage", updateUserData);
-  }, []);
+  //   window.addEventListener("storage", updateUserData);
+  //   return () => window.removeEventListener("storage", updateUserData);
+  // }, []);
+
+  useEffect(()=>{
+    if(user){
+      router.push("/dashboard");
+    }
+  })
 
   const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
     setMessageType(type);
@@ -80,33 +91,49 @@ export default function AuthPage() {
         showMessage('error', data.error)
         throw new Error(data.error);
       }
-
-      if (isLogin) {
-        console.log("Before storing in localStorage:");
-        console.log("Email:", email);
-        console.log("Name:", data.user.name);
-
-        localStorage.setItem("email", email);
-        localStorage.setItem("name", data.user.name);
-
-        console.log("Stored in localStorage:");
-        console.log("Email:", localStorage.getItem("email"));
-        console.log("Name:", localStorage.getItem("name"));
-
-        setEmail(email);
-        setName(data.user.name);
-
-        showMessage('success', "Login successful!");
+      if(!isLogin){
+        setUser({name: name, email:email})
+        clearCashiers();// will fetch new data since a new cashier is added
+        showMessage('success', "Redirecting to Dashboard...");
         setTimeout(() => {
           router.push("/dashboard");
         }, 250);
-      } else {
-        showMessage('success', "Account created successfully! Please log in.");
-        setIsLogin(true);
-        setEmail("");
-        setPassword("");
-        setName("");
+        return
       }
+      setUser({name: data.user.name, email:email})
+      showMessage('success', "Redirecting to Dashboard...");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 250);
+      return
+
+
+      // if (isLogin) {
+      //   console.log("Before storing in localStorage:");
+      //   console.log("Email:", email);
+      //   console.log("Name:", data.user.name);
+
+      //   localStorage.setItem("email", email);
+      //   localStorage.setItem("name", data.user.name);
+
+      //   console.log("Stored in localStorage:");
+      //   console.log("Email:", localStorage.getItem("email"));
+      //   console.log("Name:", localStorage.getItem("name"));
+
+      //   setEmail(email);
+      //   setName(data.user.name);
+
+      //   showMessage('success', "Login successful!");
+      //   setTimeout(() => {
+      //     router.push("/dashboard");
+      //   }, 250);
+      // } else {
+      //   showMessage('success', "Account created successfully! Please log in.");
+      //   setIsLogin(true);
+      //   setEmail("");
+      //   setPassword("");
+      //   setName("");
+      // }
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.log("Error:", error.message);
