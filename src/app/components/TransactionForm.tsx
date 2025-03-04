@@ -31,6 +31,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
     const [message, setMessage] = useState('')
+    clearItems();//Ensure Items are cleared on component load.
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashierNames`, {
