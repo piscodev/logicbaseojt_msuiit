@@ -24,42 +24,8 @@ export default function AuthPage() {
 
   const router = useRouter();
 
-  // Retrieve user data from localStorage when the component mounts
-  // useEffect(() => {
-  //   const storedEmail = localStorage.getItem("email") || "";
-  //   const storedName = localStorage.getItem("name") || "";
-
-  //   console.log("Retrieved from localStorage:");
-  //   console.log("Email:", storedEmail);
-  //   console.log("Name:", storedName);
-
-  //   setEmail(storedEmail);
-  //   setName(storedName);
-
-  //   // Listen for storage changes (e.g., when login happens in another tab)
-  //   const updateUserData = () => {
-  //     const updatedEmail = localStorage.getItem("email") || "";
-  //     const updatedName = localStorage.getItem("name") || "";
-  //     console.log("Storage updated:");
-  //     console.log("Email:", updatedEmail);
-  //     console.log("Name:", updatedName);
-  //     setEmail(updatedEmail);
-  //     setName(updatedName);
-  //   };
-
-  //   window.addEventListener("storage", updateUserData);
-  //   return () => window.removeEventListener("storage", updateUserData);
-  // }, []);
-  // console.log("USER:::", user);
   if(user)
     router.push("/dashboard");
-  // useEffect(()=>{
-    
-  //     return
-  //   }
-  // },[])
-  // console.log("USER::0000:", user);
-  
 
   const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
     setMessageType(type);
@@ -95,16 +61,7 @@ export default function AuthPage() {
         showMessage('error', data.error)
         throw new Error(data.error);
       }
-
-      if(isLogin){
-        setUser({name: data.user.name, email:email})
-        console.log("user213412", user)
-        showMessage('success', "Redirecting to Dashboard...");
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 250);
-        return
-      } else {
+      if(!isLogin){
         setUser({name: name, email:email})
         console.log("user2134=====12", user)
         clearCashiers();// will fetch new data since a new cashier is added
@@ -113,36 +70,14 @@ export default function AuthPage() {
           router.push("/dashboard");
         }, 250);
         return
-      }
-      
-
-
-      // if (isLogin) {
-      //   console.log("Before storing in localStorage:");
-      //   console.log("Email:", email);
-      //   console.log("Name:", data.user.name);
-
-      //   localStorage.setItem("email", email);
-      //   localStorage.setItem("name", data.user.name);
-
-      //   console.log("Stored in localStorage:");
-      //   console.log("Email:", localStorage.getItem("email"));
-      //   console.log("Name:", localStorage.getItem("name"));
-
-      //   setEmail(email);
-      //   setName(data.user.name);
-
-      //   showMessage('success', "Login successful!");
-      //   setTimeout(() => {
-      //     router.push("/dashboard");
-      //   }, 250);
-      // } else {
-      //   showMessage('success', "Account created successfully! Please log in.");
-      //   setIsLogin(true);
-      //   setEmail("");
-      //   setPassword("");
-      //   setName("");
-      // }
+      } 
+      setUser({name: data.user.name, email:email})
+      console.log("user213412", user)
+      showMessage('success', "Redirecting to Dashboard...");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 250);
+      return
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.log("Error:", error.message);

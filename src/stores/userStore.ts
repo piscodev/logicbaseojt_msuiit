@@ -22,7 +22,6 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: "user-storage",
-      // skipHydration:true,
     }
   )
 );

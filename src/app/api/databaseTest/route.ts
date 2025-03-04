@@ -7,7 +7,6 @@ interface ResponseData {
     version: string | number
 }
 
-
 export async function GET(req: NextRequest) {
     if (req.method === 'GET') {
         try {
@@ -29,7 +28,6 @@ export async function GET(req: NextRequest) {
             });
         }
     } else {
-        console.error("Method is: ", req.method);
         return NextResponse.json({success: false,
             status: 505})
     }

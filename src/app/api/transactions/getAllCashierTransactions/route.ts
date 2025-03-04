@@ -69,14 +69,7 @@ export async function POST(req: NextRequest){
                 HAVING SUM(td.amount) > 0
                 ORDER BY c.name, s.id, p.name
             `, [currentDate]) as [TransactionsData[], FieldPacket[]];
-            // COALESCE(SUM(CASE WHEN p.id < 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
-            // COALESCE(SUM(CASE WHEN p.id >= 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total
             console.log('transactions: ', transactions);
-            // // Get all cashiers
-            // const [cashiers]: [Cashier[],FieldPacket[]] = await connection.query(`
-            //     SELECT id, name FROM Cashier ORDER BY name ASC
-            // `) as [Cashier[],FieldPacket[]];
-
             // Get all particulars
             const [particulars]:[ParticularDefinition[], FieldPacket[]] = await connection.query(`
                 SELECT id, name, fee_percent FROM Particular ORDER BY id ASC

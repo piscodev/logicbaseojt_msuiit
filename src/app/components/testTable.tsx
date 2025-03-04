@@ -74,16 +74,10 @@ const TestTable: React.FC<TestTableProps> = ({
   const { setNetTotalTrade, setNetTotalNonTrade, setGrandTotalPos, setFetching, setSelectedDate } = useStatsStore();
   const [form] = Form.useForm();
   const [data, setData] = useState<DataType[]>([]);
-  // const [tradeAmount, setTradeAmount] = useState<number>(0);
-  // const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
-  // const [grandTotal, setGrandTotal] = useState<number>(0);
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi,] = message.useMessage();
   const [api, ] = notification.useNotification();
-  // useEffect(() => {
-  //   onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
-  // }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
       message: 'Notification Title',
@@ -95,28 +89,21 @@ const TestTable: React.FC<TestTableProps> = ({
   };
 
 
-// Use useEffect for initial load and date changes
   useEffect(() => {
     fetchData(currentDate);
   }, [currentDate]);
-  // Suppose `data` is your table data
   useEffect(() => {
-    // setLoading(true)
-    // Find the GRAND TOTAL row and set the state
     const grandRow = data.find((d) => d.particular.startsWith("GRAND"));
     const tradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
     const nonTradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
     if (grandRow) {
       setGrandTotalPos(Number(grandRow.net_total));
-      //setGrandTotal(Number(grandRow.net_total));
     }
     if (tradeRow) {
       setNetTotalTrade(Number(tradeRow.net_total));
-      //setTradeAmount(Number(tradeRow.net_total));
     }
     if (nonTradeRow) {
       setNetTotalNonTrade(Number(nonTradeRow.net_total));
-      //setNonTradeAmount(Number(nonTradeRow.net_total));
     }
     setFetching(false);
     setLoading(false);
@@ -138,8 +125,6 @@ const TestTable: React.FC<TestTableProps> = ({
     } catch (error) {
         console.error('Fetch error:', error);
         console.error(loading);
-    // } finally {
-    //     setLoading(false);
     }
     
   };
@@ -242,7 +227,6 @@ const TestTable: React.FC<TestTableProps> = ({
     },
   ];
 
-
   const mergedColumns: TableProps<DataType>['columns'] = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -301,8 +285,6 @@ const TestTable: React.FC<TestTableProps> = ({
     const blob = await pdf(<PDFDocument data={data} />).toBlob();
     const url = URL.createObjectURL(blob);
 
-    // window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
-
     const link = document.createElement("a");
     link.href = url;
     link.download = `transactions_${currentDate.format("YYYY_MM_DD")}.pdf`;
@@ -310,9 +292,6 @@ const TestTable: React.FC<TestTableProps> = ({
     link.click();
     document.body.removeChild(link);
   }
-
-  
-
   return (
     <Form form={form} component={false}>
       <Table<DataType>
@@ -324,32 +303,20 @@ const TestTable: React.FC<TestTableProps> = ({
         loading={loading}
         title={() => 
           <Space style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
-          {/* Left Section */}
-          <Space>
-            <CustomDatePicker />
-            <Button onClick={() => fetchData(currentDate)}>Refresh Data</Button>
-            <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate} />
+          
+            <Space>
+              <CustomDatePicker />
+              <Button onClick={() => fetchData(currentDate)}>Refresh Data</Button>
+              <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate} />
+            </Space>
+          
+            <Space>
+              <Button type="primary" onClick={exportToCSV}>{<ExportOutlined />}Export as CSV</Button>
+              <Button type="primary" onClick={generatePDF}>{<FilePdfOutlined />}Export as PDF</Button> 
+          
+            </Space>
           </Space>
-        
-          {/* Right Section */}
-          {/* <PDFDownloadLink
-              document={<PDFDocument data={data} />}
-              fileName={`transactions_${dayjs().format("YYYY-MM-DD")}.pdf`}
-            >
-              {({ loading }) =>
-              {
-                return (
-                  <> */}
-                    <Space>
-                      <Button type="primary" onClick={exportToCSV}>{<ExportOutlined />}Export as CSV</Button>
-                      <Button type="primary" onClick={generatePDF}>{<FilePdfOutlined />}Export as PDF</Button> 
-                  
-                    </Space>
-                    {/* </>
-                )
-              }}
-            </PDFDownloadLink> */}
-        </Space>}
+        }
         columns={mergedColumns}
         rowClassName="editable-row"
         pagination={false}

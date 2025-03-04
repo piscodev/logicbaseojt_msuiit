@@ -8,19 +8,11 @@ import Icon from '@ant-design/icons';
 import Peso from "./../../../public/pesos-svgrepo-blue.svg"
 import { useStatsStore } from '@/stores/statsStore';
 
-// interface StatsCardProps {
-//   tradeAmount: number;
-//   nonTradeAmount: number;
-//   grandTotal: number;
-//   loading: boolean
-// }
-
 const formatter: StatisticProps['formatter'] = (value) => {
   return (
       <CountUp start={0} delay={1} end={value as number} separator="," decimals={2} />
   );
 } 
-// export default function StatsCard ({ params }: { params: any })
 const StatsCard: React.FC = () =>
 {
   const { net_total_trade,net_total_non_trade, grand_total_pos, fetching } = useStatsStore();

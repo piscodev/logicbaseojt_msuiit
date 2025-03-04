@@ -12,23 +12,6 @@ export default function LogoutButton() {
   const router = useRouter();
   const user = useUserStore((state) => state.user)
   const clearUser = useUserStore((state) => state.clearUser)
-  // const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   // Retrieve user details from sessionStorage or localStorage
-  //   const storedUser = sessionStorage.getItem("user");
-  //   if (storedUser) {
-  //     setUser(JSON.parse(storedUser));
-  //   } else {
-  //     const name = localStorage.getItem("name");
-  //     const email = localStorage.getItem("email");
-  //     if (name && email) {
-  //       setUser({ name, email });
-  //     }
-  //   }
-  //   // setLoading(false);
-  // }, []);
 
   const handleLogout = async () => {
     try {
@@ -39,14 +22,10 @@ export default function LogoutButton() {
       console.error("Logout failed:", error);
     }
   };
-
-  // if(!user){
-  //   router.push('/')
-  // }
-
+  
   // Display actual name and email
-  const userName = user?.name || "Guest";
-  const userEmail = user?.email || "No Email";
+  const userName = user?.name || "";
+  const userEmail = user?.email || "";
 
   // Define dropdown menu items
   const menuItems: MenuProps["items"] = [
@@ -71,14 +50,11 @@ export default function LogoutButton() {
 
   return (
     user && (
-      <>
-      <div //style={{ position: "absolute", top: 20, right: 20 }}
-      >
+      <div>
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           <Button shape='circle' size='large' icon={<UserOutlined />} />
         </Dropdown>
       </div>
-      </>
     )
   );
 }

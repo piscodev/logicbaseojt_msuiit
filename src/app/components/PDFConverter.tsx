@@ -156,10 +156,6 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data }) => {
             <View style={styles.logoContainer}>
               <Image src="/Logo-whitebg2.png" style={styles.logoImage} />
             </View>
-            {/* <Text style={styles.headerTitle}>
-              <Text style={{ color: "#6abd45" }}>Money</Text>
-              <Text style={{ color: "#1669b2" }}>Cache</Text>
-            </Text> */}
           </View>
         </View>
 
