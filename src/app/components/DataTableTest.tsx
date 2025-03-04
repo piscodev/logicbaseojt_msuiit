@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Space, Table, Typography } from "antd";
+import { Button, message, Space, Table, Typography } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import CustomDatePicker from "./CustomDatePicker";
 import { useStatsStore } from "@/stores/statsStore";
+import PDFDocument from "./PDFConverter";
+import { pdf } from "@react-pdf/renderer";
+import { ExportOutlined, FilePdfOutlined } from "@ant-design/icons";
 const { Text } = Typography;
 // interface DataTableProps {
 //   onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
@@ -48,6 +51,12 @@ interface ApiCashier {
 interface ResponseData {
   cashiers?: ApiCashier[];
 }
+
+const formatNumber = (value: number | undefined): string => {
+  if (value === undefined || isNaN(value)) return "0"; // Handle undefined values
+  return value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,"); // Adds commas
+};
+
 
 // Transform API response into an array of CashierShift
 const transformAPIResponse = (apiData: ResponseData): CashierShift[] => {
@@ -252,6 +261,8 @@ const DataTable: React.FC = ({
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
+
+
   // const [tradeAmount, setTradeAmount] = useState<number>(0);
   // const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);
   // const [grandTotal, setGrandTotal] = useState<number>(0);
@@ -338,9 +349,9 @@ const DataTable: React.FC = ({
         <>
           {(record.particular.startsWith("GRAND") ||
             record.particular.startsWith("SUB TOTAL")) ? (
-            <Text strong>{Number(record.am).toFixed(2)}</Text>
+            <Text strong>{formatNumber(Number(record.am))}</Text>
           ) : (
-            record.am > 0 && <Text>{Number(record.am).toFixed(2)}</Text>
+            record.am > 0 && <Text>{formatNumber(Number(record.am))}</Text>
           )}
         </>
       )
@@ -353,9 +364,9 @@ const DataTable: React.FC = ({
         <>
           {(record.particular.startsWith("GRAND") ||
             record.particular.startsWith("SUB TOTAL")) ? (
-            <Text strong>{Number(record.mid).toFixed(2)}</Text>
+            <Text strong>{formatNumber(Number(record.mid))}</Text>
           ) : (
-            record.mid > 0 && <Text>{Number(record.mid).toFixed(2)}</Text>
+            record.mid > 0 && <Text>{formatNumber(Number(record.mid))}</Text>
           )}
         </>
       )
@@ -368,24 +379,24 @@ const DataTable: React.FC = ({
         <>
           {(record.particular.startsWith("GRAND") ||
             record.particular.startsWith("SUB TOTAL")) ? (
-            <Text strong>{Number(record.pm).toFixed(2)}</Text>
+            <Text strong>{formatNumber(Number(record.pm))}</Text>
           ) : (
-            record.pm > 0 && <Text>{Number(record.pm).toFixed(2)}</Text>
+            record.pm > 0 && <Text>{formatNumber(Number(record.pm))}</Text>
           )}
         </>
       )
     },
     {
       title: "GROSS TOTAL",
-      dataIndex: "grossTotal",
-      key: "grossTotal",
-      render: (value: number) => <><Text strong>{Number(value).toFixed(2)}</Text></>
+      dataIndex: "gross_total",
+      key: "gross_total",
+      render: (value: number) => <><Text strong>{formatNumber(Number(value))}</Text></>
     },
     {
       title: "NET TOTAL",
-      dataIndex: "netTotal",
-      key: "netTotal",
-      render: (value: number) => <><Text strong>{Number(value).toFixed(2)}</Text></>
+      dataIndex: "net_total",
+      key: "net_total",
+      render: (value: number) => <><Text strong>{formatNumber(Number(value))}</Text></>
     }
   ];
 
@@ -520,8 +531,8 @@ const DataTable: React.FC = ({
       am: t.am,
       mid: t.mid,
       pm: t.pm,
-      grossTotal: t.grossTotal,
-      netTotal: t.netTotal,
+      gross_total: t.grossTotal,
+      net_total: t.netTotal,
     }));
   }, [cashiers, selectedRowKeys]);
   
@@ -533,34 +544,94 @@ const DataTable: React.FC = ({
       const tradeRow = table2Data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
       const nonTradeRow = table2Data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
       if (grandRow) {
-        setGrandTotalPos(Number(grandRow.netTotal));
+        setGrandTotalPos(Number(grandRow.net_total));
         // setGrandTotal(Number(grandRow.netTotal));
       }
       if (tradeRow) {
-        setNetTotalTrade(Number(tradeRow.netTotal));
+        setNetTotalTrade(Number(tradeRow.net_total));
         // setTradeAmount(Number(tradeRow.netTotal));
       }
       if (nonTradeRow) {
-        setNetTotalNonTrade(Number(nonTradeRow.netTotal));
+        setNetTotalNonTrade(Number(nonTradeRow.net_total));
         // setNonTradeAmount(Number(nonTradeRow.netTotal));
       }
       setLoading(false)
       setFetching(false);
     }, [table2Data]);
 
+    const exportToCSV = () => {
+      if (table2Data.length === 0) {
+        message.error('No data to export')
+        return;
+      }
+  
+      const headers = ["Particulars", "AM", "MID", "PM", "Gross Total", "Net Total"];
+      
+      const csvRows = table2Data.map((row) => [
+        row.particular,
+        row.am,
+        row.mid,
+        row.pm,
+        row.gross_total,
+        row.net_total,
+      ]);
+  
+      // Convert to CSV format
+      const csvString = [headers, ...csvRows]
+        .map((row) => row.map((cell) => `"${cell || 0}"`).join(","))
+        .join("\n");
+  
+      const blob = new Blob(["\ufeff" + csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `transactions_${selectedDate.format("YYYY_MM_DD")}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    const generatePDF = async () =>
+      {
+        if (table2Data.length === 0) {
+          message.error('No data to export')
+          return
+        }
+        
+        const blob = await pdf(<PDFDocument data={table2Data} />).toBlob();
+        const url = URL.createObjectURL(blob);
+
+        // window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `transactions_${selectedDate.format("YYYY_MM_DD")}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
   return (
     <div>
       <Table
-        title={() => (
-          <Space>
-            <CustomDatePicker currentDate={selectedDate} onChangeDate={handleDateChange} />
-          </Space>
-        )}
+        title={() =>
+        {
+          return (
+            <Space style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+              <Space>
+                <CustomDatePicker currentDate={selectedDate} onChangeDate={handleDateChange} />
+              </Space>
+              <Space>
+                <Button type="primary" onClick={exportToCSV}>{<ExportOutlined />}Export as CSV</Button>
+                <Button type="primary" onClick={generatePDF}>{<FilePdfOutlined />}Export as PDF</Button> 
+              </Space>
+            </Space>
+          )
+        }}
         columns={columnsT1}
         rowSelection={{ type: "checkbox", ...rowSelection }}
         dataSource={cashiers}
         rowKey={(record) => `${record.cashier_id}-${record.shift.toLowerCase()}`}
-        pagination={false}
         loading={loading}
       />
       <Table

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStatsStore } from '@/stores/statsStore';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography, notification } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
 import { FilePdfOutlined, ExportOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
@@ -77,17 +77,9 @@ const TestTable: React.FC<TestTableProps> = ({
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi,] = message.useMessage();
-  const [api, ] = notification.useNotification();
-  const openNotification = (pauseOnHover: boolean) => () => {
-    api.open({
-      message: 'Notification Title',
-      description:
-        'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
-      showProgress: true,
-      pauseOnHover,
-    });
-  };
-
+  // useEffect(() => {
+  //   onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
+  // }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
 
   useEffect(() => {
     fetchData(currentDate);
@@ -244,7 +236,7 @@ const TestTable: React.FC<TestTableProps> = ({
 
   const exportToCSV = () => {
     if (data.length === 0) {
-      message.warning("No data to export.");
+      message.warning("No data to export");
       return;
     }
 
@@ -278,7 +270,7 @@ const TestTable: React.FC<TestTableProps> = ({
   const generatePDF = async () =>
   {
     if (data.length === 0) {
-      openNotification(true)
+      message.warning("No data to export");
       return
     }
     
