@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
