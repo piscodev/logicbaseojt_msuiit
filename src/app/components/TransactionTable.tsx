@@ -5,13 +5,6 @@ import type { TableProps } from 'antd';
 
 type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
 
-// interface DataType {
-//   key: React.ReactNode;
-//   name: string;
-//   age: number;
-//   address: string;
-//   children?: DataType[];
-// }
 
 interface Transaction {
   particular: string;

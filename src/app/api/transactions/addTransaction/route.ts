@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
         const {
             cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge//, sub_total_trade_POS, grand_total_trade_POS, z_reading_POS, short_over_POS
         }: TransactionValuesState = bodyData.data;
-        console.log("Received: ", cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge)
+        //console.log("Received: ", cashier_name, shift, cash, check, bpi_cc, bpi_dc, metro_cc, metro_dc, pay_maya, aub_cc, gcash, foodpanda, streetby, grabfood, mm_head, mm_commisary, mm_, mm_rm, mm_dm, mm_km, food_charge)
         // Validate if all fields are provided
         if (!cashier_name || !shift && (!cash || !check || !bpi_cc || !bpi_dc || !metro_cc || !metro_dc || !pay_maya || !aub_cc || !gcash || !foodpanda || !streetby || !grabfood || !mm_head || !mm_commisary || !mm_ || !mm_rm || !mm_dm || !mm_km || !food_charge)) {
             return NextResponse.json({ error: 'Some required fields are not filled' }, { status: 400 });
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
                 if (particularName === 'MM-' && particular.amount && particular.amount > 0) {
                     // If we need to handle dynamic MM- suffixes from user input
                     // We'll need additional logic here to create/retrieve these
-                    // This example assumes they're predefined in Particulars table
+                    // This code assumes they're predefined in Particulars table
                     particularName = 'MM-'; // Keep as-is if predefined
                 }
                 try {

@@ -17,9 +17,7 @@ export default function LandingPage()
   if(user)
     router.push('/dashboard');
 
-
   const handleLogin = () => {
-    // Redirect to your login page. Adjust the path as needed.
     router.push("/login");
   };
 

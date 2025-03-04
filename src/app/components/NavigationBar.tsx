@@ -9,12 +9,6 @@ import { useRouter } from 'next/navigation';
 
 const { Header }  = Layout
 
-// const items = [
-//     { key: "1", label: "Home" },
-//     { key: "2", label: "About" },
-//     { key: "3", label: "Contact" }
-// ]
-
 const Nav: React.FC = () => {
     const router = useRouter();
     return (
@@ -36,12 +30,6 @@ const Nav: React.FC = () => {
                   }}
                 />
             </Card>
-            {/* <Menu
-                mode="horizontal"
-                defaultSelectedKeys={["1"]}
-                items={items}
-                style={{ flex: 1, background: "#1669B2" }}
-            /> */}
             <LogoutButton />
         </Header>
         

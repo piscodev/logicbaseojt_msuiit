@@ -11,7 +11,7 @@ interface CustomDatePickerProps {
 const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ currentDate, onChangeDate }) => (
   <DatePicker
     onChange={onChangeDate}
-    value={currentDate} // Use `value` instead of `defaultValue` for controlled input
+    value={currentDate}
     presets={[
       { label: "Yesterday", value: dayjs().add(-1, "d") },
       { label: "Last Week", value: dayjs().add(-7, "d") },
