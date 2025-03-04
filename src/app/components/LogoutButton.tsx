@@ -40,9 +40,9 @@ export default function LogoutButton() {
     }
   };
 
-  if(!user){
-    router.push('/')
-  }
+  // if(!user){
+  //   router.push('/')
+  // }
 
   // Display actual name and email
   const userName = user?.name || "Guest";

@@ -7,10 +7,12 @@ import { Tabs, TabsProps } from "antd";
 import TestTable from "../components/testTable";
 import DataTable from "../components/DataTableTest";
 // import { useStatsStore } from "@/stores/statsStore";
-  
+import { useUserStore } from "@/stores/userStore";
 
 export default function App()
 {
+  const user = useUserStore((state) => state.user);
+  console.log("user213412", user)
   // const { net_total_trade, net_total_non_trade, grand_total_pos, fetching } = useStatsStore();
   // const [tradeAmount, setTradeAmount] = useState<number>(0);
   // const [nonTradeAmount, setNonTradeAmount] = useState<number>(0);

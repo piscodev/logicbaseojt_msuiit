@@ -43,7 +43,7 @@ const StatsCard: React.FC = () =>
                 />
             </Card>
           </Col>
-          <Col key='NO-trade' span={8}>
+          <Col key='Non-trade' span={8}>
             <Card loading={fetching}>
                 <Card.Meta
                     avatar={
@@ -58,7 +58,7 @@ const StatsCard: React.FC = () =>
                 />
             </Card>
           </Col>
-          <Col key='trade' span={8}>
+          <Col key='Grand-total-trade' span={8}>
             <Card loading={fetching}>
                 <Card.Meta
                     avatar={

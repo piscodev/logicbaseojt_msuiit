@@ -50,12 +50,16 @@ export default function AuthPage() {
   //   window.addEventListener("storage", updateUserData);
   //   return () => window.removeEventListener("storage", updateUserData);
   // }, []);
-
-  useEffect(()=>{
-    if(user){
-      router.push("/dashboard");
-    }
-  })
+  // console.log("USER:::", user);
+  if(user)
+    router.push("/dashboard");
+  // useEffect(()=>{
+    
+  //     return
+  //   }
+  // },[])
+  // console.log("USER::0000:", user);
+  
 
   const showMessage = (type: 'success' | 'error' | 'warning', content: string) => {
     setMessageType(type);
@@ -86,13 +90,23 @@ export default function AuthPage() {
       const data = await res.json();
 
       console.log("Response received:", data);
-
+      
       if (!res.ok) {
         showMessage('error', data.error)
         throw new Error(data.error);
       }
-      if(!isLogin){
+
+      if(isLogin){
+        setUser({name: data.user.name, email:email})
+        console.log("user213412", user)
+        showMessage('success', "Redirecting to Dashboard...");
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 250);
+        return
+      } else {
         setUser({name: name, email:email})
+        console.log("user2134=====12", user)
         clearCashiers();// will fetch new data since a new cashier is added
         showMessage('success', "Redirecting to Dashboard...");
         setTimeout(() => {
@@ -100,12 +114,7 @@ export default function AuthPage() {
         }, 250);
         return
       }
-      setUser({name: data.user.name, email:email})
-      showMessage('success', "Redirecting to Dashboard...");
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 250);
-      return
+      
 
 
       // if (isLogin) {
