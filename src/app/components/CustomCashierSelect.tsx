@@ -8,6 +8,7 @@ import { useStatsStore } from "@/stores/statsStore";
 import PDFDocument from "./PDFConverter";
 import { pdf } from "@react-pdf/renderer";
 import { ExportOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { formatNumber } from "../lib/formatter";
 const { Text } = Typography;
 // interface DataTableProps {
 //   onUpdateAmounts: (trade: number, nonTrade: number, grand: number, loading: boolean) => void;
@@ -51,12 +52,6 @@ interface ApiCashier {
 interface ResponseData {
   cashiers?: ApiCashier[];
 }
-
-const formatNumber = (value: number | undefined): string => {
-  if (value === undefined || isNaN(value)) return "0"; // Handle undefined values
-  return value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,"); // Adds commas
-};
-
 
 // Transform API response into an array of CashierShift
 const transformAPIResponse = (apiData: ResponseData): CashierShift[] => {
@@ -528,10 +523,10 @@ const DataTable: React.FC = ({
     return Array.from(transactionMap.values()).map(t => ({
       key: t.particular,
       particular: t.particular,
-      am: t.am,
-      mid: t.mid,
-      pm: t.pm,
-      gross_total: t.grossTotal,
+      am: parseFloat(t.am.toFixed(2)),
+      mid: parseFloat(t.mid.toFixed(2)),
+      pm: parseFloat(t.pm.toFixed(2)),
+      gross_total: t.grossTotal.toFixed(2),
       net_total: t.netTotal,
     }));
   }, [cashiers, selectedRowKeys]);
@@ -566,15 +561,15 @@ const DataTable: React.FC = ({
       }
   
       const headers = ["Particulars", "AM", "MID", "PM", "Gross Total", "Net Total"];
-      
+
       const csvRows = table2Data.map((row) => [
         row.particular,
-        row.am,
-        row.mid,
-        row.pm,
-        row.gross_total,
-        row.net_total,
-      ]);
+        formatNumber(row.am),
+        formatNumber(row.mid),
+        formatNumber(row.pm),
+        formatNumber(Number(row.gross_total)),
+        formatNumber(row.net_total),
+      ])
   
       // Convert to CSV format
       const csvString = [headers, ...csvRows]
@@ -592,13 +587,23 @@ const DataTable: React.FC = ({
     };
 
     const generatePDF = async () =>
-      {
+    {
         if (table2Data.length === 0) {
           message.error('No data to export')
           return
         }
-        
-        const blob = await pdf(<PDFDocument data={table2Data} />).toBlob();
+
+        const data = table2Data.map((row) => ({
+            key: row.key,
+            particular: row.particular,
+            am: formatNumber(row.am),
+            mid: formatNumber(row.mid),
+            pm: formatNumber(row.pm),
+            gross_total: formatNumber(Number(row.gross_total)),
+            net_total: formatNumber(row.net_total),
+        }))
+
+        const blob = await pdf(<PDFDocument data={data} />).toBlob();
         const url = URL.createObjectURL(blob);
 
         // window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
@@ -609,7 +614,7 @@ const DataTable: React.FC = ({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      }
+    }
 
   return (
     <div>

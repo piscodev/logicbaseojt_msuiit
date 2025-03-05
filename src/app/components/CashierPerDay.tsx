@@ -8,6 +8,7 @@ import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from './drawer';
 import PDFDocument from './PDFConverter';
 import { pdf } from '@react-pdf/renderer';
+import { formatNumber } from '../lib/formatter';
 
 const { Text } = Typography;
 interface TestTableProps {
@@ -244,11 +245,11 @@ const TestTable: React.FC<TestTableProps> = ({
     
     const csvRows = data.map((row) => [
       row.particular,
-      row.am,
-      row.mid,
-      row.pm,
-      row.gross_total,
-      row.net_total,
+      formatNumber(Number(row.am)),
+      formatNumber(Number(row.mid)),
+      formatNumber(Number(row.pm)),
+      formatNumber(Number(row.gross_total)),
+      formatNumber(Number(row.net_total)),
     ]);
 
     // Convert to CSV format
@@ -273,9 +274,22 @@ const TestTable: React.FC<TestTableProps> = ({
       message.warning("No data to export");
       return
     }
+
+    const fdata = data.map((row) => ({
+        key: row.key,
+        particular: row.particular,
+        am: formatNumber(Number(row.am)),
+        mid: formatNumber(Number(row.mid)),
+        pm: formatNumber(Number(row.pm)),
+        gross_total: formatNumber(row.gross_total),
+        net_total: formatNumber(row.net_total),
+    }))
     
-    const blob = await pdf(<PDFDocument data={data} />).toBlob();
+    const blob = await pdf(<PDFDocument data={fdata} />).toBlob();
     const url = URL.createObjectURL(blob);
+
+    window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
+
 
     const link = document.createElement("a");
     link.href = url;
