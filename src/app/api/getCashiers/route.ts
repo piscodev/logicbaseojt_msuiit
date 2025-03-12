@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/app/lib/Database/db';
-import { Cashier } from '@/app/lib/Interface/interface';
+import { User } from '@/app/lib/Interface/interface';
 import { FieldPacket } from 'mysql2';
 export async function GET(req: NextRequest) {
   if (req.method === 'GET') {
@@ -9,11 +9,17 @@ export async function GET(req: NextRequest) {
       connection = await pool.getConnection();
       
       // Query to get all cashier names
-      const [rows]: [Cashier[],FieldPacket[]] = await connection.query(
-        'SELECT * FROM cashier ORDER BY name ASC'
-      ) as [Cashier[],FieldPacket[]];
+      const [rows]: [User[],FieldPacket[]] = await connection.query(
+        `
+          SELECT u.name 
+          FROM Cashier c
+          JOIN User u ON c.user_id = u.id
+          WHERE u.user_type = 'cashier'
+          ORDER BY c.name ASC
+        `
+      ) as [User[],FieldPacket[]];
       // Extract just the names from the result
-      const cashiers = rows.map((row: Cashier) => ({
+      const cashiers = rows.map((row: User) => ({
         value: row.name}));
       
       return NextResponse.json(

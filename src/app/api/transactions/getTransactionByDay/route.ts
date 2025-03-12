@@ -147,7 +147,6 @@ export async function POST(req: NextRequest) {
             grossNonTradeTotal += Number(gross);
             netNonTradeTotal += Number(net);
         }
-        // console.log(`Current key: ${currentKey} ; current index: ${index} ; current type: ${particular.type}`)
         const row: TransactionRow = {
           key: currentKey,
           particular: particular.name.toUpperCase(),

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest){
             const [transactions]: [TransactionsData[], FieldPacket[]] = await connection.query(`
                 SELECT 
                 c.id AS cashier_id,
-                c.name AS cashier_name,
+                u.name AS cashier_name,
                 s.name AS shift,
                 p.name AS particular,
                 p.id AS id,
@@ -61,13 +61,14 @@ export async function POST(req: NextRequest){
                 COALESCE(SUM(CASE WHEN p.id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
                 FROM Transaction t
                 JOIN Cashier c ON t.cashier_id = c.id
+                JOIN User u ON c.user_id = u.id
                 JOIN Shift s ON t.shift_id = s.id
                 LEFT JOIN TransactionDetail td ON t.id = td.transaction_id
                 LEFT JOIN Particular p ON td.particular_id = p.id
                 WHERE t.date = ?
                 GROUP BY c.id, s.id, p.id
                 HAVING SUM(td.amount) > 0
-                ORDER BY c.name, s.id, p.name
+                ORDER BY u.name, s.id, p.name
             `, [currentDate]) as [TransactionsData[], FieldPacket[]];
             console.log('transactions: ', transactions);
             // Get all particulars

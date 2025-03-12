@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
         FROM Transaction t
         JOIN Shift AS s ON t.shift_id = s.id
         JOIN Cashier AS c ON t.cashier_id = c.id
+        JOIN User AS u ON c.user_id = u.id
         LEFT JOIN TransactionDetail AS td ON t.id = td.transaction_id
         LEFT JOIN Particular AS p ON td.particular_id = p.id
         WHERE t.date = ?
