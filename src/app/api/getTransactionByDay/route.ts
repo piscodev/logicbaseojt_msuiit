@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
           p.name AS particular,
           s.name AS shift,
           SUM(td.amount) AS amount,
-          MAX(c.name) AS cashier
+          MAX(u.name) AS cashier
         FROM Transaction t
         JOIN Shift AS s ON t.shift_id = s.id
         JOIN Cashier AS c ON t.cashier_id = c.id
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         WHERE t.date = ?
         GROUP BY p.name, s.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
-        
+        console.log("Transactions: ", transactions)
       // Create transaction map
       const transactionMap = new Map<string, {
         AM?: { amount: number, cashier: string },

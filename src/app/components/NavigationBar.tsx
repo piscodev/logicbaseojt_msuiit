@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Layout, Card } from 'antd';
+import { Layout, Card, Space, Button } from 'antd';
 import Icon from '@ant-design/icons'
 import LogoutButton from './LogoutButton';
 import MoneyCacheLogo from "./../../../public/file.svg"
@@ -14,6 +14,7 @@ const Nav: React.FC = () => {
     return (
     <>
         <Header style={{ display: "flex", alignItems: "center", justifyContent:'space-between', background: "#1669B2", height:'72px' }}>
+            <Space>
             <Card
                 hoverable
                 onClick={()=>router.push("/")}
@@ -30,6 +31,8 @@ const Nav: React.FC = () => {
                   }}
                 />
             </Card>
+            <Button type='link' href='/dashboard/Cashiers'>Cashiers</Button>
+            </Space>
             <LogoutButton />
         </Header>
     </>
