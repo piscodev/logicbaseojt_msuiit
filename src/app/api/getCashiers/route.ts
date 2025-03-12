@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/app/lib/Database/db';
 import { User } from '@/app/lib/Interface/interface';
 import { FieldPacket } from 'mysql2';
@@ -9,17 +8,16 @@ export async function GET(req: NextRequest) {
     try {
       connection = await pool.getConnection();
       
-      const [rows]: [User[], FieldPacket[]] = await connection.query(
+      // Query to get all cashier names
+      const [rows]: [User[],FieldPacket[]] = await connection.query(
         `
           SELECT u.name 
           FROM Cashier c
           JOIN User u ON c.user_id = u.id
           WHERE u.user_type = 'cashier'
-          ORDER BY u.name ASC
+          ORDER BY c.name ASC
         `
-      ) as [User[], FieldPacket[]];
-      
-      console.log('Result: ', rows);
+      ) as [User[],FieldPacket[]];
       // Extract just the names from the result
       const cashiers = rows.map((row: User) => ({
         value: row.name}));

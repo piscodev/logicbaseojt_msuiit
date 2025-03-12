@@ -31,6 +31,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
     const [message, setMessage] = useState('')
+    clearItems();//Ensure Items are cleared on component load.
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashierNames`, {
@@ -71,8 +72,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     const prevValueSubTotalNonTradePosRef = useRef<number | 0>(0)
     const formatter_subTotalTradePos: StatisticProps['formatter'] = (value) => {
         const startValue = prevValueSubTotalTradePosRef.current;
-
-        
         return (
         
             <CountUp start={startValue as number} delay={1} end={value as number} separator="," decimals={2}

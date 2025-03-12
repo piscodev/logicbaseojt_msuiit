@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
             const [txResult]: [ResultSetHeader, FieldPacket[]] = await connection.query(
                 `INSERT INTO Transaction (cashier_id, shift_id, date)
                 VALUES (
-                (SELECT id FROM Cashier WHERE name = ?),
+                (SELECT id FROM User WHERE name = ?),
                 (SELECT id FROM Shift WHERE name = ?),
                 ?
                 )`,

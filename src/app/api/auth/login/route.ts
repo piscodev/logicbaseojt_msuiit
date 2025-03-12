@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Cashier } from "@/app/lib/Interface/interface";
+import { User } from "@/app/lib/Interface/interface";
 import { FieldPacket } from "mysql2";
 
 export async function POST(req: Request) {
@@ -10,10 +10,10 @@ export async function POST(req: Request) {
     const { email, password } = await req.json();
 
     // Fetch user by email
-    const [rows]: [Cashier[], FieldPacket[]] = await pool.query(
-      "SELECT * FROM Cashier WHERE email = ?", 
+    const [rows]: [User[], FieldPacket[]] = await pool.query(
+      "SELECT * FROM User WHERE email = ?", 
       [email]
-    ) as [Cashier[], FieldPacket[]];
+    ) as [User[], FieldPacket[]];
 
     if (rows.length === 0) {
       return NextResponse.json({ error: "Email not found. Please sign up first." }, { status: 401 });;

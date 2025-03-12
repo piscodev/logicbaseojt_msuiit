@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/Database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Cashier } from "@/app/lib/Interface/interface";
+import { User } from "@/app/lib/Interface/interface";
 import { FieldPacket, ResultSetHeader } from "mysql2";
 import { DateTime } from "luxon";
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, email, password, user_type } = await req.json();
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const connection = await pool.getConnection();
     try{
       // ✅ Check if email already exists
-      const existingUser: [Cashier[], FieldPacket[]] = await connection.query("SELECT id FROM Cashier WHERE email = ?", [email]) as [Cashier[], FieldPacket[]];
+      const existingUser: [User[], FieldPacket[]] = await connection.query("SELECT id FROM User WHERE email = ?", [email]) as [User[], FieldPacket[]];
       console.log('Existing user: ', existingUser[0]);
       if (existingUser[0].length > 0) {
         return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
@@ -28,9 +28,18 @@ export async function POST(req: Request) {
       const hashedPassword = await bcrypt.hash(password, 10);
       // ✅ Insert new user
       console.log('Will insert user ');
+      let query;
+      let values=[];
+      if(user_type){
+        query = "INSERT INTO User (name, email, hashed_password, registeredAt, user_type) VALUES (?, ?, ?, ?, ?)";
+        values=[name, email, hashedPassword, formattedDateString, user_type];
+      } else {
+        query = "INSERT INTO User (name, email, hashed_password, registeredAt) VALUES (?, ?, ?, ?, ?)";
+        values=[name, email, hashedPassword, formattedDateString];
+      }
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-        "INSERT INTO Cashier (name, email, hashed_password, registeredAt) VALUES (?, ?, ?, ?)",
-        [name, email, hashedPassword, formattedDateString]
+        query,
+        values
       ) as [ResultSetHeader, FieldPacket[]];
       console.log('Inserted user ');
       // ✅ Generate JWT Token

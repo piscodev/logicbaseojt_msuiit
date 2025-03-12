@@ -32,7 +32,6 @@ const Nav: React.FC = () => {
             </Card>
             <LogoutButton />
         </Header>
-        
     </>
 )}
 

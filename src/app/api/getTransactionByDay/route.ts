@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import pool from '../../../lib/Database/db';
+import pool from '../../lib/Database/db';
 import { FieldPacket } from 'mysql2';
 import { DateTime } from 'luxon';
-interface ParticularDefinition {
-  id: number;
-  name: string;
-  type: 'Trade' | 'Non-Trade';
-  fee_percent: number;
-}
+import { ParticularDefinition } from '@/app/lib/Interface/interface';
 
 interface TransactionData {
   particular: string;
@@ -61,13 +56,13 @@ export async function POST(req: NextRequest) {
         FROM Transaction t
         JOIN Shift AS s ON t.shift_id = s.id
         JOIN Cashier AS c ON t.cashier_id = c.id
+        JOIN User AS u ON c.user_id = u.id
         LEFT JOIN TransactionDetail AS td ON t.id = td.transaction_id
         LEFT JOIN Particular AS p ON td.particular_id = p.id
         WHERE t.date = ?
         GROUP BY p.name, s.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
-      console.log('Transactions: ', transactions)
-
+        
       // Create transaction map
       const transactionMap = new Map<string, {
         AM?: { amount: number, cashier: string },
@@ -129,9 +124,6 @@ export async function POST(req: NextRequest) {
         const am = amNum.toFixed(2) || '';
         const mid = midNum.toFixed(2) || '';
         const pm = pmNum.toFixed(2) || '';
-        console.log("  ")
-        // console.log('Index: ', index)
-        // console.log('Particular: ', particular)
         const numericValues = [Number(txData.AM?.amount), Number(txData.MID?.amount), Number(txData.PM?.amount)]
           .filter(v => typeof v === 'number');
         
@@ -199,8 +191,8 @@ export async function POST(req: NextRequest) {
                     am: subTotalNonTradeAM,
                     mid: subTotalNonTradeMID,
                     pm: subTotalNonTradePM,
-                    gross_total: grossNonTradeTotal,
-                    net_total: netNonTradeTotal
+                    gross_total: grossNonTradeTotal.toFixed(2),
+                    net_total: netNonTradeTotal.toFixed(2),
                 };
                 nonTradeRows.push(nonTrade)
                 grandPOSAM += subTotalNonTradeAM

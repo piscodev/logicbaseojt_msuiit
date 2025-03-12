@@ -55,7 +55,7 @@ export interface TransactionValuesState {
     short_over_POS?: number
 }
 
-export interface Cashier {
+export interface User {
     id: number
     name: string
     email: string
