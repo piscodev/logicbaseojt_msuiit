@@ -4,8 +4,8 @@ import React from "react";
 import Card from "antd/es/card/Card";
 import StatsCard from "../components/StatsCard";
 import { Tabs, TabsProps } from "antd";
-import TestTable from "../components/testTable";
-import DataTable from "../components/DataTableTest";
+import TestTable from "../components/CashierPerDay";
+import DataTable from "../components/CustomCashierSelect";
 
 export default function App()
 {

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useStatsStore } from '@/stores/statsStore';
 import type { TableProps } from 'antd';
-import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography, notification } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, Space, Button, Table, Typography } from 'antd';
 import { FilePdfOutlined, ExportOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
 import TransactionFormDrawer from './drawer';
 import PDFDocument from './PDFConverter';
 import { pdf } from '@react-pdf/renderer';
+import { formatNumber } from '../lib/formatter';
 
 const { Text } = Typography;
 interface TestTableProps {
@@ -77,17 +78,9 @@ const TestTable: React.FC<TestTableProps> = ({
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
   const [loading, setLoading] = useState<boolean>(false);
   const [messageApi,] = message.useMessage();
-  const [api, ] = notification.useNotification();
-  const openNotification = (pauseOnHover: boolean) => () => {
-    api.open({
-      message: 'Notification Title',
-      description:
-        'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
-      showProgress: true,
-      pauseOnHover,
-    });
-  };
-
+  // useEffect(() => {
+  //   onUpdateAmounts(tradeAmount, nonTradeAmount, grandTotal, loading);
+  // }, [onUpdateAmounts, tradeAmount, nonTradeAmount, grandTotal, loading]);
 
   useEffect(() => {
     fetchData(currentDate);
@@ -244,7 +237,7 @@ const TestTable: React.FC<TestTableProps> = ({
 
   const exportToCSV = () => {
     if (data.length === 0) {
-      message.warning("No data to export.");
+      message.warning("No data to export");
       return;
     }
 
@@ -252,11 +245,11 @@ const TestTable: React.FC<TestTableProps> = ({
     
     const csvRows = data.map((row) => [
       row.particular,
-      row.am,
-      row.mid,
-      row.pm,
-      row.gross_total,
-      row.net_total,
+      formatNumber(Number(row.am)),
+      formatNumber(Number(row.mid)),
+      formatNumber(Number(row.pm)),
+      formatNumber(Number(row.gross_total)),
+      formatNumber(Number(row.net_total)),
     ]);
 
     // Convert to CSV format
@@ -278,12 +271,25 @@ const TestTable: React.FC<TestTableProps> = ({
   const generatePDF = async () =>
   {
     if (data.length === 0) {
-      openNotification(true)
+      message.warning("No data to export");
       return
     }
+
+    const fdata = data.map((row) => ({
+        key: row.key,
+        particular: row.particular,
+        am: formatNumber(Number(row.am)),
+        mid: formatNumber(Number(row.mid)),
+        pm: formatNumber(Number(row.pm)),
+        gross_total: formatNumber(row.gross_total),
+        net_total: formatNumber(row.net_total),
+    }))
     
-    const blob = await pdf(<PDFDocument data={data} />).toBlob();
+    const blob = await pdf(<PDFDocument data={fdata} />).toBlob();
     const url = URL.createObjectURL(blob);
+
+    window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
+
 
     const link = document.createElement("a");
     link.href = url;

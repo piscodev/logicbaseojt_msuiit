@@ -128,8 +128,8 @@ interface PDFDocumentProps {
     am: number | string; 
     mid: number | string; 
     pm: number | string; 
-    gross_total: number; 
-    net_total: number;
+    gross_total: number | string; 
+    net_total: number | string;
   }[];
 }
 
