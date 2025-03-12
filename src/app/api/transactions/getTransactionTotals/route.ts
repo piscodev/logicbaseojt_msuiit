@@ -58,10 +58,11 @@ export async function POST(res: NextRequest)
         p.name AS particular,
         s.name AS shift,
         SUM(td.amount) AS amount,
-        MAX(c.name) AS cashier
+        MAX(u.name) AS cashier
       FROM transaction t
       JOIN shift AS s ON t.shift_id = s.id
       JOIN cashier AS c ON t.cashier_id = c.id
+      JOIN User AS u ON c.user_id = u.id
       LEFT JOIN transactiondetail AS td ON t.id = td.transaction_id
       LEFT JOIN particular AS p ON td.particular_id = p.id
       WHERE t.date = ?

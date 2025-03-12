@@ -7,7 +7,12 @@ import { FieldPacket, ResultSetHeader } from "mysql2";
 import { DateTime } from "luxon";
 export async function POST(req: Request) {
   try {
-    const { name, email, password, user_type } = await req.json();
+    const { name, email, password, user_type, rate } = await req.json();
+    console.log("Rate: ", rate)
+    console.log("Type: ", user_type)
+    console.log("Password: ", password)
+    console.log("Name: ", name)
+    console.log("Email: ", email)
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
@@ -34,7 +39,7 @@ export async function POST(req: Request) {
         query = "INSERT INTO User (name, email, hashed_password, registeredAt, user_type) VALUES (?, ?, ?, ?, ?)";
         values=[name, email, hashedPassword, formattedDateString, user_type];
       } else {
-        query = "INSERT INTO User (name, email, hashed_password, registeredAt) VALUES (?, ?, ?, ?, ?)";
+        query = "INSERT INTO User (name, email, hashed_password, registeredAt) VALUES (?, ?, ?, ?)";
         values=[name, email, hashedPassword, formattedDateString];
       }
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.query(
@@ -42,6 +47,13 @@ export async function POST(req: Request) {
         values
       ) as [ResultSetHeader, FieldPacket[]];
       console.log('Inserted user ');
+
+      const userId = result.insertId;
+      const [cashier]: [ResultSetHeader, FieldPacket[]] = await connection.query(
+        "INSERT INTO Cashier (user_id, rate) VALUES (?, ?)",
+        [userId, rate]
+      ) as [ResultSetHeader, FieldPacket[]];
+      console.log("Inserted Cashier: ", cashier)
       // ✅ Generate JWT Token
       const token = jwt.sign(
         { id: result.insertId, email }, // Payload

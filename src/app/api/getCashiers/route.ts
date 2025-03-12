@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
           FROM Cashier c
           JOIN User u ON c.user_id = u.id
           WHERE u.user_type = 'cashier'
-          ORDER BY c.name ASC
+          ORDER BY u.name ASC
         `
       ) as [User[],FieldPacket[]];
       // Extract just the names from the result
