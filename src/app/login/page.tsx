@@ -41,8 +41,9 @@ export default function AuthPage() {
       setMesssageKey(DateTime.now().setZone('Asia/Manila').toFormat('yyyy LLL dd'))
     };
     try {
+      const user_type = 'admin'
       const url = isLogin ? "/api/auth/login" : "/api/auth/signup";
-      const body = isLogin ? { email, password } : { name, email, password };
+      const body = isLogin ? { email, password } : { name, email, password, user_type};
 
       console.log("Submitting request to:", url);
       console.log("Request body:", body);
