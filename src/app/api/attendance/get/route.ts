@@ -1,10 +1,7 @@
 
-import { FieldPacket, QueryResult, ResultSetHeader } from "mysql2";
+import { FieldPacket } from "mysql2";
 import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { message } from "antd";
-// import { TransactionValuesState } from '@/app/lib/Interface/interface';
-// import { DateTime } from "luxon";
 interface AttendanceData {
     time_in: string,
     time_out: string,

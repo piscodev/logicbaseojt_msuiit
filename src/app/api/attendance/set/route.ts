@@ -1,5 +1,5 @@
 
-import { FieldPacket, QueryResult, ResultSetHeader } from "mysql2";
+import { FieldPacket } from "mysql2";
 import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
 // import { TransactionValuesState } from '@/app/lib/Interface/interface';
