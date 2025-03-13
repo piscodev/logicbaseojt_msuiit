@@ -121,7 +121,7 @@ const CashiersTable:React.FC = () => {
     dataSource={cashiers}
     onChange={onChange}
     showSorterTooltip={{ target: 'sorter-icon' }}
-    style={{padding:"32px"}}
+    pagination={{ pageSize: 10 }}
   />
  )
 };
