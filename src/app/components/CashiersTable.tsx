@@ -5,39 +5,39 @@ import type { TableColumnsType, TableProps } from 'antd';
 interface DataType {
   key: React.Key;
   name: string;
-  age: number;
-  address: string;
+  rate: number;
+//   address: string;
 }
 
 const columns: TableColumnsType<DataType> = [
     {
       title: 'Name',
       dataIndex: 'name',
-      showSorterTooltip: { target: 'full-header' },
-      filters: [
-        {
-          text: 'Joe',
-          value: 'Joe',
-        },
-        {
-          text: 'Jim',
-          value: 'Jim',
-        },
-        {
-          text: 'Submenu',
-          value: 'Submenu',
-          children: [
-            {
-              text: 'Green',
-              value: 'Green',
-            },
-            {
-              text: 'Black',
-              value: 'Black',
-            },
-          ],
-        },
-      ],
+    //   showSorterTooltip: { target: 'full-header' },
+    //   filters: [
+    //     {
+    //       text: 'Joe',
+    //       value: 'Joe',
+    //     },
+    //     {
+    //       text: 'Jim',
+    //       value: 'Jim',
+    //     },
+    //     {
+    //       text: 'Submenu',
+    //       value: 'Submenu',
+    //       children: [
+    //         {
+    //           text: 'Green',
+    //           value: 'Green',
+    //         },
+    //         {
+    //           text: 'Black',
+    //           value: 'Black',
+    //         },
+    //       ],
+    //     },
+    //   ],
       // specify the condition of filtering result
       // here is that finding the name started with `value`
       onFilter: (value, record) => record.name.indexOf(value as string) === 0,
@@ -45,26 +45,26 @@ const columns: TableColumnsType<DataType> = [
       sortDirections: ['descend'],
     },
     {
-      title: 'Age',
-      dataIndex: 'age',
+      title: 'Rate',
+      dataIndex: 'rate',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.age - b.age,
+      sorter: (a, b) => a.rate - b.rate,
     },
-    {
-      title: 'Address',
-      dataIndex: 'address',
-      filters: [
-        {
-          text: 'London',
-          value: 'London',
-        },
-        {
-          text: 'New York',
-          value: 'New York',
-        },
-      ],
-      onFilter: (value, record) => record.address.indexOf(value as string) === 0,
-    },
+    // {
+    //   title: 'Address',
+    //   dataIndex: 'address',
+    //   filters: [
+    //     {
+    //       text: 'London',
+    //       value: 'London',
+    //     },
+    //     {
+    //       text: 'New York',
+    //       value: 'New York',
+    //     },
+    //   ],
+    //   onFilter: (value, record) => record.address.indexOf(value as string) === 0,
+    // },
   ];
   
 //   const data = [
@@ -102,18 +102,18 @@ const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter,
 const CashiersTable:React.FC = () => {
     const [cashiers, setCashiers] = useState <DataType[]>()
     const fetchData = async() => {
-        const response = await fetch('/api/CashierData',{
+        const response = await fetch('/api/getCashierData',{
             method:"GET"
         })
         if(!response.ok){
             console.error("Error getting Cashier data");
         }
         const parsedData = await response.json()
-        setCashiers(parsedData)
+        setCashiers(parsedData.cashiers)
     }
     useEffect(()=>{
         fetchData();
-    });
+    }, []);
 
  return (
     <Table<DataType>

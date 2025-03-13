@@ -63,7 +63,7 @@ export default function AuthPage() {
         throw new Error(data.error);
       }
       if(!isLogin){
-        setUser({name: name, email:email})
+        setUser({name: name, email:email, user_type:'admin'})
         console.log("user2134=====12", user)
         clearCashiers();// will fetch new data since a new cashier is added
         showMessage('success', "Redirecting to Dashboard...");
@@ -72,7 +72,7 @@ export default function AuthPage() {
         }, 250);
         return
       } 
-      setUser({name: data.user.name, email:email})
+      setUser({name: data.user.name, email:email, user_type:'cashier'})
       console.log("user213412", user)
       showMessage('success', "Redirecting to Dashboard...");
       setTimeout(() => {
