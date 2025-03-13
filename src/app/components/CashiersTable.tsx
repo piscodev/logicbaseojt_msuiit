@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Table } from 'antd';
+import { Table, DatePicker } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
-
+import { Dayjs } from 'dayjs';
+const { RangePicker } = DatePicker;
+export type NoUndefinedRangeValueType<DateType> = [start: DateType | null, end: DateType | null];
 interface DataType {
   key: React.Key;
   name: string;
   rate: number;
+  total_hours_worked: number;
+  earnings: number
 //   address: string;
 }
 
@@ -50,6 +54,18 @@ const columns: TableColumnsType<DataType> = [
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.rate - b.rate,
     },
+    {
+        title: 'Total Hours',
+        dataIndex: 'total_hours_worked',
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => a.total_hours_worked - b.total_hours_worked,
+      },
+      {
+        title: 'Total Earnings',
+        dataIndex: 'earnings',
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => a.earnings - b.earnings,
+      },
     // {
     //   title: 'Address',
     //   dataIndex: 'address',
@@ -100,10 +116,14 @@ const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter,
   };
 
 const CashiersTable:React.FC = () => {
-    const [cashiers, setCashiers] = useState <DataType[]>()
+    const [ cashiers, setCashiers ] = useState <DataType[]>()
+    const [ startDate, setStartDate ] = useState<string>('')
+    const [ endDate, setEndDate ] = useState<string>('')
     const fetchData = async() => {
         const response = await fetch('/api/getCashierData',{
-            method:"GET"
+            method:"POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ startDate, endDate })
         })
         if(!response.ok){
             console.error("Error getting Cashier data");
@@ -112,11 +132,23 @@ const CashiersTable:React.FC = () => {
         setCashiers(parsedData.cashiers)
     }
     useEffect(()=>{
+        console.log("Start: ", startDate)
+        console.log("End: ", endDate)
+        fetchData();
+    }, [startDate, endDate]);
+    useEffect(()=>{
+        // Initial fetch (default day is current date)
         fetchData();
     }, []);
 
+    const setDates = (dates: NoUndefinedRangeValueType<Dayjs> | null, dateStrings: [string, string]) => {
+        console.log("Dates: ", dateStrings)
+        setStartDate(dateStrings[0])
+        setEndDate(dateStrings[1])
+    }
  return (
     <Table<DataType>
+    title={() => <RangePicker onChange={setDates}/>}
     columns={columns}
     dataSource={cashiers}
     onChange={onChange}
