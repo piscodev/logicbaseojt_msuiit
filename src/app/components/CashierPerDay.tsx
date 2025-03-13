@@ -288,7 +288,7 @@ const TestTable: React.FC<TestTableProps> = ({
     const blob = await pdf(<PDFDocument data={fdata} />).toBlob();
     const url = URL.createObjectURL(blob);
 
-    window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
+    // window.open(url, "blank"); // for debug purposes, opens in new tab instead of downloading
 
 
     const link = document.createElement("a");
