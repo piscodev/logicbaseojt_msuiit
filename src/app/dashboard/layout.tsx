@@ -46,9 +46,6 @@ const items: MenuItem[] = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState<boolean>(false);
-  // const handleToggle = (col: boolean) => {
-  //   setCollapsed(col)
-  // }
   const router = useRouter();
   const pathname = usePathname();
   return (
@@ -71,23 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </Sider>
       <Layout>
         <Nav/>
-        {/* <Header style={{ padding: 0}}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
-          />
-        </Header> */}
         <Content style={{ padding: "0 48px", margin: "16px 0" }}>
         {children}
       </Content>
-      </Layout>
-      
+    </Layout>
     </Layout>
   );
 }
