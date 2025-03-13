@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 export type User = {
   name: string;
   email: string;
+  user_type: string;
 } | null;
 
 interface UserState {

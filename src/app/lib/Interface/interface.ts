@@ -62,6 +62,12 @@ export interface User {
     hashed_password: string
 }
 
+export interface Cashier {
+    id: number
+    rate: number
+    name: string
+}
+
 export interface CashiersTransaction
 {
     id: number

@@ -1,27 +1,49 @@
 'use client'
 
-import React from 'react';
-import { Layout, Card, Space, Menu } from 'antd';
+import React, {useState} from 'react';
+import { Layout, Card, Space, Menu, Button } from 'antd';
 import Icon from '@ant-design/icons'
+import {
+    MenuFoldOutlined,
+    MenuUnfoldOutlined
+  } from '@ant-design/icons';
 import LogoutButton from './LogoutButton';
 import MoneyCacheLogo from "./../../../public/file.svg"
 import { usePathname, useRouter } from 'next/navigation';
 
 const { Header }  = Layout
 
+// interface NavProps {
+//     onCollapsed: (collapsed: boolean) => void;
+// }
 const Nav: React.FC = () =>
 {
     const router = useRouter()
     const pathname = usePathname()
 
+    // const [col, setCollapsed] = useState<boolean>(false);
+    // const handleClick = () => {
+    //     setCollapsed(!col)
+    //     onCollapsed(col)
+    // }
     return (
     <>
         <Header style={{ display: "flex", alignItems: "center", justifyContent:'space-between', background: "#1669B2", height:'72px' }}>
             <Space>
+            {/* <Button
+            type="text"
+            icon={col ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={handleClick}
+            style={{
+              fontSize: '16px',
+              width: 64,
+              height: 64,
+            }}
+          /> */}
                 <Card
                     hoverable
                     onClick={()=>router.push("/")}
-                    style={{ width: 196, color: 'white', height: '3.5em', overflow: 'hidden', position: 'relative', marginRight: '12px' }}
+                    style={{ width: 196, color: 'white', height: '3.5em', overflow: 'hidden', position: 'relative' }}
                 >
                     <Icon
                         component={MoneyCacheLogo as React.FC<React.SVGProps<SVGSVGElement>> } 
