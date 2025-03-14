@@ -5,18 +5,18 @@ import { useRouter } from "next/navigation";
 import { Dropdown, Button, Typography, Space, MenuProps } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useUserStore } from "@/stores/userStore";
-
+import { useCashierStore } from "@/stores/cashierStore";
 const { Text } = Typography;
 
 export default function LogoutButton() {
   const router = useRouter();
   const user = useUserStore((state) => state.user)
   const clearUser = useUserStore((state) => state.clearUser)
-
+  const clearCashiers = useCashierStore((state)=>state.clearCashiers);
   const handleLogout = async () => {
     try {
       clearUser();
-
+      clearCashiers();
       router.replace("/login"); // Redirect to login page
     } catch (error) {
       console.error("Logout failed:", error);
