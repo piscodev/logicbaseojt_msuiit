@@ -36,6 +36,8 @@ export async function POST(req: NextRequest) {
             WHERE cashier_id = (SELECT c.id FROM Cashier c
                 JOIN User u ON c.user_id = u.id
                 WHERE u.name = ?)
+            AND DATE(time_in) = CURDATE()
+            AND time_out IS NULL
             `;
 
             const existingRecord:[AttendanceData[], FieldPacket[]] = await connection.query(checkQuery, [name]) as [AttendanceData[], FieldPacket[]];

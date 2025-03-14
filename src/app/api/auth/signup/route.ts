@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       console.log('Will insert user ');
       let query;
       let values=[];
-      if(user_type){
+      if(user_type==='admin'){
         query = "INSERT INTO User (name, email, hashed_password, registeredAt, user_type) VALUES (?, ?, ?, ?, ?)";
         values=[name, email, hashedPassword, formattedDateString, user_type];
       } else {
@@ -49,11 +49,14 @@ export async function POST(req: Request) {
       console.log('Inserted user ');
 
       const userId = result.insertId;
-      const [cashier]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-        "INSERT INTO Cashier (user_id, rate) VALUES (?, ?)",
-        [userId, rate]
-      ) as [ResultSetHeader, FieldPacket[]];
-      console.log("Inserted Cashier: ", cashier)
+      if(user_type!=='admin'){
+        const [cashier]: [ResultSetHeader, FieldPacket[]] = await connection.query(
+          "INSERT INTO Cashier (user_id, rate) VALUES (?, ?)",
+          [userId, rate]
+        ) as [ResultSetHeader, FieldPacket[]];
+        console.log("Inserted Cashier: ", cashier)
+      }
+      
       // ✅ Generate JWT Token
       const token = jwt.sign(
         { id: result.insertId, email }, // Payload
