@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import FooterComp from "./components/Footer";
+// import FooterComp from "./components/Footer";
 import { ConfigProvider } from "antd";
 // import Nav from "./components/NavigationBar";
 
@@ -39,7 +39,7 @@ export default function RootLayout({
           <ConfigProvider>
             {/* <Nav /> */}
             {children}
-            <FooterComp />
+            {/* <FooterComp /> */}
           </ConfigProvider>
         </AntdRegistry>
       </body>

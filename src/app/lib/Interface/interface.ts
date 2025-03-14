@@ -66,6 +66,8 @@ export interface Cashier {
     id: number
     rate: number
     name: string
+    total_hours_worked?: number
+    total_earnings ?: number
 }
 
 export interface CashiersTransaction

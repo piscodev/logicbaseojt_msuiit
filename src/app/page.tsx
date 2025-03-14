@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa";
 import { useUserStore } from "@/stores/userStore";
+import FooterComp from "./components/Footer";
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
 
@@ -45,6 +46,7 @@ export default function LandingPage()
               </Button>
           </motion.div>
         </Content>
+        <FooterComp/>
       </Layout>
     </>
   );

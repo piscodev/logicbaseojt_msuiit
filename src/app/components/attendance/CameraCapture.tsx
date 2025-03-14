@@ -11,8 +11,8 @@ const { Meta } = Card;
 const CameraCapture = () =>
 {
     const user = useUserStore((state) => state.user)
-    const [ isTimedIn, setIsTimedIn ] = useState<boolean>(true);
-    const [ isTimedOut, setIsTimedOut ] = useState<boolean>(true);
+    const [ isTimedIn, setIsTimedIn ] = useState<boolean>(false);
+    const [ isTimedOut, setIsTimedOut ] = useState<boolean>(false);
     const [ isCaptured, setIsCaptured ] = useState<boolean>(false);
     const [ isTimeOutAllowed, setIsTimeoutAllowed ] = useState<boolean>(false);
     const [ imageSrc, setImageSrc ] = useState<string>('')
@@ -52,7 +52,14 @@ const CameraCapture = () =>
         startCamera()
         setIsTimedIn(false)
         setIsTimedOut(false)
-      } else {
+      } else if (data.message === "Record for time in already exists") {
+        setIsTimedIn(true)
+        setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
+        setIsTimedOut(false)
+      }
+      else {
+        setIsTimedIn(true)
+        setIsTimedOut(true)
         setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
         setTimeOutTimeStamp(DateTime.fromISO(data.data.time_out).toFormat("yyyy-LL-dd HH:mm:ss"))
       }
@@ -113,9 +120,6 @@ const CameraCapture = () =>
     }, [isTimeOutAllowed]);
     useEffect(() =>
     {
-      
-
-        
         if(user){
           setCardTitle("Cashiers Attendance | " + user.name)
           fetchTodayAttendance()
@@ -182,11 +186,12 @@ const CameraCapture = () =>
 
             <div className="camera">
               {!isCaptured||(isTimeOutAllowed&&!isTimedOut)?(
-                <><video ref={videoRef} width="640px" height="640px">
-                Video stream not available.
-                </video>
-              <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-              </>
+                <>
+                  <video ref={videoRef} width="640px" height="640px">
+                    Video stream not available.
+                  </video>
+                  <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+                </>
               ):(
                 <div className="output">
                   <img src={imageSrc} alt="Captured snapshot will appear here" />
