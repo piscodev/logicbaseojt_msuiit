@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
             WHERE cashier_id = (SELECT c.id FROM Cashier c
                 JOIN User u ON c.user_id = u.id
                 WHERE u.name = ?)
-            GROUP BY DATE(a.time_in)
-            ORDER BY ANY_VALUE(a.time_in) DESC
+            GROUP BY DATE(a.time_in), a.time_in, a.time_out
+            ORDER BY a.time_in DESC
             `;
            
 
