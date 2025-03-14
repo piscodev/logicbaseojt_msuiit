@@ -1,15 +1,17 @@
 'use client'
 
-import React from 'react';
-import { Button, Space, Table } from 'antd';
+import React, { useState } from 'react';
+import { Button, Space, Table, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
+import CustomDatePicker from '../CustomDatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+import { ExportOutlined, FilePdfOutlined } from '@ant-design/icons';
 
 interface DataType {
   key: string;
   name: string;
-  age: number;
-  address: string;
-  tags: string[];
+  shift: string;
+  rate: number | string;
 }
 
 
@@ -26,34 +28,30 @@ const columns: TableProps<DataType>['columns'] = [
     render: (text) => <a>{text}</a>,
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
     title: 'Shift',
-    key: 'tags',
-    dataIndex: 'tags',
+    key: 'shift',
+    dataIndex: 'shift',
   },
   {
     title: 'Rate',
-    key: 'tags',
-    dataIndex: 'tags',
+    key: 'rate',
+    dataIndex: 'rate',
   },
   {
     title: 'Action',
     key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
+    render: () =>
+    {
+      return (
+        <>
+          { /* userStore user.type === "admin" && */ }
+          <Space size="middle">
+            <a>Edit</a>
+            <a>Delete</a>
+          </Space>
+        </>
+      )
+    },
   },
 ];
 
@@ -75,28 +73,34 @@ const data: DataType[] = [
   {
     key: '1',
     name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
+    shift: 'MID',
+    rate: 250,
   },
   {
     key: '2',
     name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
+    shift: 'AM',
+    rate: 250,
   },
   {
     key: '3',
     name: 'Joe Black',
-    age: 32,
-    address: 'Sydney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
+    shift: 'PM',
+    rate: 250,
   },
 ]
 
 const App: React.FC = () =>
 {
+  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
+
+  const handleDateChange = (date: Dayjs) => {
+    if (date) {
+      setSelectedDate(date);
+      // fetchData(date);
+    }
+  };
+
   return (
     <>
       <Table<DataType>
@@ -107,23 +111,22 @@ const App: React.FC = () =>
         dataSource={data}
         // loading={loading}
         title={() => 
-          <Space style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
-          
+          <Space style={{ width: 'auto', display: "flex", justifyContent: "space-between" }}>
             <Space>
-              {/* <CustomDatePicker /> */}
+              <Tooltip placement="bottom" title="Select Date">
+                <CustomDatePicker currentDate={selectedDate} onChangeDate={handleDateChange} />
+                <Button icon={<CustomDatePicker currentDate={selectedDate} onChangeDate={handleDateChange} />}></Button>
+              </Tooltip>
               <Button onClick={() => console.log()}>Refresh Data</Button>
-              {/* <TransactionFormDrawer onSubmit={handleTransactionProcess} selectedDate={currentDate} /> */}
             </Space>
-          
-            {/* <Space>
-              <Button type="primary" onClick={exportToCSV}>{<ExportOutlined />}Export as CSV</Button>
-              <Button type="primary" onClick={generatePDF}>{<FilePdfOutlined />}Export as PDF</Button> 
-            </Space> */}
+            <Space>
+              <Button type="primary">{<ExportOutlined />}To CSV</Button>
+              <Button type="primary">{<FilePdfOutlined />}To PDF</Button> 
+            </Space>
           </Space>
         }
         columns={columns}
         rowClassName="editable-row"
-        pagination={false}
         size="middle"
         scroll={{ y: 105 * 5 }}
       />

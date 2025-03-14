@@ -1,210 +1,260 @@
 'use client'
 
 import { useEffect, useRef, useState } from "react";
-import { Card, Button, Space } from "antd";
+import { Card, Col, Row, Button, Alert, Space } from "antd";
+import CashiersDataTableList from "./CashiersDataTableList";
 import { useUserStore } from "@/stores/userStore";
-import { DateTime } from "luxon";
-const { Meta } = Card;
-// import CashiersDataTableList from "./CashiersDataTableList";
+import Meta from "antd/es/card/Meta";
 // import CashiersTable from "../CashiersTable";
+
+// computation: 8 * 60 * 60 * 1000
+// para mas dali kay difference lang ang computon ayha sya maka time-out dadto sa api
+// return lng dayn ug message na di pa kalogout chuchu
+// const workHours = 28_800_000 // 8 hours in milliseconds // maybe kato 4hrs sguro
+
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function dateConv(date: number) : string
+{
+  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + ", " + new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "numeric", hour12: true })  
+}
+
+
+// TODO (paklay): revise pa nako ang login kay murag lisod e scale pd. bale simpleon lang,
+                  // input ang html form data: user | email, password
+                  // tapos retrieve sa api ang result sa query pag login sa user, then e set sa login component then e store sa userStore()
 
 const CameraCapture = () =>
 {
-    const user = useUserStore((state) => state.user)
-    const [ isTimedIn, setIsTimedIn ] = useState<boolean>(false);
-    const [ isTimedOut, setIsTimedOut ] = useState<boolean>(false);
-    const [ isCaptured, setIsCaptured ] = useState<boolean>(false);
-    const [ isTimeOutAllowed, setIsTimeoutAllowed ] = useState<boolean>(false);
-    const [ imageSrc, setImageSrc ] = useState<string>('')
-    const videoRef = useRef<HTMLVideoElement | null>(null)
-    const [streamSrc, setStreamSrc] = useState<MediaStream|null>(null)
-    const canvasRef = useRef<HTMLCanvasElement | null>(null)
-    const photoRef = useRef<HTMLImageElement | null>(null)
-    const [ cardTitle, setCardTitle ] = useState<string>('')
-    const [ timeInTimestamp, setTimeInTimeStamp ] = useState<string>('');
-    const [ timeOutTimestamp, setTimeOutTimeStamp ] = useState<string>('');
-    
-    // Function to compare if the timeInTimestamp is more than 1 minute ago from now
-    const compareTime = (current: string, marked: string) => {
-      if(marked){
-        const currentTime = DateTime.fromFormat(current, "yyyy-LL-dd HH:mm:ss");
-        const markedTime = DateTime.fromFormat(marked, "yyyy-LL-dd HH:mm:ss");
-        console.log("Current:", currentTime.toFormat("yyyy-LL-dd HH:mm:ss"))
-        console.log("Marked:", markedTime.toFormat("yyyy-LL-dd HH:mm:ss"))
-        const diff = currentTime.diff(markedTime, "minutes").minutes;//use minutes instead of currentTime.diff(markedTime, "seconds").seconds
-        console.log("diff: ", diff)
-        return diff >= 1;
-      }
-      return false; // return false if marked is undefined
-    };
-    const fetchTodayAttendance = async() => {
-      const name = user?.name;
-      const response = await fetch('/api/attendance/get', {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({name})
-      })
-      const data = await response.json()
-      console.log("data attendance exist: ", data);
-      if(data.message === "Record for today doesn't exists"){
-        startCamera()
-        setIsTimedIn(false)
-        setIsTimedOut(false)
-      } else if (data.message === "Record for time in already exists") {
-        setIsTimedIn(true)
-        setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
-        setIsTimedOut(false)
-      }
-      else if (data.message === "Record for today already exists") {
-        setIsTimedIn(true)
-        setIsTimedOut(true)
-        setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
-        setTimeOutTimeStamp(DateTime.fromISO(data.data.time_out).toFormat("yyyy-LL-dd HH:mm:ss"))
-      }
-    };
-    const setAttendance = async(time:string) => {
-      const name = user?.name;
-      const response = await fetch('/api/attendance/set', {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({time, name, imageSrc})
-      })
-      const data = await response.json()
-      console.log("data: ", data);
-    }
-    useEffect(() => {
-      let mark:string;
-      if (timeInTimestamp) {
-        mark = DateTime.fromFormat(timeInTimestamp, "yyyy-LL-dd HH:mm:ss")
-          .toFormat("yyyy-LL-dd HH:mm:ss");
-      }
-      const interval = setInterval(() => {
+  const user = useUserStore((state) => state.user)
+  const [btnLoading, setBtnLoading] = useState<boolean>(false)
 
-        const currentTime = DateTime.now().setZone('Asia/Manila').toFormat("yyyy-LL-dd HH:mm:ss");
-        if (isTimedIn) {
-          setIsTimeoutAllowed(compareTime(currentTime, mark));
-        } else {
-          console.log("Not Timed in yet");
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }, [isTimedIn]);
-    
-    const startCamera = async () =>{
-      try
+
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const photoRef = useRef<HTMLImageElement | null>(null)
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [streamSrc, setStreamSrc] = useState<MediaStream | null>(null)
+
+  const [imageSrc, setImageSrc] = useState<string>('')
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [cashierData, setCashierData] = useState({})
+
+  const [timeInStamp, setTimeInStamp] = useState<number>(0)
+  const [timeOutStamp, setTimeOutStamp] = useState<number>(0)
+
+  const [isTimedIn, setIsTimedIn] = useState<boolean>(false)
+  // const [isTimedOut, setIsTimedOut] = useState<boolean>(false)
+  // const [hasTimedOut, setHasTimedOut] = useState<boolean>(false) // base state kung naka time-out na sya para di na magbalik ang time-in button --- ugma npd
+
+  const retrieveCashierAttendance = async () =>
+  {
+    const response = await fetch('api/testonggg')
+    if (!response.ok)
+      return console.error("Error: ", response.statusText)
+
+    const data = await response.json()
+    if (!data)
+      return console.error("Error: No data received")
+
+    // kung null kay wla pa naka time-in today, so need pa e trigger ang button Time-In
+    setCashierData(data)
+
+    setTimeInStamp(data.timeInStamp)
+    setTimeOutStamp(data.timeOutStamp)
+    setIsTimedIn(data.isTimedIn)
+    // setIsTimedOut(data.isTimedOut)
+  }
+
+  const startCamera = async () =>
+  {
+    await navigator.mediaDevices.getUserMedia(
+    {
+      video: { width: 640, height: 640, facingMode: "user" },
+      audio: false,
+    }).then(stream =>
+    {
+      if (videoRef.current)
       {
-        await navigator.mediaDevices.getUserMedia({
-            video: { width: 640, height: 640, facingMode: "user" },
-            audio: false,
-        }).then(stream => {
-          if (videoRef.current){
-            videoRef.current.srcObject = stream
-            videoRef.current.play()
-            setStreamSrc(stream);
-          }
-        })
-      } catch (err) {
-          console.error("Error accessing camera:", err)
+        videoRef.current.srcObject = stream
+        videoRef.current.play()
+        setStreamSrc(stream)
       }
-    }
-    useEffect(() => {
-      console.log("Is time out allowed: ", isTimeOutAllowed);
-      if(isTimeOutAllowed){
-        startCamera()
-        setIsCaptured(false)
+    }).catch(err => {
+        console.error("Error accessing camera:", err)
+    })
+  }
+
+  useEffect(() =>
+  {
+      const videoElement = videoRef.current
+      startCamera()
+
+      if (videoElement?.srcObject)
+      {
+          const stream = videoElement.srcObject as MediaStream
+          stream.getTracks().forEach((track) => track.stop())
       }
-    }, [isTimeOutAllowed]);
-    useEffect(() =>
+
+      retrieveCashierAttendance()
+  }, [])
+
+  const handleTimeIn = async () =>
+  {
+    setBtnLoading(true)
+
+    const timeStamp = new Date().getTime() // to millis
+
+    const response = await fetch('/api/attendance/get/logon',
     {
-        if(user){
-          setCardTitle("Cashiers Attendance | " + user.name)
-          fetchTodayAttendance()
-        }
-    }, [])
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId: user?.name, timeStamp, imageSrc, hasTimedIn: isTimedIn })
+    })
 
-    const getCurrentTime = () => {
-      return DateTime.now().setZone('Asia/Manila').toFormat('yyyy-LL-dd HH:mm:ss')
-    };
+    if (!response.ok)
+      return console.error("Error: ", response.statusText)
 
-    const takePhoto = () =>
+    const data = await response.json()
+    if (!data)
+      return console.error("Error: No data received")
+
+    setCashierData(data)
+    takePhoto()
+
+    // setTimeInStamp(timeStamp) // to millis // data.timeStamp
+    // setIsTimedIn(true) // data.timedIn
+    // setIsTimedOut(false)
+  }
+
+  const handleTimeOut = async () =>
+  {
+    setBtnLoading(true)
+
+    const timeStamp = new Date().getTime() // to millis
+
+    const response = await fetch('/api/attendance/get/logon',
     {
-      console.log("Take photo")
-        if (!videoRef.current || !canvasRef.current || !photoRef.current){
-          console.log("No refs found");
-          // return;
-        }
-        console.log("Refs found");
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId: user?.name, timeStamp, imageSrc, hasTimedIn: isTimedIn })
+    })
 
-        const context = canvasRef.current!.getContext("2d");
-        if (!context){
-          console.log("No context found");
-          return;
-        }
-        if(!isTimedIn) {
-          setTimeInTimeStamp(getCurrentTime())
-          setIsTimedIn((prev) => !prev); 
-          setAttendance(getCurrentTime())
-        }
-        else {
-          setTimeOutTimeStamp(getCurrentTime())
-          setIsTimedOut((prev) => !prev);
-          setAttendance(getCurrentTime())
-        }
-        
-        setIsCaptured((prev) => !prev);
-        const width = 640;
-        const height = videoRef.current!.videoHeight / (videoRef.current!.videoWidth / width);
+    if (!response.ok)
+      return console.error("Error: ", response.statusText)
 
-        canvasRef.current!.width = width;
-        canvasRef.current!.height = height;
-        context.drawImage(videoRef.current!, 0, 0, width, height);
+    const data = await response.json()
+    if (!data)
+      return console.error("Error: No data received")
 
-        const imageData = canvasRef.current!.toDataURL("image/png");
-        setImageSrc(imageData)
-    };
-  useEffect(() => {
-    console.log("isCaptured state: ", isCaptured);
-    if(isCaptured&&streamSrc){
-      streamSrc.getTracks().forEach(track => track.stop());
+    // setTimeOutStamp(timeStamp) // to millis // data.timeStamp
+    // setIsTimedIn(false) // data.timedIn
+    // setHasTimedOut(true)
+    // setIsTimedOut(true)
+    // setIsTimedOut(false)
+
+
+
+    // retrieve nlng new kay maka himo napd ug useEffect if mag setData sa cashier
+    // murag kato same nahitabo sa pag add sa tcmc nga datatable same ato nga e retrieve lang
+    // kibale, dadto na sa api mag update sa data sa cashier before sya mag retrieve dria
+    // retrieveCashierAttendance() // retrieve ang new user datas sa cashier
+
+    takePhoto() // photo for time-out na dyn
+  }
+
+  const takePhoto = () =>
+  {
+    if (!videoRef.current || !canvasRef.current || !photoRef.current)
+        return
+
+    const context = canvasRef.current.getContext("2d")
+    if (!context)
+        return
+
+    const dateMillisNow = new Date().getTime()
+
+    const width = 320
+    const height = videoRef.current.videoHeight / (videoRef.current.videoWidth / width)
+
+    canvasRef.current.width = width
+    canvasRef.current.height = height
+    context.drawImage(videoRef.current, 0, 0, width, height)
+
+    const imageData = canvasRef.current.toDataURL("image/png")
+    photoRef.current.src = imageData
+    console.log("Image data: ", imageData)
+    if (!imageSrc)
+      setImageSrc(imageData)
+
+    if (isTimedIn)
+    {
+        setTimeOutStamp(dateMillisNow)
+        setIsTimedIn(false)
+        // setIsTimedOut(true)
+    } else {
+        setTimeInStamp(dateMillisNow)
+        setIsTimedIn(true)
+        // setIsTimedOut(false)
     }
-  }, [isCaptured]);
+
+    if (timeInStamp !== 0 && timeOutStamp !== 0)
+    {
+        // const diff = timeOutStamp - timeInStamp
+        // dria sguro e compute ang iya accumulation rate karon na day
+        // to do pa
+    }
+
+    setBtnLoading(false)
+  }
 
   return (
-    <Card title={cardTitle}>
-      
-          <Space direction="vertical" style={{marginBottom: '24px'}}>
-          <Meta
-            title={"Time in: "+timeInTimestamp}></Meta>
-            <Meta
-            title={"Time out: "+timeOutTimestamp}></Meta>
-          </Space>
-          <Card title="Attendance">
+    <Card title={"Attendance | User: " + user?.name}>
+      <Space direction="vertical" style={{marginBottom: '24px'}}>
+        <Meta title={"Time in: "+ (timeInStamp === 0 ? "" : dateConv(timeInStamp))}></Meta>
+        <Meta title={"Time out: " + (timeOutStamp === 0 ? "" : dateConv(timeOutStamp))}></Meta>
+      </Space>
 
-            <div className="camera">
-              {!isCaptured||(isTimeOutAllowed&&!isTimedOut)?(
-                <>
-                  <video ref={videoRef} width="640px" height="640px">
-                    Video stream not available.
-                  </video>
-                  <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-                </>
-              ):(
-                <div className="output">
-                  <img src={imageSrc} alt="Captured snapshot will appear here" />
-                </div>
-              )}
-                <Button type="primary" onClick={takePhoto} disabled={(isTimedIn&&!isTimeOutAllowed)||isTimedOut} style={{ marginTop: "10px" }}>
-                {isTimedIn ?isTimedOut?('Attendance Closed'):("Time out"):("Time in")}
-                </Button>
-            </div>
-            
-          </Card>
+      <Row>
+        <Col className="p-2" flex="1 1 80px">
+            <CashiersDataTableList /> sampol ( logs sa individual cashier saiyang mga time-in ug out)
+            {/* <CashiersTable/> */}
+        </Col>
+        <Col className="p-2" flex="0 1 500px">
+        <Card title={"Status: " + (!isTimedIn ? "To Time-In" : "To Time-Out")}>
+          {/* <h1>Camera Capture</h1> */}
+          <p>Take a selfie</p>
+
+          <div className="camera" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+            <video ref={videoRef} width="auto" height="240">
+              Video stream not available.
+            </video>
+            <Button type="primary" onClick={!isTimedIn ? handleTimeIn : handleTimeOut} loading={btnLoading} disabled={btnLoading}>
+              {isTimedIn ? "Time-Out" : "Time-In"}
+            </Button>
+            {/* { timeInStamp === 0 ? <Alert message={"Successfully timed-in at dateConv(millis) "} type="success" showIcon closable /> : "" } */}
+            <Alert message={"Successfully timed-in at dateConv(millis) "} type="success" showIcon closable />
+            <Alert message={"Server Error: Unable to chuchu "} type="error" showIcon closable />
+          </div>
+
+          <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+
+          <div className="output" style={{ marginTop: "10px", display: "flex", justifyContent: "center" }}>
+            {}
+            <img ref={photoRef !== null ? photoRef : ""} />
+          </div>
+        </Card>
+
+        </Col>
+      </Row>
     </Card>
-  );
-};
+  )
+}
 
-export default CameraCapture;
+export default CameraCapture

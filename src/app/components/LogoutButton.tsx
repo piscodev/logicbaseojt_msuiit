@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Dropdown, Button, Typography, Space, MenuProps } from "antd";
-import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { Dropdown, Button, Typography, Space, MenuProps, Tooltip } from "antd";
+import { BellOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useUserStore } from "@/stores/userStore";
 import { useCashierStore } from "@/stores/cashierStore";
 const { Text } = Typography;
@@ -51,6 +51,11 @@ export default function LogoutButton() {
   return (
     user && (
       <div>
+        <span className="p-3">
+          <Tooltip placement="bottom" title="Attendance notification">
+            <Button shape='circle' size='large' icon={<BellOutlined />}></Button>
+          </Tooltip>
+        </span>
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           <Button shape='circle' size='large' icon={<UserOutlined />} />
         </Dropdown>
