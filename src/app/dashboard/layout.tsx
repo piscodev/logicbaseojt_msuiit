@@ -131,7 +131,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </Sider>
       <Layout>
         <Nav/>
-        <Content style={{ padding: "0 48px", margin: "16px 0" }}>
+        <Content style={{ padding: "0 48px", margin: "16px 0" , minHeight: '80vh'}}>
           {children}
         </Content>
         <FooterComp/>
