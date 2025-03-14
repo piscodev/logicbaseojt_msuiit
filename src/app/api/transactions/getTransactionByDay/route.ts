@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         LEFT JOIN TransactionDetail AS td ON t.id = td.transaction_id
         LEFT JOIN Particular AS p ON td.particular_id = p.id
         WHERE t.date = ?
-        GROUP BY p.name, s.name
+        GROUP BY p.name, s.name, u.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
       console.log('Transactions: ', transactions)
 
