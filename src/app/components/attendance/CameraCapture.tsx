@@ -57,7 +57,7 @@ const CameraCapture = () =>
         setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
         setIsTimedOut(false)
       }
-      else {
+      else if (data.message === "Record for today already exists") {
         setIsTimedIn(true)
         setIsTimedOut(true)
         setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))

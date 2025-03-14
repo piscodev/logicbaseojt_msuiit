@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
           getItem('My Profile', '1', true),
           getItem('Employee Management', 'sub1', false, <UserOutlined />, [
-            getItem('Assign Cashiers', '/dashboard/cashiers', true),
+            getItem('Assign Cashiers', '11', true),
             getItem('View Cashiers', '/dashboard/cashiers', false)
           ]),
           getItem('Sales Management', 'sub2', true, <DesktopOutlined />, [
@@ -101,16 +101,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       }
   }, [user])
   
-  // const items: MenuItem[] = [
-  //   getItem('Dashboard', '/dashboard', <PieChartOutlined />),
-  //   getItem('Attendance', '/dashboard/attendance', <DesktopOutlined />),
-  //   getItem('Profiles', 'sub1', <UserOutlined />, [
-  //     getItem('My Profile', '3'),
-  //     getItem('Cashiers', '/dashboard/cashiers')
-  //   ]),
-  //   getItem('Records', 'sub2', <TeamOutlined />, [getItem('Transactions', '6'), getItem('Cashier', '8')]),
-  //   getItem('Files', '9', <FileOutlined />),
-  // ];
 
   const router = useRouter();
   const pathname = usePathname();

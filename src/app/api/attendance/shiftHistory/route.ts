@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
                 JOIN User u ON c.user_id = u.id
                 WHERE u.name = ?)
             GROUP BY DATE(a.time_in)
+            ORDER BY a.time_in DESC
             `;
            
 

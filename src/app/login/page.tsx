@@ -72,7 +72,7 @@ export default function AuthPage() {
         }, 250);
         return
       } 
-      setUser({name: data.user.name, email:email, user_type:'cashier'})
+      setUser({name: data.user.name, email:email, user_type:data.user.user_type})
       console.log("user213412", user)
       showMessage('success', "Redirecting to Dashboard...");
       setTimeout(() => {

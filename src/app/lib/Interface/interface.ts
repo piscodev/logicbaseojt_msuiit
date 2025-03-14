@@ -60,6 +60,7 @@ export interface User {
     name: string
     email: string
     hashed_password: string
+    user_type: string
 }
 
 export interface Cashier {
