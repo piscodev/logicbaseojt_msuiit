@@ -54,27 +54,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             getItem('Assign Cashiers', '11', true),
             getItem('View Cashiers', '/dashboard/cashiers', false)
           ]),
-          getItem('Sales Management', 'sub2', true, <DesktopOutlined />, [
+          getItem('Sales Management', 'sub2', false, <DesktopOutlined />, [
             getItem('View Sales', '2', true),
           ]),
           
-          getItem('Product Management', 'sub3', true, <DesktopOutlined />, [
+          getItem('Product Management', 'sub3', false, <DesktopOutlined />, [
             getItem('View Products', '3', true), // All Products (filter by out of stock, top-selling products, lowest-selling products), Add Product, Import Products (Bulk Upload), Modify Product (Edit product details, change pricing), Delete Product (Remove product) 
             getItem('Product Categories', '4', true), // Add categories, manage categories (assign products to categories)
           ]),
-          getItem('Inventory Management', 'sub4', true, <DesktopOutlined />, [
+          getItem('Inventory Management', 'sub4', false, <DesktopOutlined />, [
             getItem('Stock Overview', '5', true), // Current Inventory levels, Low stock alerts, Add stock to product
             getItem('Inventory Adjustments', '6', true), // Manual Adjustments, Stock Reconciliation
             getItem('Stock Audits', '7', true), // Scheduled Audits, Past Audits
           ]),
-          getItem('Reports & Analytics', 'sub5', true, <UserOutlined />, [
+          getItem('Reports & Analytics', 'sub5', false, <UserOutlined />, [
             getItem('Sales Reports', '8', true), // Daily Sales, Monthly Sales, Sales by Product
             getItem('Inventory Reports', '9', true), // Stock Management Report, Stock Value Report
             getItem('Employee Reports', '10', true), // Employee Sales Performance, Shift reports
             getItem('Audit Logs', '11', true) // Audit History
           ]),
           
-          getItem('Settings', 'sub6', true,<TeamOutlined />, [
+          getItem('Settings', 'sub6', false,<TeamOutlined />, [
             getItem('System', '12', true), 
             getItem('POS Settings', '13', true),
             getItem('Security', '14', true), 
@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             getItem('New Sale', '1', true),
             getItem('Process Refund', '2', true),
           ]),
-          getItem('Shift Management', 'sub2', false, <UserOutlined />, [
+          getItem('Attendance', 'sub2', false, <UserOutlined />, [
             getItem('Clock In/Out', '/dashboard/attendance', false),
             getItem('Shift History', '/dashboard/shiftHistory', false),
           ]),

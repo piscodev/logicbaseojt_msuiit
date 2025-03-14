@@ -31,11 +31,11 @@ const CameraCapture = () =>
         const markedTime = DateTime.fromFormat(marked, "yyyy-LL-dd HH:mm:ss");
         console.log("Current:", currentTime.toFormat("yyyy-LL-dd HH:mm:ss"))
         console.log("Marked:", markedTime.toFormat("yyyy-LL-dd HH:mm:ss"))
-        const diff = currentTime.diff(markedTime, "minutes").minutes;
+        const diff = currentTime.diff(markedTime, "minutes").minutes;//use minutes instead of currentTime.diff(markedTime, "seconds").seconds
         console.log("diff: ", diff)
         return diff >= 1;
       }
-      return false; // Check if the difference is greater than or equal to 1 minute
+      return false; // return false if marked is undefined
     };
     const fetchTodayAttendance = async() => {
       const name = user?.name;
