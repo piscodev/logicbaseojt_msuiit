@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     // Store token in cookies (Secure, HTTPOnly)
     const response = NextResponse.json(
-      { message: "Login successful", user: { id: rows[0].id, name: rows[0].name, email: rows[0].email } }, 
+      { message: "Login successful", user: { id: rows[0].id, name: rows[0].name, email: rows[0].email, user_type:rows[0].user_type } }, 
       { status: 200 }
     );
     response.headers.set(

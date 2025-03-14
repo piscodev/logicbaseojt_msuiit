@@ -117,9 +117,7 @@ const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter,
 
 const CashiersTable:React.FC = () => {
     const [ cashiers, setCashiers ] = useState <DataType[]>()
-    const [ startDate, setStartDate ] = useState<string>('')
-    const [ endDate, setEndDate ] = useState<string>('')
-    const fetchData = async() => {
+    const fetchData = async(startDate?: string, endDate?: string) => {
         const response = await fetch('/api/getCashierData',{
             method:"POST",
             headers: { 'Content-Type': 'application/json' },
@@ -132,19 +130,13 @@ const CashiersTable:React.FC = () => {
         setCashiers(parsedData.cashiers)
     }
     useEffect(()=>{
-        console.log("Start: ", startDate)
-        console.log("End: ", endDate)
-        fetchData();
-    }, [startDate, endDate]);
-    useEffect(()=>{
         // Initial fetch (default day is current date)
         fetchData();
     }, []);
 
     const setDates = (dates: NoUndefinedRangeValueType<Dayjs> | null, dateStrings: [string, string]) => {
         console.log("Dates: ", dateStrings)
-        setStartDate(dateStrings[0])
-        setEndDate(dateStrings[1])
+        fetchData(dateStrings[0], dateStrings[1]);
     }
  return (
     <Table<DataType>
