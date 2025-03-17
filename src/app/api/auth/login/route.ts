@@ -6,11 +6,12 @@ import { User } from "@/app/lib/Interface/interface";
 import { FieldPacket } from "mysql2";
 
 export async function POST(req: Request) {
+  let connection = null;
   try {
     const { email, password } = await req.json();
-
+    connection = await pool.getConnection();
     // Fetch user by email
-    const [rows]: [User[], FieldPacket[]] = await pool.query(
+    const [rows]: [User[], FieldPacket[]] = await connection.query(
       "SELECT * FROM User WHERE email = ?", 
       [email]
     ) as [User[], FieldPacket[]];
@@ -31,6 +32,10 @@ export async function POST(req: Request) {
       process.env.JWT_SECRET!,
       { expiresIn: "1d" }
     );
+    await connection.query(
+      "UPDATE User SET last_login = NOW(), active = 1 WHERE email = ?", 
+      [email]
+    ) as [User[], FieldPacket[]];
 
     // Store token in cookies (Secure, HTTPOnly)
     const response = NextResponse.json(
@@ -46,5 +51,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Login Error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } finally {
+    if(connection) connection.release();
   }
 }
