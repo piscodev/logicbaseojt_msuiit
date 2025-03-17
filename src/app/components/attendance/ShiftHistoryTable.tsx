@@ -10,6 +10,7 @@ interface DataType {
     time_out: string,
     total_hours_worked: number,
     shift_date: string,
+    shift: string,
     name: string
 }
 const columns: TableColumnsType<DataType> = [
@@ -21,6 +22,11 @@ const columns: TableColumnsType<DataType> = [
       sorter: (a, b) => a.name.length - b.name.length,
       sortDirections: ['descend'],
     },
+    {
+        title: 'Shift',
+        dataIndex: 'shift',
+        // render: (text: string) => text?.length > 0 && DateTime.fromISO(text).toFormat('yyyy-MM-dd'),
+      },
     {
       title: 'Shift Date',
       dataIndex: 'shift_date',

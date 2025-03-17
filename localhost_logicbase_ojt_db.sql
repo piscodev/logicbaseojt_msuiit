@@ -11,6 +11,18 @@ CREATE TABLE IF NOT EXISTS `User` (
     `user_type` ENUM('cashier', 'admin') DEFAULT 'cashier',
 	`registeredAt` DATETIME NOT NULL
 ) ENGINE=InnoDB;
+ALTER TABLE `User` 
+-- DROP `name`,
+ADD `username` VARCHAR(100),
+ADD `first_name` VARCHAR(100),
+ADD `last_name` VARCHAR(100),
+ADD `address` VARCHAR(255),
+ADD `age` TINYINT,
+ADD `active` TINYINT,
+ADD `gender` enum('Male', 'Female', 'Not specified') DEFAULT 'Not specified',
+ADD `last_login` DATETIME DEFAULT NULL,
+ADD `last_update` DATETIME DEFAULT NULL,
+ADD `last_password_reset` DATETIME DEFAULT NULL;
 
 -- Cashier table
 CREATE TABLE IF NOT EXISTS `Cashier` (

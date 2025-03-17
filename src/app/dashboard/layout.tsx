@@ -7,6 +7,7 @@ import {
   DesktopOutlined,
   FileOutlined,
   PieChartOutlined,
+  CalendarOutlined,
   TeamOutlined,
   UserOutlined,
   MenuFoldOutlined,
@@ -15,6 +16,7 @@ import {
 import Nav from "../components/NavigationBar";
 import { usePathname, useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
+import { useCashierStore } from "@/stores/cashierStore";
 import FooterComp from "../components/Footer";
 const { Content, Sider } = Layout;
 
@@ -51,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
           getItem('My Profile', '1', true),
           getItem('Employee Management', 'sub1', false, <UserOutlined />, [
-            getItem('Assign Cashiers', '11', true),
+            getItem('Assign Cashiers', '/dashboard/employeeManagement/assignCashiers', false),
             getItem('View Cashiers', '/dashboard/cashiers', false)
           ]),
           getItem('Sales Management', 'sub2', false, <DesktopOutlined />, [
@@ -89,7 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             getItem('New Sale', '1', true),
             getItem('Process Refund', '2', true),
           ]),
-          getItem('Attendance', 'sub2', false, <UserOutlined />, [
+          getItem('Attendance', 'sub2', false, <CalendarOutlined />, [
             getItem('Clock In/Out', '/dashboard/attendance', false),
             getItem('Shift History', '/dashboard/shiftHistory', false),
           ]),
@@ -104,6 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   const router = useRouter();
   const pathname = usePathname();
+  const clearCashiers = useCashierStore((state)=>state.clearCashiers);
   return (
     <Layout>
       <Sider theme="dark" trigger={null} collapsible collapsed={collapsed}>
@@ -120,10 +123,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         <Menu theme="dark" defaultSelectedKeys={['/dashboard']} mode="inline" items={items}
         selectedKeys={[pathname]}
-        onSelect={(e) => {
+        onSelect={async(e) => {
           if(e.key==="/logout"){
+            const res = await fetch('/api/auth/logout', {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(user?.email),
+            });
+      
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
             clearUser();
-            router.replace('/login')
+            clearCashiers();
+            router.replace("/login"); // Redirect to login page
             return
           }
           router.push(e.key)

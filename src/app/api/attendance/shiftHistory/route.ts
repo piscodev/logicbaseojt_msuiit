@@ -7,6 +7,7 @@ interface ShiftHistoryData {
     time_out: string,
     total_hours_worked: number,
     shift_date: string,
+    shift: string,
     name: string
 }
 export async function POST(req: NextRequest) {
@@ -18,14 +19,20 @@ export async function POST(req: NextRequest) {
         try {
             connection = await pool.getConnection();
             // await connection.beginTransaction();
-            console.log('Connection established, begin transaction')
+            // console.log('Connection established, begin transaction')
             
             const query = `
             SELECT 
             DATE(a.time_in) AS shift_date,
                 a.time_in,
                 a.time_out,
-                COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60), 0) AS total_hours_worked
+                COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60), 0) AS total_hours_worked,
+            CASE 
+                WHEN TIME(a.time_out) BETWEEN '08:00:00' AND '11:59:59' THEN 'AM'
+                WHEN TIME(a.time_out) BETWEEN '12:00:00' AND '15:59:59' THEN 'MID'
+                WHEN TIME(a.time_out) BETWEEN '16:00:00' AND '19:59:59' THEN 'PM'
+                ELSE 'UNKNOWN' -- For cases where time_out is outside the defined ranges
+            END AS shift
             FROM Attendance a
             WHERE cashier_id = (SELECT c.id FROM Cashier c
                 JOIN User u ON c.user_id = u.id
@@ -41,6 +48,7 @@ export async function POST(req: NextRequest) {
                 key: index,
                 name: name,
                 shift_date: row.shift_date,
+                shift: row.shift,
                 time_in: row.time_in,
                 time_out: row.time_out,
                 total_hours_worked: row.total_hours_worked,
