@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Dropdown, Button, Typography, Space, MenuProps, Tooltip } from "antd";
+import { Dropdown, Button, Typography, Space, MenuProps, Tooltip, Badge } from "antd";
 import { BellOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useUserStore } from "@/stores/userStore";
 import { useCashierStore } from "@/stores/cashierStore";
@@ -66,7 +66,11 @@ export default function LogoutButton() {
           </Tooltip>
         </span>
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
-          <Button shape='circle' size='large' icon={<UserOutlined />} />
+          {/* <Button shape='circle' size='large' icon={<UserOutlined />} /> */}
+          <Badge dot status={"success"} offset={[-3, 42]}>
+            <Button shape='circle' size='large' icon={<UserOutlined />} />
+            {/* <Avatar shape="circle" size="large" icon={<UserOutlined />}/> */}
+          </Badge>
         </Dropdown>
       </div>
     )
