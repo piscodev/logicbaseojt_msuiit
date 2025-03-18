@@ -61,6 +61,13 @@ export interface User {
     email: string
     hashed_password: string
     user_type: string
+    last_login?: string
+    address?:string
+    active?:number
+    gender?:string
+    contact_number?:string
+    total_hours_worked?: number
+    total_earnings ?: number
 }
 
 export interface Cashier {
