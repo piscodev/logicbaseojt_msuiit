@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Flex, Switch, Table, Transfer, Card, Button, Drawer, Form, Input } from 'antd';
+import { Flex, Table, Transfer, Card, Button, Drawer, notification, Form, Input } from 'antd';
 import type { GetProp, TableColumnsType, TableProps, TransferProps } from 'antd';
+
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
 
 // import { useUserStore } from '@/stores/userStore';
 // import { DateTime } from 'luxon';
@@ -127,14 +129,57 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
   const TransferComponent: React.FC = () => {
     const [form] = Form.useForm();
     const [targetKeys, setTargetKeys] = useState<TransferProps['targetKeys']>([]);
-    const [disabled, setDisabled] = useState(false);
+    // const [disabled, setDisabled] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
     const [tableData, setTableData] = useState<DataType[]>([]);
     const [cashierLanes, setCashierLanes] = useState<CashierLane[]>([]);// WILL UPDATE THIS TO FETCH ACTUAL LANES FROM API
+    const [api, contextHolder] = notification.useNotification();
 
-    const [activeLane, setActiveLane] = useState<number | null>(null);
+    const openNotificationWithIcon = (type: NotificationType, message:string, description:string) => {
+      api[type]({
+        message: message,
+        description: description});
+    };
+    const [activeLane, setActiveLane] = useState<number | null>(0);
     const handleAddCashierLane = () => {
       setIsDrawerOpen(true)
+    };
+    const handleDrawerClose = () => {
+      setIsDrawerOpen(false)
+    }
+    const fetchAllData = async () => {
+      try {
+        const laneResponse = await fetch('/api/getCashierLanes');
+        const lanesData = await laneResponse.json();
+        if (!laneResponse.ok) {
+          throw new Error('Failed to fetch cashier lanes');
+        } 
+        console.log('Fetched cashier lanes:', lanesData.data);
+        const tableResponse = await fetch(`/api/getAllCashierData`, {
+          method: 'GET'
+        });
+        const tableDataResult = await tableResponse.json()
+        if(!tableResponse.ok){
+            throw new Error("Failed to fetch cashier data.");
+        }
+        console.log('Cashier data fetched succcessfully: ', tableDataResult.data);
+        // Sync the cashier lanes with the correct assigned cashiers from the tableData
+        const updatedLanes = lanesData.data.map((lane:CashierLane) => ({
+          ...lane,
+          assignedCashiers: tableDataResult.data.filter((user:DataType) =>
+            lane.assignedCashiers.some((cashier) => String(cashier.key) === String(user.key))
+          ),
+          initialCashiers: tableDataResult.data.filter((user:DataType) =>
+            lane.assignedCashiers.some((cashier) => String(cashier.key) === String(user.key))
+          ),
+        }));
+
+        // Update both states after all data is ready
+        setTableData(tableDataResult.data);
+        setCashierLanes(updatedLanes);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
     const handleSubmitCashierLane = async(name:string) => {
       try {
@@ -150,14 +195,16 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
         if (!response.ok) {
           throw new Error('Failed to add cashier lane');
         }
+        openNotificationWithIcon('success', 'Success', 'Cashier lane added successfully');
+        handleDrawerClose();
+        fetchAllData();
         form.resetFields();
       } catch (error){
+        openNotificationWithIcon('error', 'Error', 'Failed to add cashier lane');
         console.error('Error adding cashier lane:', error);
       }
     }
-    const handleDrawerClose = () => {
-      setIsDrawerOpen(false)
-    }
+    
     
     // Update targetKeys when activeLane changes
     useEffect(() => {
@@ -175,40 +222,6 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
     }, [activeLane, tableData]);
 
     useEffect(()=>{
-      const fetchAllData = async () => {
-        try {
-          const laneResponse = await fetch('/api/getCashierLanes');
-          const lanesData = await laneResponse.json();
-          if (!laneResponse.ok) {
-            throw new Error('Failed to fetch cashier lanes');
-          } 
-          console.log('Fetched cashier lanes:', lanesData.data);
-          const tableResponse = await fetch(`/api/getAllCashierData`, {
-            method: 'GET'
-          });
-          const tableDataResult = await tableResponse.json()
-          if(!tableResponse.ok){
-              throw new Error("Failed to fetch cashier data.");
-          }
-          console.log('Cashier data fetched succcessfully: ', tableDataResult.data);
-          // Sync the cashier lanes with the correct assigned cashiers from the tableData
-          const updatedLanes = lanesData.data.map((lane:CashierLane) => ({
-            ...lane,
-            assignedCashiers: tableDataResult.data.filter((user:DataType) =>
-              lane.assignedCashiers.some((cashier) => String(cashier.key) === String(user.key))
-            ),
-            initialCashiers: tableDataResult.data.filter((user:DataType) =>
-              lane.assignedCashiers.some((cashier) => String(cashier.key) === String(user.key))
-            ),
-          }));
-
-          // Update both states after all data is ready
-          setTableData(tableDataResult.data);
-          setCashierLanes(updatedLanes);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
       fetchAllData();
     },[])
     useEffect(() => {
@@ -244,7 +257,9 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
           )
         );
         console.log(`Changes saved for ${lane.name}`);
+        openNotificationWithIcon('success', "Success", `Changes saved for ${lane.name}`);
       } catch (error) {
+        openNotificationWithIcon('error', "Error", `Failed to save changes for ${lane.name}`);
         console.error('Error saving changes:', error);
       }
     };
@@ -281,9 +296,9 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
       );
     };
   
-    const toggleDisabled = (checked: boolean) => {
-      setDisabled(checked);
-    };
+    // const toggleDisabled = (checked: boolean) => {
+    //   setDisabled(checked);
+    // };
   
     return (
       <Flex align="start" gap="middle" vertical>
@@ -341,6 +356,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
             </Card>
           ))}
         </Flex>
+        {contextHolder}
         <Drawer
         open={isDrawerOpen}
         onClose={handleDrawerClose}
@@ -364,7 +380,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
           titles={["Cashiers", `${activeLane !== null && cashierLanes.find((lane) => lane.id === activeLane)?.name}`]}
           dataSource={tableData.filter((user) => user.cashier_lane_id === null || user.cashier_lane_id === activeLane)}
           targetKeys={targetKeys}
-          disabled={disabled}
+          // disabled={disabled}
           showSearch
           showSelectAll={false}
           onChange={onChange}
@@ -374,12 +390,12 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
           leftColumns={transferColumns}
           rightColumns={transferColumns}
         />
-        <Switch
+        {/* <Switch
           unCheckedChildren="disabled"
           checkedChildren="disabled"
           checked={disabled}
           onChange={toggleDisabled}
-        />
+        /> */}
       </Flex>
     );
   };

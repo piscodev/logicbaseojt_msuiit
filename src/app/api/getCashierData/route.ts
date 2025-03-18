@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import pool from '@/app/lib/Database/db';
-import { Cashier } from '@/app/lib/Interface/interface';
 import { FieldPacket } from 'mysql2';
+interface ResultData {
+  id: number
+  rate: number
+  name: string
+  total_hours_worked?: number
+  total_earnings ?: number
+  active: number
+  last_login: string
+  address: string
+  age: number,
+  gender: string,
+  email: string,
+  cl_name: string | null,
+}
 export async function POST(req: NextRequest) {
   if (req.method === 'POST') {
     let connection;
@@ -13,13 +26,25 @@ export async function POST(req: NextRequest) {
         SELECT 
             u.name,
             c.rate,
-            COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60), 0) AS total_hours_worked
+            COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60), 0) AS total_hours_worked,
+            u.active,
+            u.last_login,
+            u.address,
+            u.age,
+            u.gender,
+            u.email,
+            cl.name AS cl_name
         FROM 
             Cashier c
         JOIN 
             User u ON c.user_id = u.id
         LEFT JOIN 
             Attendance a ON c.id = a.cashier_id
+        LEFT JOIN
+          CashierLane cl ON 
+          c.id = cl.cashier1_id OR
+          c.id = cl.cashier2_id OR
+          c.id = cl.cashier3_id
         WHERE 
             u.user_type = 'cashier'
         `;
@@ -38,23 +63,30 @@ export async function POST(req: NextRequest) {
 
         query += `
             GROUP BY 
-                u.name, c.rate
+                u.name, c.rate, u.active, u.last_login, u.address, u.age, u.gender, u.email, cl.name
             ORDER BY 
                 u.name ASC
         `;
-      const [rows]: [Cashier[], FieldPacket[]] = await connection.query(query, [
+      const [rows]: [ResultData[], FieldPacket[]] = await connection.query(query, [
         startDate && endDate ? startDate : undefined,
         startDate && endDate ? endDate : undefined
-      ]) as [Cashier[], FieldPacket[]];
+      ]) as [ResultData[], FieldPacket[]];
       
       console.log('Result: ', rows);
       // Extract just the names from the result
-      const cashiers = rows.map((row: Cashier, index:number) => ({
+      const cashiers = rows.map((row: ResultData, index:number) => ({
         key: index,
         name: row.name,
         rate: row.rate,
         total_hours_worked: row.total_hours_worked,
-        earnings: Number(row.rate)*Number(row.total_hours_worked)
+        earnings: Number(row.rate)*Number(row.total_hours_worked),
+        active: row.active,
+        last_login: row.last_login,
+        address: row.address,
+        age: row.age,
+        gender: row.gender,
+        email: row.email,
+        cl_name: row.cl_name || null,
     }));
       
       return NextResponse.json(
