@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Table, DatePicker } from 'antd';
+import { Table, DatePicker, Badge, Typography } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
 import { Dayjs } from 'dayjs';
+import { DateTime } from 'luxon';
 const { RangePicker } = DatePicker;
+const { Text } = Typography;
 export type NoUndefinedRangeValueType<DateType> = [start: DateType | null, end: DateType | null];
 interface DataType {
-  key: React.Key;
-  name: string;
-  rate: number;
-  total_hours_worked: number;
+  key: React.Key
+  id: number
+  name: string
+  rate: number
+  total_hours_worked: number
   earnings: number
-//   address: string;
+  total_earnings ?: number
+  active: number
+  last_login: string
+  address: string
+  age: number
+  gender: string
+  email: string
+  cl_name: string | null
 }
 
 const columns: TableColumnsType<DataType> = [
@@ -44,9 +54,39 @@ const columns: TableColumnsType<DataType> = [
     //   ],
       // specify the condition of filtering result
       // here is that finding the name started with `value`
-      onFilter: (value, record) => record.name.indexOf(value as string) === 0,
-      sorter: (a, b) => a.name.length - b.name.length,
-      sortDirections: ['descend'],
+      // onFilter: (value, record) => record.name.indexOf(value as string) === 0,
+      // sorter: (a, b) => a.name.length - b.name.length,
+      // sortDirections: ['descend'],
+    },
+    {
+      title: 'Status',
+      dataIndex: 'last_login',
+      render:(_: unknown, record: DataType)=>(
+        <>
+          {(record.active === 1) ? (<Badge status="success" text="Active" />) : (<Text>Last Online: {(DateTime.fromISO(record.last_login).toFormat('yyyy-MM-dd HH:mm:ss'))==="Invalid DateTime"?"Never":DateTime.fromISO(record.last_login).toFormat('yyyy-MM-dd HH:mm:ss')}</Text>)}
+        </>
+      ),
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+    },
+    {
+      title: 'Address',
+      dataIndex: 'address',
+    },
+    {
+      title: 'Age',
+      dataIndex: 'age',
+    },
+    {
+      title: 'Cashier Lane',
+      dataIndex: 'cl_name',
+      render:(_: unknown, record: DataType)=>(
+        <>
+          {(record.cl_name !== null) ? (record.cl_name) : "Not yet Assigned"}
+        </>
+      ),
     },
     {
       title: 'Rate',
@@ -146,6 +186,7 @@ const CashiersTable:React.FC = () => {
     onChange={onChange}
     showSorterTooltip={{ target: 'sorter-icon' }}
     pagination={{ pageSize: 10 }}
+    scroll={{ x: '100vw' }}
   />
  )
 };
