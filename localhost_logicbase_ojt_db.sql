@@ -16,6 +16,7 @@ ALTER TABLE `User`
 ADD `username` VARCHAR(100),
 ADD `first_name` VARCHAR(100),
 ADD `last_name` VARCHAR(100),
+ADD `contact_number` VARCHAR(100),
 ADD `address` VARCHAR(255),
 ADD `age` TINYINT,
 ADD `active` TINYINT,
@@ -24,23 +25,29 @@ ADD `last_login` DATETIME DEFAULT NULL,
 ADD `last_update` DATETIME DEFAULT NULL,
 ADD `last_password_reset` DATETIME DEFAULT NULL;
 
--- Cashier table
+-- -- Cashier table
 CREATE TABLE IF NOT EXISTS `Cashier` (
     `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(50) NOT NULL,
-	`hashed_password` VARCHAR(255) NOT NULL,
-	`email` VARCHAR(50) NOT NULL,
-	`registeredAt` DATETIME NOT NULL
+    `user_id` INT UNSIGNED,
+    `rate` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-USE `logicbase_ojt_db`;
-ALTER TABLE `Cashier`
-ADD `user_id` INT UNSIGNED,
-ADD `rate` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-ADD FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE CASCADE, 
-DROP `name`,
-DROP `hashed_password`,
-DROP `email`,
-DROP `registeredAt`;
+-- CREATE TABLE IF NOT EXISTS `Cashier` (
+--     `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+--     `name` VARCHAR(50) NOT NULL,
+-- 	`hashed_password` VARCHAR(255) NOT NULL,
+-- 	`email` VARCHAR(50) NOT NULL,
+-- 	`registeredAt` DATETIME NOT NULL
+-- ) ENGINE=InnoDB;
+-- USE `logicbase_ojt_db`;
+-- ALTER TABLE `Cashier`
+-- ADD `user_id` INT UNSIGNED,
+-- ADD `rate` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+-- ADD FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE CASCADE, 
+-- DROP `name`,
+-- DROP `hashed_password`,
+-- DROP `email`,
+-- DROP `registeredAt`;
 
 -- Create CashierLane table
 CREATE TABLE IF NOT EXISTS `CashierLane` (
