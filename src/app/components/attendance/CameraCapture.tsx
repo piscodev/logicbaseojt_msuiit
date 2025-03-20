@@ -5,7 +5,6 @@ import { Card, Col, Row, Button, Alert, Space } from "antd";
 import { useUserStore } from "@/stores/userStore";
 import Meta from "antd/es/card/Meta";
 import ShiftHistoryTable from "./ShiftHistoryTable";
-import { getCurrentTime } from "@/utils/CurrentTimeHelper";
 // import CashiersTable from "../CashiersTable";
 
 // computation: 8 * 60 * 60 * 1000
