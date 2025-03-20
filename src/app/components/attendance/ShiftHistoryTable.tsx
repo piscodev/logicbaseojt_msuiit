@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Table } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
-import { useUserStore } from '@/stores/userStore';
 import { DateTime } from 'luxon';
 export type NoUndefinedRangeValueType<DateType> = [start: DateType | null, end: DateType | null];
 
@@ -13,6 +12,7 @@ interface DataType {
     shift: string,
     name: string
 }
+
 const columns: TableColumnsType<DataType> = [
     {
       title: 'Name',
@@ -33,12 +33,12 @@ const columns: TableColumnsType<DataType> = [
       render: (text: string) => text?.length > 0 && DateTime.fromISO(text).toFormat('yyyy-MM-dd'),
     },
     {
-        title: 'Time In',
+        title: 'Time-In',
         dataIndex: 'time_in',
         render: (text: string) => text?.length > 0 && DateTime.fromISO(text).toFormat('yyyy-MM-dd HH:mm:ss'),
     },
     {
-        title: 'Time Out',
+        title: 'Time-Out',
         dataIndex: 'time_out',
         render: (text: string) => text?.length > 0 && DateTime.fromISO(text).toFormat('yyyy-MM-dd HH:mm:ss'),
     },
@@ -65,42 +65,59 @@ const columns: TableColumnsType<DataType> = [
   ];
   
 
-const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra);
-};
+const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) =>
+{
+    console.log('params', pagination, filters, sorter, extra)
+}
 
-const ShiftHistoryTable:React.FC = () => {
-    const user = useUserStore((state) => state.user);
-    const [ data, setData ] = useState <DataType[]>()
-    const fetchData = async() => {
-        if(user){
-            const name = user.name;
-            const response = await fetch('/api/attendance/shiftHistory',{
-                method:"POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            })
-            if(!response.ok){
-                console.error("Error getting Cashier data");
-            }
-            const parsedData = await response.json()
+const ShiftHistoryTable: React.FC<{ data: DataType[], isLoading: boolean }> = ({ data, isLoading }) =>
+{
+    return (
+        <Table<DataType>
+            columns={columns}
+            dataSource={data}
+            onChange={onChange}
+            showSorterTooltip={{ target: 'sorter-icon' }}
+            pagination={{ pageSize: 10 }}
+            loading={isLoading}
+        />
+    )
+}
 
-            setData(parsedData.data)
-        }
+export default ShiftHistoryTable
+
+// const ShiftHistoryTable:React.FC = () => {
+//     const user = useUserStore((state) => state.user);
+//     const [ data, setData ] = useState <DataType[]>()
+//     const fetchData = async() => {
+//         if(user){
+//             const name = user.name;
+//             const response = await fetch('/api/attendance/shiftHistory',{
+//                 method:"POST",
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ name })
+//             })
+//             if(!response.ok){
+//                 console.error("Error getting Cashier data");
+//             }
+//             const parsedData = await response.json()
+
+//             setData(parsedData.data)
+//         }
         
         
-    }
-    useEffect(()=>{
-        fetchData();
-    }, []);
- return (
-    <Table<DataType>
-    columns={columns}
-    dataSource={data}
-    onChange={onChange}
-    showSorterTooltip={{ target: 'sorter-icon' }}
-    pagination={{ pageSize: 10 }}
-  />
- )
-};
-export default ShiftHistoryTable;
+//     }
+//     useEffect(()=>{
+//         fetchData();
+//     }, []);
+//  return (
+//     <Table<DataType>
+//     columns={columns}
+//     dataSource={data}
+//     onChange={onChange}
+//     showSorterTooltip={{ target: 'sorter-icon' }}
+//     pagination={{ pageSize: 10 }}
+//   />
+//  )
+// };
+// export default ShiftHistoryTable;
