@@ -41,7 +41,7 @@ CREATE TABLE `particulars` (
 INSERT INTO `particulars` (`particular_id`, `particular_name`, `particular_type`, `particular_fee_percent`) VALUES
 (1, 'Cash', 'Trade', 0.00),
 (2, 'Check', 'Trade', 0.00),
-(3, 'BPI Credit Card', 'Trade', 3.00),
+(3, 'BPI Credit Card', 'Trade', 2.80),
 (4, 'BPI Debit Card', 'Trade', 1.50),
 (5, 'Metro Credit Card', 'Trade', 1.50),
 (6, 'Metro Debit Card', 'Trade', 1.00),

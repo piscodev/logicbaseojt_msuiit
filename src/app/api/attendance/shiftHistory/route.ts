@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
             FROM users_cashiers_attendance a
             WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c
                 JOIN users u ON c.user_id = u.user_id
-                WHERE u.name = ?)
+                WHERE CONCAT(u.first_name, ' ', u.last_name) = ?)
             GROUP BY DATE(a.time_in), a.time_in, a.time_out
             ORDER BY a.time_in DESC
             `;

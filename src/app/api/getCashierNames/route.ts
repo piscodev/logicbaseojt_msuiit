@@ -11,11 +11,11 @@ export async function GET(req: NextRequest) {
       
       const [rows]: [User[], FieldPacket[]] = await connection.query(
         `
-          SELECT u.name 
+          SELECT CONCAT(u.first_name, ' ', u.last_name) as name 
           FROM users_cashiers c
           JOIN users u ON c.user_id = u.user_id
           WHERE u.user_type = 'cashier'
-          ORDER BY u.name ASC
+          ORDER BY CONCAT(u.first_name, ' ', u.last_name) ASC
         `
       ) as [User[], FieldPacket[]];
       

@@ -59,7 +59,7 @@ const CameraCapture = () =>
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // const [streamSrc, setStreamSrc] = useState<MediaStream | null>(null)
 
-  const [timeInStamp, setTimeInStamp] = useState<number>(0)
+  // const [timeInStamp, setTimeInStamp] = useState<number>(0)
   const [timeOutStamp, setTimeOutStamp] = useState<number>(0)
 
   const [isTimedIn, setIsTimedIn] = useState<boolean>(false)
@@ -215,7 +215,7 @@ const CameraCapture = () =>
             })
           }
 
-          setTimeInStamp(data.timeIn || 0)
+          // setTimeInStamp(data.timeIn || 0)
         }
         setIsTimedIn(true)
 

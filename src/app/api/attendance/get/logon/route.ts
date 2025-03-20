@@ -1,6 +1,5 @@
 import pool from "@/app/lib/Database/db";
 import { FieldPacket, ResultSetHeader } from "mysql2";
-import { init } from "next/dist/compiled/webpack/webpack";
 import { NextRequest, NextResponse } from "next/server";
 
 interface AttendanceData
@@ -21,7 +20,7 @@ export async function POST(req: NextRequest)
     let conn = null
     try
     {
-        const { userId, imageSrc, time, hasTimedIn } = await req.json()
+        const { userId, imageSrc, time/*, hasTimedIn */} = await req.json()
 
         // test purposes
         // console.log(userId, imageSrc, hasTimedIn)

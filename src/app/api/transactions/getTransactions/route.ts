@@ -32,11 +32,11 @@ export async function GET() {
         conn = await pool.getConnection();
 
         // Fetch cashiers
-        const [cashiers]: [Testongg[], FieldPacket[]] = await conn.query('SELECT * FROM cashier') as [Testongg[], FieldPacket[]];
+        const [cashiers]: [Testongg[], FieldPacket[]] = await conn.query('SELECT * FROM users_cashiers') as [Testongg[], FieldPacket[]];
 
         // Fetch transactions
         const [transactions]: [CashiersTransaction[], FieldPacket[]] = await conn.query(
-            'SELECT * FROM transaction AS t LEFT JOIN transactiondetail ON transactiondetail.transaction_id = t.id'
+            'SELECT * FROM transactions AS t LEFT JOIN transaction_detail ON transaction_detail.transaction_id = t.transaction_id'
         ) as [CashiersTransaction[], FieldPacket[]];
 
         const result = cashiers.map((cashier: Testongg) => ({

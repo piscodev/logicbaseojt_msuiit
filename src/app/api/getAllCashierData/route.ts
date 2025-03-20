@@ -15,7 +15,7 @@ interface CashierResult {
     contact_number:string
     total_hours_worked: number
     total_earnings: number
-    cashier_lane_id: number
+    lane_id: number
 }
 import { FieldPacket } from 'mysql2';
 export async function GET(req: NextRequest) {
@@ -28,24 +28,24 @@ export async function GET(req: NextRequest) {
         const [rows]: [CashierResult[],FieldPacket[]] = await connection.query(
             `
             SELECT 
-                u.name,
+                CONCAT(u.first_name, ' ', u.last_name) AS name,
                 u.last_login,
                 u.active,
                 u.address,
                 u.gender,
                 u.contact_number,
-                c.id,
+                c.user_cashier_id,
                 COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60), 0) AS total_hours_worked,
                 COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60) * c.rate, 0) AS total_earnings,
-                cl.id AS cashier_lane_id
-            FROM Cashier c
-            JOIN User u ON c.user_id = u.id
-            LEFT JOIN Attendance a ON c.id = a.cashier_id
-            LEFT JOIN CashierLane cl 
-                ON c.id = cl.cashier1_id OR c.id = cl.cashier2_id OR c.id = cl.cashier3_id
+                cl.lane_id AS lane_id
+            FROM users_cashiers c
+            JOIN users u ON c.user_id = u.user_id
+            LEFT JOIN users_cashiers_attendance a ON c.user_cashier_id = a.user_cashier_id
+            LEFT JOIN users_cashier_lanes cl 
+                ON c.user_cashier_id = cl.cashier1_id OR c.user_cashier_id = cl.cashier2_id OR c.user_cashier_id = cl.cashier3_id
             WHERE u.user_type = 'cashier'
-            GROUP BY u.id
-            ORDER BY u.name ASC
+            GROUP BY u.user_id
+            ORDER BY CONCAT(u.first_name, ' ', u.last_name) ASC
             `
         ) as [CashierResult[],FieldPacket[]];
         // Extract just the names from the result
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
             contact_number: row.contact_number,
             total_hours_worked: row.total_hours_worked,
             total_earnings: row.total_earnings,
-            cashier_lane_id: row.cashier_lane_id 
+            lane_id: row.lane_id 
         }));
         
         return NextResponse.json(

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       connection = await pool.getConnection();
       let query =  `
         SELECT 
-            u.name,
+            CONCAT(u.first_name, ' ', u.last_name) AS name,
             c.rate,
             COALESCE(SUM(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60), 0) AS total_hours_worked,
             u.active,
@@ -63,9 +63,9 @@ export async function POST(req: NextRequest) {
 
         query += `
             GROUP BY 
-                u.name, c.rate, u.active, u.last_login, u.address, u.age, u.gender, u.email, cl.name
+                CONCAT(u.first_name, ' ', u.last_name) AS name, c.rate, u.active, u.last_login, u.address, u.age, u.gender, u.email, cl.name
             ORDER BY 
-                u.name ASC
+                CONCAT(u.first_name, ' ', u.last_name) AS name ASC
         `;
       const [rows]: [ResultData[], FieldPacket[]] = await connection.query(query, [
         startDate && endDate ? startDate : undefined,
