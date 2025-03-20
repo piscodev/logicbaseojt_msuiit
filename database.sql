@@ -1,6 +1,6 @@
 -- Create database if not exists
-CREATE DATABASE IF NOT EXISTS `logicbase_ojt_db_v2`;
-USE `logicbase_ojt_db_v2`;
+CREATE DATABASE IF NOT EXISTS `logicbase_ojt_db`;
+USE `logicbase_ojt_db`;
 
 -- User table
 CREATE TABLE IF NOT EXISTS `users` (
