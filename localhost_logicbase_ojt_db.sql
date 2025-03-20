@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS `TransactionDetail` (
 -- INSERT IGNORE INTO `Shift` (`name`) VALUES ('AM'), ('MID'), ('PM');
 -- INSERT IGNORE INTO `Particular` (`name`, `type`, `fee_percent`) 
 -- VALUES ('Cash', 'Trade', 0), ('Check', 'Trade', 0),
--- ('BPI Credit Card', 'Trade', 3.00), ('BPI Debit Card', 'Trade', 1.50),
+-- ('BPI Credit Card', 'Trade', 2.80), ('BPI Debit Card', 'Trade', 1.50),
 -- ('Metro Credit Card', 'Trade', 1.50), ('Metro Debit Card', 'Trade', 1.00), 
 -- ('AUB Credit Card', 'Trade', 1.50),
 -- ('GCash', 'Trade', 1.50), ('Pay Maya', 'Trade', 2.25),

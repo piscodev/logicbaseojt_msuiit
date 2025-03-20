@@ -49,10 +49,10 @@ export async function POST(req: NextRequest) {
       // Get transaction data for the date
       const [transactions]: [TransactionData[], FieldPacket[]] = await connection.query(`
         SELECT 
-          p.name AS particulars,
-          s.name AS shift,
+          p.particular_name AS particulars,
+          s.shift_name AS shift,
           SUM(td.amount) AS amount,
-          MAX(u.name) AS users_cashiers
+          CONCAT(u.first_name, ' ', u.last_name) AS users_cashiers
         FROM transactions t
         JOIN shift AS s ON t.shift_id = s.shift_id
         JOIN users_cashiers AS c ON t.cashier_id = c.user_cashier_id
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         LEFT JOIN transactions_detail AS td ON t.transaction_id = td.transaction_id
         LEFT JOIN particulars AS p ON td.particular_id = p.particular_id
         WHERE t.transaction_date = ?
-        GROUP BY p.name, s.name
+        GROUP BY p.particular_name, s.shift_name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
         console.log("Transactions: ", transactions)
       // Create transaction map

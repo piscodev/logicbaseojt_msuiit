@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
                 VALUES (
                 (SELECT c.user_id FROM users_cashiers c
                 JOIN users u ON c.user_id = u.user_id
-                WHERE u.name = ?),
+                WHERE CONCAT(u.first_name, ' ', u.last_name) = ?),
                 (SELECT shift_id FROM shift WHERE shift_name = ?),
                 ?
                 )`,

@@ -23,7 +23,7 @@ interface DataType {
   contact_number?:string
   total_hours_worked?: number
   total_earnings ?: number
-  cashier_lane_id: number | null
+  lane_id: number | null
 }
 interface CashierLane {
   id: number;
@@ -211,7 +211,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
       if (activeLane) {
         // Get all cashiers assigned to the active lane
         const selectedLaneCashiers = tableData
-          .filter((cashier) => cashier.cashier_lane_id === activeLane)
+          .filter((cashier) => cashier.lane_id === activeLane)
           .map((cashier) => cashier.key); // Map to key for targetKeys
     
         console.log("Selected lane cashiers: ", selectedLaneCashiers);
@@ -278,19 +278,19 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
             : lane
         )
       );
-      // Update tableData to reflect the cashier_lane_id change
+      // Update tableData to reflect the lane_id change
       setTableData((prevTableData) =>
         prevTableData.map((cashier) => {
-          // If the cashier is part of the currently active lane, update cashier_lane_id
+          // If the cashier is part of the currently active lane, update lane_id
           if (nextTargetKeys.includes(cashier.key)) {
             // Assign to activeLane if included in targetKeys
-            return { ...cashier, cashier_lane_id: activeLane };
+            return { ...cashier, lane_id: activeLane };
           } 
-          // If the cashier was in the active lane but is no longer in targetKeys, reset cashier_lane_id to null
-          else if (cashier.cashier_lane_id === activeLane) {
-            return { ...cashier, cashier_lane_id: null };
+          // If the cashier was in the active lane but is no longer in targetKeys, reset lane_id to null
+          else if (cashier.lane_id === activeLane) {
+            return { ...cashier, lane_id: null };
           }
-          // Otherwise, don't change the cashier_lane_id
+          // Otherwise, don't change the lane_id
           return cashier;
         })
       );
@@ -378,7 +378,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
         </Drawer>
         <TableTransfer
           titles={["Cashiers", `${activeLane !== null && cashierLanes.find((lane) => lane.id === activeLane)?.name}`]}
-          dataSource={tableData.filter((user) => user.cashier_lane_id === null || user.cashier_lane_id === activeLane)}
+          dataSource={tableData.filter((user) => user.lane_id === null || user.lane_id === activeLane)}
           targetKeys={targetKeys}
           // disabled={disabled}
           showSearch
