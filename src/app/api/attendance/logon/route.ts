@@ -20,7 +20,7 @@ export async function POST(req: NextRequest)
     let conn = null
     try
     {
-        const { userId, imageSrc, time/*, hasTimedIn */} = await req.json()
+        const { userId, imageSrc, time, hasTimedIn} = await req.json()
 
         // test purposes
         // console.log(userId, imageSrc, hasTimedIn)

@@ -23,22 +23,31 @@ const formatTimeLeft = (ms: number) =>
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
-  
+
   return `${hours}h : ${minutes}m : ${seconds}s`
 }
 
-function isNumeric(str: number)
+function isNumeric(value: number): boolean
 {
-  if (typeof str != "number")
-    return false
-
-  return !isNaN(str) && !isNaN(Number(str)) && isFinite(str)
+  return typeof value === "number" && !isNaN(value) && isFinite(value)
 }
 
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function dateConv(date: number) : string
+function dateConv(date: number): string
 {
-  return isNumeric(date) ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + ", " + new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "numeric", hour12: true }) : ""
+  return isNumeric(date)
+    ? new Date(date).toLocaleString("en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "numeric",
+        hour12: true
+      })
+    : ""
 }
 
 
@@ -117,21 +126,27 @@ const CameraCapture = () =>
 
   const startCamera = async () =>
   {
-    await navigator.mediaDevices.getUserMedia(
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream
+      stream.getTracks().forEach((track) => track.stop()) // Stop old tracks
+    }
+  
+    try
     {
-      video: { width: 640, height: 640, facingMode: "user" },
-      audio: false,
-    }).then(stream =>
-    {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 640, facingMode: "user" },
+        audio: false,
+      })
+
       if (videoRef.current)
       {
         videoRef.current.srcObject = stream
         videoRef.current.style.transform = "scaleX(-1)"
-        videoRef.current.play()
+        await videoRef.current.play()
       }
-    }).catch(err => {
-        console.error("Error accessing camera:", err)
-    })
+    } catch (err) {
+      console.error("Error accessing camera:", err)
+    }
   }
 
   useEffect(() =>
@@ -155,164 +170,259 @@ const CameraCapture = () =>
     takePhoto('out')
   }
 
-  const takePhoto = async (typ: string) =>
+  // Optimized GPT
+  const takePhoto = async (type: "in" | "out") =>
   {
     if (!videoRef.current || !canvasRef.current || !photoRef.current)
-        return
-
+      return
+  
     setBtnLoading(true)
-
-    const context = canvasRef.current.getContext("2d")
-    if (!context)
+  
+    try
+    {
+      const context = canvasRef.current.getContext("2d")
+      if (!context)
         return
-
-    const dateNow = new Date(getCurrentTime())
-
-    if (dateNow.getHours() >= 8 && dateNow.getHours() < 13 || dateNow.getHours() >= 12 && dateNow.getHours() < 17 || dateNow.getHours() >= 16 && dateNow.getHours() < 21)
-    {
-      setIsTimedIn(false)
-      setTimeInStamp(0)
-    }
-
-    const width = 320
-    const height = videoRef.current.videoHeight / (videoRef.current.videoWidth / width)
-
-    canvasRef.current.width = width
-    canvasRef.current.height = height
-    context.drawImage(videoRef.current, 0, 0, width, height)
-
-    const imageData = canvasRef.current.toDataURL("image/png")
-    photoRef.current.src = imageData
-    // console.log("Image data: ", imageData)
-    // setImageSrc(() =>
-    // {
-    //   console.log("Setting ImageSrc:", imageData.substring(0, 50))
-    //   return imageData
-    // })
-
-    if (typ === 'in')
-    {
-      await fetch('/api/attendance/logon',
+  
+      const width = 320
+      const height = videoRef.current.videoHeight / (videoRef.current.videoWidth / width)
+  
+      canvasRef.current.width = width
+      canvasRef.current.height = height
+      context.drawImage(videoRef.current, 0, 0, width, height)
+  
+      const imageData = canvasRef.current.toDataURL("image/png")
+      photoRef.current.src = imageData
+  
+      const dateNow = new Date()
+  
+      const response = await fetch("/api/attendance/logon",
       {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn })
-      }).then(async response =>
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn }),
+      })
+  
+      if (!response.ok)
+        throw new Error("Failed to log attendance")
+  
+      const data = await response.json()
+      if (!data)
+        throw new Error("No data received")
+  
+      if (type === "in" && data.timeIn)
       {
-        // if (!response.ok)
-        //   return console.error("Error: ", response.statusText)
-
-        const data = await response.json()
-        if (!data)
-          return console.error("Error: No data received")
-
-        if (data.timeIn)
+        if (user)
         {
-          if (user)
-          {
-            setUser({
-              user_id: user.user_id,
-              name: user.name,
-              email: user.email,
-              user_type: user.user_type,
-              loginData: {
-                time_in: new Date(data.timeIn).toString(),
-                time_in_image: imageData,
-                time_out: (timeOutStamp > 0) ? new Date(timeOutStamp).toString() : "",
-                time_out_image: (timeOutStamp > 0) ? imageData : ""
-              }
-            })
-          }
-
-          setTimeInStamp(data.timeIn || 0)
-          fetchTodayAttendance()
-          sendNotification("🔔 Attendance Notification", `Cashier: ${user?.name} has successfully Timed-In!`)
+          setUser({
+            user_id: user.user_id,
+            name: user.name,
+            email: user.email,
+            user_type: user.user_type,
+            loginData: {
+              time_in: new Date(data.timeIn).toString(),
+              time_in_image: imageData,
+              time_out: (timeOutStamp > 0) ? new Date(timeOutStamp).toString() : "",
+              time_out_image: (timeOutStamp > 0) ? imageData : ""
+            }
+          })
         }
+
+        setTimeInStamp(data.timeIn || 0)
+        sendNotification("🔔 Attendance Notification", `Cashier: ${user?.name} has successfully Timed-In!`)
         setIsTimedIn(true)
-
-
-        setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
-      }).catch(err => 
+      } else if (type === "out" && data.timeOut)
       {
-        console.error("Error accessing camera:", err)
-        setIsTimedIn(false)
-      }).finally(() => setBtnLoading(false))
-    } else {
-
-      // time-out
-      await fetch('/api/attendance/logon',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn })
-      }).then(async response =>
-      {
-        if (!response.ok)
-          return console.error("Error: ", response.statusText)
-  
-        const data = await response.json()
-        if (!data)
-          return console.error("Error: No data received")
-  
-        if (data.type === "error")
+        if (user)
         {
-          setIsTimedIn(false)
-        } else {
-
-          if (data.timeOut)
-          {
-            setTimeOutStamp(data.timeOut || 0)
-            console.log(data.timeOut)
-          }
-
-          if (user)
-          {
-            setUser({
-              user_id: user.user_id,
-              name: user.name,
-              email: user.email,
-              user_type: user.user_type,
-              loginData: {
-                time_in: user.loginData?.time_in ? user.loginData?.time_in : "",
-                time_in_image: user.loginData?.time_in_image ? user.loginData?.time_in_image : "",
-                time_out: new Date(dateNow).toString(),
-                time_out_image: imageData
-              }
-            })
-          }
-
-          fetchTodayAttendance()
-          sendNotification("🔔 Attendance Notification", `Cashier: ${user?.name} has successfully Timed-Out!`)
-          setIsTimedIn(false)
+          setUser({
+            user_id: user.user_id,
+            name: user.name,
+            email: user.email,
+            user_type: user.user_type,
+            loginData: {
+              time_in: user.loginData?.time_in ? user.loginData?.time_in : "",
+              time_in_image: user.loginData?.time_in_image ? user.loginData?.time_in_image : "",
+              time_out: new Date(dateNow).toString(),
+              time_out_image: imageData
+            }
+          })
         }
 
-        setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
-      }).catch(err =>
-      {
-        console.error("Error accessing camera:", err)
+        setTimeOutStamp(data.timeOut || 0)
+        sendNotification("🔔 Attendance Notification", `Cashier: ${user?.name} has successfully Timed-Out!`)
         setIsTimedIn(false)
-      }).finally(() => setBtnLoading(false))
+      }
+  
+      setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
+      fetchTodayAttendance()
+    } catch (error) {
+      console.error("Error logging attendance:", error)
+      setIsTimedIn(false)
+    } finally {
+      setBtnLoading(false)
     }
   }
 
   const sendNotification = async (title: string, desc: string) =>
   {
-    await fetch('/api/notifications/sendNotification',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ title: title, desc: desc })
-    }).then(response => response.json()).then(msg =>
-    {
-      console.log(msg)
-    })
-  }
+    try {
+      await fetch("/api/notifications/sendNotification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, desc }),
+      })
+    } catch (error) {
+      console.error("Failed to send notification:", error)
+    }
+  }  
+  
+  // unoptimized Paklay
+  // const takePhoto = async (typ: string) =>
+  // {
+  //   if (!videoRef.current || !canvasRef.current || !photoRef.current)
+  //       return
+
+  //   setBtnLoading(true)
+
+  //   try
+  //   {
+  //   const context = canvasRef.current.getContext("2d")
+  //   if (!context)
+  //       return
+
+  //   const dateNow = new Date(getCurrentTime())
+
+  //   if (dateNow.getHours() >= 8 && dateNow.getHours() < 13 || dateNow.getHours() >= 12 && dateNow.getHours() < 17 || dateNow.getHours() >= 16 && dateNow.getHours() < 21)
+  //   {
+  //     setIsTimedIn(false)
+  //     setTimeInStamp(0)
+  //   }
+
+  //   const width = 320
+  //   const height = videoRef.current.videoHeight / (videoRef.current.videoWidth / width)
+
+  //   canvasRef.current.width = width
+  //   canvasRef.current.height = height
+  //   context.drawImage(videoRef.current, 0, 0, width, height)
+
+  //   const imageData = canvasRef.current.toDataURL("image/png")
+  //   photoRef.current.src = imageData
+  //   // console.log("Image data: ", imageData)
+  //   // setImageSrc(() =>
+  //   // {
+  //   //   console.log("Setting ImageSrc:", imageData.substring(0, 50))
+  //   //   return imageData
+  //   // })
+
+  //   if (typ === 'in')
+  //   {
+  //     await fetch('/api/attendance/logon',
+  //     {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn })
+  //     }).then(async response =>
+  //     {
+  //       // if (!response.ok)
+  //       //   return console.error("Error: ", response.statusText)
+
+  //       const data = await response.json()
+  //       if (!data)
+  //         return console.error("Error: No data received")
+
+  //       if (data.timeIn)
+  //       {
+  //         if (user)
+  //         {
+  //           setUser({
+  //             user_id: user.user_id,
+  //             name: user.name,
+  //             email: user.email,
+  //             user_type: user.user_type,
+  //             loginData: {
+  //               time_in: new Date(data.timeIn).toString(),
+  //               time_in_image: imageData,
+  //               time_out: (timeOutStamp > 0) ? new Date(timeOutStamp).toString() : "",
+  //               time_out_image: (timeOutStamp > 0) ? imageData : ""
+  //             }
+  //           })
+  //         }
+
+  //         setTimeInStamp(data.timeIn || 0)
+  //         fetchTodayAttendance()
+  //         sendNotification("🔔 Attendance Notification", `Cashier: ${user?.name} has successfully Timed-In!`)
+  //       }
+  //       setIsTimedIn(true)
+
+
+  //       setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
+  //     }).catch(err => 
+  //     {
+  //       console.error("Error accessing camera:", err)
+  //       setIsTimedIn(false)
+  //     }).finally(() => setBtnLoading(false))
+  //   } else {
+
+  //     // time-out
+  //     await fetch('/api/attendance/logon',
+  //     {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn })
+  //     }).then(async response =>
+  //     {
+  //       if (!response.ok)
+  //         return console.error("Error: ", response.statusText)
+  
+  //       const data = await response.json()
+  //       if (!data)
+  //         return console.error("Error: No data received")
+  
+  //       if (data.type === "error")
+  //       {
+  //         setIsTimedIn(false)
+  //       } else {
+
+  //         if (data.timeOut)
+  //         {
+  //           setTimeOutStamp(data.timeOut || 0)
+  //           console.log(data.timeOut)
+  //         }
+
+  //         if (user)
+  //         {
+  //           setUser({
+  //             user_id: user.user_id,
+  //             name: user.name,
+  //             email: user.email,
+  //             user_type: user.user_type,
+  //             loginData: {
+  //               time_in: user.loginData?.time_in ? user.loginData?.time_in : "",
+  //               time_in_image: user.loginData?.time_in_image ? user.loginData?.time_in_image : "",
+  //               time_out: new Date(dateNow).toString(),
+  //               time_out_image: imageData
+  //             }
+  //           })
+  //         }
+
+  //         fetchTodayAttendance()
+  //         sendNotification("🔔 Attendance Notification", `Cashier: ${user?.name} has successfully Timed-Out!`)
+  //         setIsTimedIn(false)
+  //       }
+
+  //       setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
+  //     }).catch(err =>
+  //     {
+  //       console.error("Error accessing camera:", err)
+  //       setIsTimedIn(false)
+  //     }).finally(() => setBtnLoading(false))
+  //   }
+  // }
 
   return (
     <Card title={"Attendance | User: " + user?.name}>
