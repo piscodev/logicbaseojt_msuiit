@@ -56,7 +56,7 @@ export interface TransactionValuesState {
 }
 
 export interface User {
-    id: number
+    user_id: number
     name: string
     email: string
     hashed_password: string

@@ -6,6 +6,7 @@ import { Dropdown, Button, Typography, Space, MenuProps, Tooltip, Badge } from "
 import { BellOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useUserStore } from "@/stores/userStore";
 import { useCashierStore } from "@/stores/cashierStore";
+import PushNotifications from "./notification/PushNotifications";
 const { Text } = Typography;
 
 export default function LogoutButton() {
@@ -61,9 +62,7 @@ export default function LogoutButton() {
     user && (
       <div>
         <span className="p-3">
-          <Tooltip placement="bottom" title="Attendance notification">
-            <Button shape='circle' size='large' icon={<BellOutlined />}></Button>
-          </Tooltip>
+          <PushNotifications />
         </span>
         <Dropdown menu={{ items: menuItems }} placement="bottomRight">
           {/* <Button shape='circle' size='large' icon={<UserOutlined />} /> */}

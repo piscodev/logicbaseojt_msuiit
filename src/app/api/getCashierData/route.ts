@@ -35,16 +35,16 @@ export async function POST(req: NextRequest) {
             u.email,
             cl.name AS cl_name
         FROM 
-            Cashier c
+            users_cashiers c
         JOIN 
-            User u ON c.user_id = u.id
+            users u ON c.user_id = u.user_id
         LEFT JOIN 
-            Attendance a ON c.id = a.cashier_id
+            users_cashiers_attendance a ON c.user_id = a.user_id
         LEFT JOIN
-          CashierLane cl ON 
-          c.id = cl.cashier1_id OR
-          c.id = cl.cashier2_id OR
-          c.id = cl.cashier3_id
+          users_cashiers_lane cl ON 
+          c.user_cashier_id = cl.cashier1_id OR
+          c.user_cashier_id = cl.cashier2_id OR
+          c.user_cashier_id = cl.cashier3_id
         WHERE 
             u.user_type = 'cashier'
         `;

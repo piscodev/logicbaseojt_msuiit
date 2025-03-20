@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
                 WHEN TIME(a.time_out) BETWEEN '16:00:00' AND '19:59:59' THEN 'PM'
                 ELSE 'UNKNOWN' -- For cases where time_out is outside the defined ranges
             END AS shift
-            FROM Attendance a
-            WHERE cashier_id = (SELECT c.id FROM Cashier c
-                JOIN User u ON c.user_id = u.id
+            FROM users_cashiers_attendance a
+            WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c
+                JOIN users u ON c.user_id = u.user_id
                 WHERE u.name = ?)
             GROUP BY DATE(a.time_in), a.time_in, a.time_out
             ORDER BY a.time_in DESC

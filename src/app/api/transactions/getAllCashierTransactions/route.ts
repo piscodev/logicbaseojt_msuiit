@@ -50,30 +50,30 @@ export async function POST(req: NextRequest){
             // Get transactions for the specified date
             const [transactions]: [TransactionsData[], FieldPacket[]] = await connection.query(`
                 SELECT 
-                c.id AS cashier_id,
+                c.user_cashier_id AS cashier_id,
                 u.name AS cashier_name,
-                s.name AS shift,
-                p.name AS particular,
-                p.id AS id,
+                s.shift_name AS shift,
+                p.particular_name AS particular,
+                p.particular_id AS id,
                 COALESCE(SUM(td.amount), 0) AS amount,
-                COALESCE(SUM(CASE WHEN p.id <= 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
-                COALESCE(SUM(CASE WHEN p.id > 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
-                COALESCE(SUM(CASE WHEN p.id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
-                FROM Transaction t
-                JOIN Cashier c ON t.cashier_id = c.id
-                JOIN User u ON c.user_id = u.id
-                JOIN Shift s ON t.shift_id = s.id
-                LEFT JOIN TransactionDetail td ON t.id = td.transaction_id
-                LEFT JOIN Particular p ON td.particular_id = p.id
-                WHERE t.date = ?
-                GROUP BY c.id, s.id, p.id
+                COALESCE(SUM(CASE WHEN p.particular_id <= 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
+                COALESCE(SUM(CASE WHEN p.particular_id > 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
+                COALESCE(SUM(CASE WHEN p.particular_id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
+                FROM transactions t
+                JOIN users_cashiers c ON t.cashier_id = c.user_cashier_id
+                JOIN users u ON c.user_id = u.user_id
+                JOIN shift s ON t.shift_id = s.shift_id
+                LEFT JOIN transactions_detail td ON t.transaction_id = td.transaction_id
+                LEFT JOIN particulars p ON td.particular_id = p.particular_id
+                WHERE t.transaction_date = ?
+                GROUP BY c.user_cashier_id, s.shift_id, p.particular_id
                 HAVING SUM(td.amount) > 0
-                ORDER BY u.name, s.id, p.name
+                ORDER BY u.name, s.shift_id, p.particular_name
             `, [currentDate]) as [TransactionsData[], FieldPacket[]];
             console.log('transactions: ', transactions);
             // Get all particulars
             const [particulars]:[ParticularDefinition[], FieldPacket[]] = await connection.query(`
-                SELECT id, name, fee_percent FROM Particular ORDER BY id ASC
+                SELECT particular_id, particular_name, particular_fee_percent FROM particulars ORDER BY particular_id ASC
             `) as [ParticularDefinition[], FieldPacket[]];
             console.log("Particulars:", particulars)
 

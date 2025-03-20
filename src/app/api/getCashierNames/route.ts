@@ -12,8 +12,8 @@ export async function GET(req: NextRequest) {
       const [rows]: [User[], FieldPacket[]] = await connection.query(
         `
           SELECT u.name 
-          FROM Cashier c
-          JOIN User u ON c.user_id = u.id
+          FROM users_cashiers c
+          JOIN users u ON c.user_id = u.user_id
           WHERE u.user_type = 'cashier'
           ORDER BY u.name ASC
         `

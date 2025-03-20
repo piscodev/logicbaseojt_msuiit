@@ -2,12 +2,16 @@
 import { FieldPacket } from "mysql2";
 import pool from '@/app/lib/Database/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { DateTime } from "luxon";
 // import { TransactionValuesState } from '@/app/lib/Interface/interface';
 // import { DateTime } from "luxon";
 interface AttendanceData {
     time: string,
     name: string
 }
+
+const getCurrentTime = () => DateTime.now().setZone('Asia/Manila').toFormat('yyyy-LL-dd HH:mm:ss')
+
 export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
         const {time, name, imageSrc} = await req.json();
@@ -50,7 +54,7 @@ export async function POST(req: NextRequest) {
             }
 
             await connection.commit();
-            return NextResponse.json({ success: true }, { status: 201 });
+            return NextResponse.json({ success: true, timeStamp: getCurrentTime() }, { status: 201 });
         } catch (error) {
             if (connection) await connection.rollback();
             console.error('Transaction Error:', error);

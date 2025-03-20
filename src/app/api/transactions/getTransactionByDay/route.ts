@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import pool from '../../../lib/Database/db';
 import { FieldPacket } from 'mysql2';
 import { DateTime } from 'luxon';
-interface ParticularDefinition {
-  id: number;
-  name: string;
-  type: 'Trade' | 'Non-Trade';
-  fee_percent: number;
-}
+import { ParticularDefinition } from '@/app/lib/Interface/interface';
+import pool from '@/app/lib/Database/db';
 
 interface TransactionData {
   particular: string;
@@ -43,9 +38,9 @@ export async function POST(req: NextRequest) {
 
       // Get all predefined particulars in order
       const [particulars]: [ParticularDefinition[], FieldPacket[]] = await connection.query(`
-        SELECT id, name, type, fee_percent 
-        FROM Particular
-        ORDER BY FIELD(id, 
+        SELECT particular_id, particular_name, particular_type, particular_fee_percent 
+        FROM particulars
+        ORDER BY FIELD(particular_id, 
           1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
         )
       `) as [ParticularDefinition[], FieldPacket[]];
@@ -54,21 +49,20 @@ export async function POST(req: NextRequest) {
       // Get transaction data for the date
       const [transactions]: [TransactionData[], FieldPacket[]] = await connection.query(`
         SELECT 
-          p.name AS particular,
-          s.name AS shift,
+          p.particular_name AS particulars,
+          s.shift_name AS shift,
           SUM(td.amount) AS amount,
-          u.name AS cashier
-        FROM Transaction t
-        JOIN Shift AS s ON t.shift_id = s.id
-        JOIN Cashier AS c ON t.cashier_id = c.id
-        LEFT JOIN User AS u ON c.user_id = u.id
-        LEFT JOIN TransactionDetail AS td ON t.id = td.transaction_id
-        LEFT JOIN Particular AS p ON td.particular_id = p.id
-        WHERE t.date = ?
-        GROUP BY p.name, s.name, u.name
+          MAX(u.name) AS users_cashiers
+        FROM transactions t
+        JOIN shift AS s ON t.shift_id = s.shift_id
+        JOIN users_cashiers AS c ON t.cashier_id = c.user_cashier_id
+        JOIN users AS u ON c.user_id = u.user_id
+        LEFT JOIN transactions_detail AS td ON t.transaction_id = td.transaction_id
+        LEFT JOIN particulars AS p ON td.particular_id = p.particular_id
+        WHERE t.transaction_date = ?
+        GROUP BY p.particular_name, s.shift_name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
-      console.log('Transactions: ', transactions)
-
+        console.log("Transactions: ", transactions)
       // Create transaction map
       const transactionMap = new Map<string, {
         AM?: { amount: number, cashier: string },
@@ -130,9 +124,6 @@ export async function POST(req: NextRequest) {
         const am = amNum.toFixed(2) || '';
         const mid = midNum.toFixed(2) || '';
         const pm = pmNum.toFixed(2) || '';
-        console.log("  ")
-        // console.log('Index: ', index)
-        // console.log('Particular: ', particular)
         const numericValues = [Number(txData.AM?.amount), Number(txData.MID?.amount), Number(txData.PM?.amount)]
           .filter(v => typeof v === 'number');
         
@@ -200,8 +191,8 @@ export async function POST(req: NextRequest) {
                     am: subTotalNonTradeAM,
                     mid: subTotalNonTradeMID,
                     pm: subTotalNonTradePM,
-                    gross_total: grossNonTradeTotal,
-                    net_total: netNonTradeTotal
+                    gross_total: grossNonTradeTotal.toFixed(2),
+                    net_total: netNonTradeTotal.toFixed(2),
                 };
                 nonTradeRows.push(nonTrade)
                 grandPOSAM += subTotalNonTradeAM

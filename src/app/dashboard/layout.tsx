@@ -18,6 +18,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import { useCashierStore } from "@/stores/cashierStore";
 import FooterComp from "../components/Footer";
+import usePushNotification from "@/hooks/usePushNotification";
+import { ToastContainer } from "react-toastify";
 const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -41,11 +43,15 @@ function getItem(
 
 
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode })
+{
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const user = useUserStore((state)=>state.user)
   const clearUser = useUserStore((state) => state.clearUser)
-  const [items, setItems]= useState<MenuItem[]>([]) 
+  const [items, setItems]= useState<MenuItem[]>([])
+
+  usePushNotification()
+
   useEffect(() => {
     if(user)
       if(user.user_type === 'admin'){
@@ -148,6 +154,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Content>
         <FooterComp/>
       </Layout>
+      <ToastContainer position="top-right" autoClose={3000} />
     </Layout>
   );
 }

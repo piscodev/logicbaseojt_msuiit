@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
 
       // Get all predefined particulars in order
       const [particulars]: [ParticularDefinition[], FieldPacket[]] = await connection.query(`
-        SELECT id, name, type, fee_percent 
-        FROM Particular
+        SELECT particular_id, particular_name, particular_type, particular_fee_percent 
+        FROM particulars
         ORDER BY FIELD(id, 
           1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
         )
@@ -49,17 +49,17 @@ export async function POST(req: NextRequest) {
       // Get transaction data for the date
       const [transactions]: [TransactionData[], FieldPacket[]] = await connection.query(`
         SELECT 
-          p.name AS particular,
+          p.name AS particulars,
           s.name AS shift,
           SUM(td.amount) AS amount,
-          MAX(u.name) AS cashier
-        FROM Transaction t
-        JOIN Shift AS s ON t.shift_id = s.id
-        JOIN Cashier AS c ON t.cashier_id = c.id
-        JOIN User AS u ON c.user_id = u.id
-        LEFT JOIN TransactionDetail AS td ON t.id = td.transaction_id
-        LEFT JOIN Particular AS p ON td.particular_id = p.id
-        WHERE t.date = ?
+          MAX(u.name) AS users_cashiers
+        FROM transactions t
+        JOIN shift AS s ON t.shift_id = s.shift_id
+        JOIN users_cashiers AS c ON t.cashier_id = c.user_cashier_id
+        JOIN users AS u ON c.user_id = u.user_id
+        LEFT JOIN transactions_detail AS td ON t.transaction_id = td.transaction_id
+        LEFT JOIN particulars AS p ON td.particular_id = p.particular_id
+        WHERE t.transaction_date = ?
         GROUP BY p.name, s.name
       `, [currentDate]) as [TransactionData[], FieldPacket[]];
         console.log("Transactions: ", transactions)

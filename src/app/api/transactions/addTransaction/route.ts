@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
   
             // Check if a shift report already exists for the given day and shift
             const existingShift:[TransactionValuesState[], FieldPacket[]]=  await connection.query(
-                `SELECT t.id 
-                FROM Transaction t
-                JOIN Shift s ON t.shift_id = s.id
-                WHERE t.date = ? AND s.name = ?`,
+                `SELECT t.transaction_id 
+                FROM transactions t
+                JOIN shift s ON t.shift_id = s.shift_id
+                WHERE t.transaction_date = ? AND s.shift_name = ?`,
                 [formattedDateString, shift]
             ) as [TransactionValuesState[], FieldPacket[]];
             console.log('existing shift data: ', existingShift[0])
@@ -43,12 +43,12 @@ export async function POST(req: NextRequest) {
             }
             // 2. Create transaction
             const [txResult]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-                `INSERT INTO Transaction (cashier_id, shift_id, date)
+                `INSERT INTO transactions (cashier_id, shift_id, transaction_date)
                 VALUES (
-                (SELECT c.id FROM Cashier c
-                JOIN User u ON c.user_id = u.id
+                (SELECT c.user_id FROM users_cashiers c
+                JOIN users u ON c.user_id = u.user_id
                 WHERE u.name = ?),
-                (SELECT id FROM Shift WHERE name = ?),
+                (SELECT shift_id FROM shift WHERE shift_name = ?),
                 ?
                 )`,
                 [cashier_name, shift, formattedDateString]
@@ -93,9 +93,9 @@ export async function POST(req: NextRequest) {
                 }
                 try {
                     await connection.query(
-                        `INSERT INTO TransactionDetail
+                        `INSERT INTO transactions_detail
                         (transaction_id, particular_id, amount)
-                        VALUES(? , (SELECT id FROM Particular where name = ?) , ?)`,
+                        VALUES(? , (SELECT particular_id FROM particulars where particular_name = ?) , ?)`,
                         [txId, particularName, amount]
                     )
                 } catch (error) {

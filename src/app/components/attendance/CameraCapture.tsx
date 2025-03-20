@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Card, Col, Row, Button, Alert, Space } from "antd";
-import CashiersDataTableList from "./CashiersDataTableList";
 import { useUserStore } from "@/stores/userStore";
 import Meta from "antd/es/card/Meta";
+import ShiftHistoryTable from "./ShiftHistoryTable";
+import { getCurrentTime } from "@/utils/CurrentTimeHelper";
 // import CashiersTable from "../CashiersTable";
 
 // computation: 8 * 60 * 60 * 1000
@@ -12,11 +13,32 @@ import Meta from "antd/es/card/Meta";
 // return lng dayn ug message na di pa kalogout chuchu
 // const workHours = 28_800_000 // 8 hours in milliseconds // maybe kato 4hrs sguro
 
+// const shiftHour = 14_400_000 // 4 hours in milliseconds
+
+
+// GPT
+const formatTimeLeft = (ms: number) =>
+{
+  const totalSeconds = Math.floor(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  
+  return `${hours}h : ${minutes}m : ${seconds}s`
+}
+
+function isNumeric(str: number)
+{
+  if (typeof str != "number")
+    return false
+
+  return !isNaN(str) && !isNaN(Number(str)) && isFinite(str)
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dateConv(date: number) : string
 {
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + ", " + new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "numeric", hour12: true })  
+  return isNumeric(date) ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + ", " + new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "numeric", hour12: true }) : ""
 }
 
 
@@ -27,46 +49,61 @@ function dateConv(date: number) : string
 const CameraCapture = () =>
 {
   const user = useUserStore((state) => state.user)
+  const setUser = useUserStore((state) => state.setUser)
   const [btnLoading, setBtnLoading] = useState<boolean>(false)
-
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const photoRef = useRef<HTMLImageElement | null>(null)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [streamSrc, setStreamSrc] = useState<MediaStream | null>(null)
-
-  const [imageSrc, setImageSrc] = useState<string>('')
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [cashierData, setCashierData] = useState({})
+  // const [streamSrc, setStreamSrc] = useState<MediaStream | null>(null)
 
   const [timeInStamp, setTimeInStamp] = useState<number>(0)
   const [timeOutStamp, setTimeOutStamp] = useState<number>(0)
 
   const [isTimedIn, setIsTimedIn] = useState<boolean>(false)
-  // const [isTimedOut, setIsTimedOut] = useState<boolean>(false)
-  // const [hasTimedOut, setHasTimedOut] = useState<boolean>(false) // base state kung naka time-out na sya para di na magbalik ang time-in button --- ugma npd
+  const [message, setMessage] = useState<string[] | null>()
 
-  const retrieveCashierAttendance = async () =>
-  {
-    const response = await fetch('api/testonggg')
-    if (!response.ok)
-      return console.error("Error: ", response.statusText)
+  // TO DO next
+  const fetchTodayAttendance = async() => {
+    if (!user)
+      return
 
+    const name = user?.name;
+    const response = await fetch('/api/attendance/get', {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({name})
+    })
     const data = await response.json()
-    if (!data)
-      return console.error("Error: No data received")
+    console.log("data attendance exist: ", data);
+    // if(data.message === "Record for today doesn't exists"){
+    if(data.success){
+      startCamera()
 
-    // kung null kay wla pa naka time-in today, so need pa e trigger ang button Time-In
-    setCashierData(data)
-
-    setTimeInStamp(data.timeInStamp)
-    setTimeOutStamp(data.timeOutStamp)
-    setIsTimedIn(data.isTimedIn)
-    // setIsTimedOut(data.isTimedOut)
-  }
+      const videoElement = videoRef.current
+      if (videoElement?.srcObject)
+      {
+          const stream = videoElement.srcObject as MediaStream
+          stream.getTracks().forEach((track) => track.stop())
+      }
+      // setIsTimedIn(false)
+      // setIsTimedOut(false)
+    } else if (data.message === "Record for time in already exists") {
+      // setIsTimedIn(true)
+      // setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
+      // setIsTimedOut(false)
+    }
+    else if (data.message === "Record for today already exists") {
+      // setIsTimedIn(true)
+      // setIsTimedOut(true)
+      // setTimeInTimeStamp(DateTime.fromISO(data.data.time_in).toFormat("yyyy-LL-dd HH:mm:ss"))
+      // setTimeOutTimeStamp(DateTime.fromISO(data.data.time_out).toFormat("yyyy-LL-dd HH:mm:ss"))
+    }
+  };
 
   const startCamera = async () =>
   {
@@ -79,8 +116,8 @@ const CameraCapture = () =>
       if (videoRef.current)
       {
         videoRef.current.srcObject = stream
+        videoRef.current.style.transform = "scaleX(-1)"
         videoRef.current.play()
-        setStreamSrc(stream)
       }
     }).catch(err => {
         console.error("Error accessing camera:", err)
@@ -89,96 +126,42 @@ const CameraCapture = () =>
 
   useEffect(() =>
   {
-      const videoElement = videoRef.current
-      startCamera()
+      console.log("User:", user);
+      // startCamera()
 
-      if (videoElement?.srcObject)
-      {
-          const stream = videoElement.srcObject as MediaStream
-          stream.getTracks().forEach((track) => track.stop())
-      }
-
-      retrieveCashierAttendance()
-  }, [])
+      // retrieveCashierAttendance()
+      if (user?.name)
+        fetchTodayAttendance()
+  }, [isTimedIn, user])
 
   const handleTimeIn = async () =>
   {
-    setBtnLoading(true)
+    if (btnLoading)
+      return
 
-    const timeStamp = new Date().getTime() // to millis
-
-    const response = await fetch('/api/attendance/get/logon',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ userId: user?.name, timeStamp, imageSrc, hasTimedIn: isTimedIn })
-    })
-
-    if (!response.ok)
-      return console.error("Error: ", response.statusText)
-
-    const data = await response.json()
-    if (!data)
-      return console.error("Error: No data received")
-
-    setCashierData(data)
-    takePhoto()
-
-    // setTimeInStamp(timeStamp) // to millis // data.timeStamp
-    // setIsTimedIn(true) // data.timedIn
-    // setIsTimedOut(false)
+      takePhoto('in')
   }
 
   const handleTimeOut = async () =>
   {
-    setBtnLoading(true)
+    if (btnLoading)
+      return
 
-    const timeStamp = new Date().getTime() // to millis
-
-    const response = await fetch('/api/attendance/get/logon',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ userId: user?.name, timeStamp, imageSrc, hasTimedIn: isTimedIn })
-    })
-
-    if (!response.ok)
-      return console.error("Error: ", response.statusText)
-
-    const data = await response.json()
-    if (!data)
-      return console.error("Error: No data received")
-
-    // setTimeOutStamp(timeStamp) // to millis // data.timeStamp
-    // setIsTimedIn(false) // data.timedIn
-    // setHasTimedOut(true)
-    // setIsTimedOut(true)
-    // setIsTimedOut(false)
-
-
-
-    // retrieve nlng new kay maka himo napd ug useEffect if mag setData sa cashier
-    // murag kato same nahitabo sa pag add sa tcmc nga datatable same ato nga e retrieve lang
-    // kibale, dadto na sa api mag update sa data sa cashier before sya mag retrieve dria
-    // retrieveCashierAttendance() // retrieve ang new user datas sa cashier
-
-    takePhoto() // photo for time-out na dyn
+    takePhoto('out')
   }
 
-  const takePhoto = () =>
+  const takePhoto = async (typ: string) =>
   {
     if (!videoRef.current || !canvasRef.current || !photoRef.current)
         return
+
+    setBtnLoading(true)
 
     const context = canvasRef.current.getContext("2d")
     if (!context)
         return
 
-    const dateMillisNow = new Date().getTime()
+    const dateNow = new Date(getCurrentTime())
 
     const width = 320
     const height = videoRef.current.videoHeight / (videoRef.current.videoWidth / width)
@@ -189,42 +172,138 @@ const CameraCapture = () =>
 
     const imageData = canvasRef.current.toDataURL("image/png")
     photoRef.current.src = imageData
-    console.log("Image data: ", imageData)
-    if (!imageSrc)
-      setImageSrc(imageData)
+    // console.log("Image data: ", imageData)
+    // setImageSrc(() =>
+    // {
+    //   console.log("Setting ImageSrc:", imageData.substring(0, 50))
+    //   return imageData
+    // })
 
-    if (isTimedIn)
+    if (typ === 'in')
     {
-        setTimeOutStamp(dateMillisNow)
-        setIsTimedIn(false)
-        // setIsTimedOut(true)
-    } else {
-        setTimeInStamp(dateMillisNow)
+      await fetch('/api/attendance/get/logon',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn })
+      }).then(async response =>
+      {
+        // if (!response.ok)
+        //   return console.error("Error: ", response.statusText)
+
+        const data = await response.json()
+        if (!data)
+          return console.error("Error: No data received")
+
+        if (data.timeIn)
+        {
+          if (user)
+          {
+            setUser({
+              user_id: user.user_id,
+              name: user.name,
+              email: user.email,
+              user_type: user.user_type,
+              loginData: {
+                time_in: new Date(data.timeIn).toString(),
+                time_in_image: imageData,
+                time_out: (timeOutStamp > 0) ? new Date(timeOutStamp).toString() : "",
+                time_out_image: (timeOutStamp > 0) ? imageData : ""
+              }
+            })
+          }
+
+          setTimeInStamp(data.timeIn || 0)
+        }
         setIsTimedIn(true)
-        // setIsTimedOut(false)
-    }
 
-    if (timeInStamp !== 0 && timeOutStamp !== 0)
-    {
-        // const diff = timeOutStamp - timeInStamp
-        // dria sguro e compute ang iya accumulation rate karon na day
-        // to do pa
-    }
 
-    setBtnLoading(false)
+        setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
+      }).catch(err => 
+      {
+        console.error("Error accessing camera:", err)
+        setIsTimedIn(false)
+      }).finally(() => setBtnLoading(false))
+    } else {
+
+      // time-out
+      await fetch('/api/attendance/get/logon',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn })
+      }).then(async response =>
+      {
+        if (!response.ok)
+          return console.error("Error: ", response.statusText)
+  
+        const data = await response.json()
+        if (!data)
+          return console.error("Error: No data received")
+  
+        if (data.type === "error")
+        {
+          setIsTimedIn(false)
+        } else {
+
+          if (data.timeOut)
+            setTimeOutStamp(data.timeOut)
+
+          if (user)
+          {
+            setUser({
+              user_id: user.user_id,
+              name: user.name,
+              email: user.email,
+              user_type: user.user_type,
+              loginData: {
+                time_in: user.loginData?.time_in ? user.loginData?.time_in : "",
+                time_in_image: imageData,
+                time_out: (timeOutStamp > 0) ? String(new Date(timeOutStamp)) : "",
+                time_out_image: (timeOutStamp > 0) ? imageData : ""
+              }
+            })
+          }
+        }
+
+        setIsTimedIn(true)
+
+        setMessage([data.type || "error", data.message || "", data.timeLeft || 0])
+      }).catch(err =>
+      {
+        console.error("Error accessing camera:", err)
+        setIsTimedIn(false)
+      }).finally(() => setBtnLoading(false))
+    }
   }
 
   return (
     <Card title={"Attendance | User: " + user?.name}>
-      <Space direction="vertical" style={{marginBottom: '24px'}}>
-        <Meta title={"Time in: "+ (timeInStamp === 0 ? "" : dateConv(timeInStamp))}></Meta>
-        <Meta title={"Time out: " + (timeOutStamp === 0 ? "" : dateConv(timeOutStamp))}></Meta>
+      <Space direction="vertical" style={{ marginBottom: '24px' }}>
+        <Meta
+          title={
+            user?.loginData?.time_in
+              ? "Timed-In: " + dateConv(new Date(user?.loginData?.time_in).getTime())
+              : "Timed-In: N/A"
+          }
+        />
+        <Meta
+          title={
+            user?.loginData?.time_out
+              ? "Timed-Out: " + dateConv(new Date(user?.loginData?.time_out).getTime())
+              : "Timed-Out: N/A"
+          }
+        />
       </Space>
 
       <Row>
         <Col className="p-2" flex="1 1 80px">
-            <CashiersDataTableList /> sampol ( logs sa individual cashier saiyang mga time-in ug out)
-            {/* <CashiersTable/> */}
+            {/* <CashiersDataTableList /> sampol ( logs sa individual cashier saiyang mga time-in ug out) */}
+            <ShiftHistoryTable />
         </Col>
         <Col className="p-2" flex="0 1 500px">
         <Card title={"Status: " + (!isTimedIn ? "To Time-In" : "To Time-Out")}>
@@ -235,12 +314,29 @@ const CameraCapture = () =>
             <video ref={videoRef} width="auto" height="240">
               Video stream not available.
             </video>
-            <Button type="primary" onClick={!isTimedIn ? handleTimeIn : handleTimeOut} loading={btnLoading} disabled={btnLoading}>
-              {isTimedIn ? "Time-Out" : "Time-In"}
-            </Button>
+            {!isTimedIn && !user?.loginData?.time_in ? 
+              (<Button type="primary" onClick={handleTimeIn} loading={btnLoading} disabled={btnLoading}>
+                Time-In
+              </Button>
+              ) :
+              <Button type="primary" onClick={handleTimeOut} loading={btnLoading} disabled={btnLoading}>
+                Time-Out
+              </Button>
+            }
             {/* { timeInStamp === 0 ? <Alert message={"Successfully timed-in at dateConv(millis) "} type="success" showIcon closable /> : "" } */}
-            <Alert message={"Successfully timed-in at dateConv(millis) "} type="success" showIcon closable />
-            <Alert message={"Server Error: Unable to chuchu "} type="error" showIcon closable />
+            {message && 
+              <Alert
+                message={
+                  <>
+                    {message[1]} 
+                    {parseInt(message[2]) > 0 && ` (Time Left: ${formatTimeLeft(Number(message[2]))})`}
+                  </>
+                }
+                type={message[0] as "success" | "info" | "warning" | "error"}
+                showIcon
+                closable
+              />
+            }
           </div>
 
           <canvas ref={canvasRef} style={{ display: "none" }}></canvas>

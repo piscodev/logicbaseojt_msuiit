@@ -1,40 +1,111 @@
-// import pool from "@/app/lib/Database/db";
-import { NextResponse } from "next/server";
+import pool from "@/app/lib/Database/db";
+import { FieldPacket, ResultSetHeader } from "mysql2";
+import { init } from "next/dist/compiled/webpack/webpack";
+import { NextRequest, NextResponse } from "next/server";
 
-
-export async function POST()
+interface AttendanceData
 {
-    // const { userId, timeStamp, imageSrc, hasTimedIn } = await req.json()
-    // if (!timeStamp || !imageSrc)
-    //     return NextResponse.json("Invalid request", { status: 400 })
+    id: number,
+    name: string
+    time_in: string,
+    time_out: string,
+}
 
+export const dynamic = 'force-dynamic'
 
-    //if (hasTimedIn)
-        // sequence . . .
-    // else
-        // sequeence . . .
+const workShiftHoursToMillis = 14_400_000 // 4 hours in milliseconds // 4 * 60 * 60 * 1000
 
-    const now = new Date().getTime()
-
-    // let conn = null
-    // try
-    // {
-    //     conn = await pool.getConnection()
-    //     // const queryTestong = await conn.query("SELECT * FROM users_cashiers_attendance WHERE na")
-
-    //     await conn.execute("INSERT INTO users_cashiers_attendance (user_id, time_in, image_src) VALUES (?, ?, ?)", [userId, timeStamp, imageSrc])
-
-    // } catch (error) {
-    //     console.error(error)
-    // } finally {
-
-    //     if (conn)
-    //         conn.release()
-    // }
-
-    return NextResponse.json(
+// export async function GET() // testing purposes
+export async function POST(req: NextRequest)
+{
+    let conn = null
+    try
     {
-        timeStamp: now,
-        cashier_data: {},
-    })
+        const { userId, imageSrc, time, hasTimedIn } = await req.json()
+
+        // test purposes
+        // console.log(userId, imageSrc, hasTimedIn)
+        // if (!userId || !imageSrc || !hasTimedIn)
+        //     return NextResponse.json({ type: "error", message: "Failed to initialize record" }, { status: 500 })
+        // const userId = 2
+        // const imageSrc = ''
+        // const hasTimedIn = false
+        const initTime = new Date(time)
+
+        // AM Shift: 8:00 AM - 12:00 PM (4 hours)
+        // MID Shift: 12:00 PM - 4:00 PM (4 hours)
+        // PM Shift: 4:00 PM - 8:00 PM (4 hours)
+        let shift
+        if (initTime.getHours() >= 8 && initTime.getHours() < 12)
+            shift = "AM"
+        else if (initTime.getHours() >= 12 && initTime.getHours() < 16)
+            shift = "MID"
+        else if (initTime.getHours() >= 16 && initTime.getHours() < 20)
+            shift = "PM"
+
+        conn = await pool.getConnection()
+
+        // kung naa na PM si specific user kay check for tomorrow napd
+        const checkOccupiedShifts = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = 'PM'"
+        const [row_shift]: [AttendanceData[], FieldPacket[]] = await conn.execute(checkOccupiedShifts, [userId]) as [AttendanceData[], FieldPacket[]]
+        if (row_shift.length === 1)
+            return NextResponse.json({ type: "info", message: "Unable to Time-Out, try again tomorrow!" }, { status: 200 })
+
+        // check if naka time-in
+        const query = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ?"
+        const [rows]: [AttendanceData[], FieldPacket[]] = await conn.execute(query, [userId, shift]) as [AttendanceData[], FieldPacket[]]
+        if (rows.length === 0)
+        {
+            // if wala pa naka time-in ang cashier, insert
+            const [result] : [ResultSetHeader, FieldPacket[]] = await conn.execute("INSERT INTO users_cashiers_attendance (user_cashier_id, user_id, time_in, time_in_image, shift) VALUES ((SELECT c.user_cashier_id FROM users_cashiers c WHERE c.user_id = ?), ?, ?, ?, ?)", [userId, userId, initTime, imageSrc, shift]) as [ResultSetHeader, FieldPacket[]]
+            if (result.affectedRows === 0)
+                return NextResponse.json({ type: "error", message: "Failed to insert record" }, { status: 500 })
+
+            // Re-query the updated record
+            const reQuery = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ? AND time_in_image = ?"
+            const [updatedRow]: [AttendanceData[], FieldPacket[]] = await conn.execute(reQuery, [userId, shift, imageSrc]) as [AttendanceData[], FieldPacket[]]
+            if (updatedRow.length === 0)
+                return NextResponse.json({ type: "success", message: "Timed-In successfully!" }, { status: 200 })
+
+            return NextResponse.json({ type: "success", message: "Timed-In successfully!", timeIn: initTime.getTime() }, { status: 200 })
+            // return NextResponse.json(updatedRow, { status: 200 })
+        }
+
+        // e check dayun kung pwede na mag time-out ang cashier saiyang shift
+        const timeInStamp = new Date(rows[0].time_in).getTime()
+
+        // check ang difference sa time-in ug sa current time para ma differentiate ang
+        // time-in ug time-out sa iyang shift (4 hours ang shift; [AM, MID, PM]) // kulang pa condition if naka time-in na sya today so like MID, PM napd
+        const timeElapsed = initTime.getTime() - timeInStamp // now - timeIn (previous)
+        console.log(timeElapsed)
+        // const timeLeft_ = (workShiftHoursToMillis - (diff)) //- 2_000_000
+        // const timeLeft_ = (timeElapsed + initTime.getTime()) //- 2_000_000
+        const timeLeft_ = workShiftHoursToMillis - timeElapsed
+        if (timeElapsed <= workShiftHoursToMillis) // 4 hours in milliseconds
+            return NextResponse.json({ type: "error", message: "Cannot time-out yet!", timeLeft: timeLeft_ }, { status: 200 })
+
+        // const isValidDate = () => new Date(rows[0].time_in).toString() !== 'Invalid Date'
+        // if (isValidDate())
+        //     return NextResponse.json({ type: "warning", message: "Already Timed-In!" }, { status: 200 })
+
+        // init data
+        // then update ang row if wla pa naka signout si cashier
+        // actually pwede ra sya multiquery, pero for the sake of the exercise, i separate sa nako
+        await conn.execute("UPDATE users_cashiers_attendance SET time_out = ?, time_out_image = ? WHERE (SELECT c.user_cashier_id FROM users_cashiers c WHERE c.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ?", [initTime, imageSrc, userId, shift])
+
+        // Re-query the updated record
+        const reQuery = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ?"
+        const [updatedRow]: [AttendanceData[], FieldPacket[]] = await conn.execute(reQuery, [userId, shift]) as [AttendanceData[], FieldPacket[]]
+        if (updatedRow.length === 0)
+            return NextResponse.json({ type: "success", message: "Timed-Out successfully!", timeOut: initTime.getTime() }, { status: 200 })
+            // return NextResponse.json( { type: "error", message: "No record found!" }, { status: 404 })
+
+        return NextResponse.json(updatedRow, { status: 200 })
+    } catch (error) {
+        console.error(error)
+    } finally {
+        
+        if (conn)
+            conn.release()
+    }
 }

@@ -18,18 +18,18 @@ export async function POST(req: NextRequest) {
         console.log('Connection established');
 
         const checkInOutQuery = `
-            SELECT * FROM Attendance
-            WHERE cashier_id = (SELECT c.id FROM Cashier c
-                JOIN User u ON c.user_id = u.id
+            SELECT * FROM users_cashiers_attendance
+            WHERE user_id = (SELECT c.user_id FROM users_cashiers c
+                JOIN users u ON c.user_id = u.user_id
                 WHERE u.name = ?) 
             AND DATE(time_in) = CURDATE() 
             AND DATE(time_out) = CURDATE()
         `;
 
         const checkInQuery = `
-            SELECT * FROM Attendance
-            WHERE cashier_id = (SELECT c.id FROM Cashier c
-                JOIN User u ON c.user_id = u.id
+            SELECT * FROM users_cashiers_attendance
+            WHERE user_id = (SELECT c.                                                                                                  user_id FROM users_cashiers c
+                JOIN users u ON c.user_id = u.user_id
                 WHERE u.name = ?) 
             AND DATE(time_in) = CURDATE() 
             AND time_out IS NULL

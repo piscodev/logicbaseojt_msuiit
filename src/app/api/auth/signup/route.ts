@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const connection = await pool.getConnection();
     try{
       // ✅ Check if email already exists
-      const existingUser: [User[], FieldPacket[]] = await connection.query("SELECT id FROM User WHERE email = ?", [email]) as [User[], FieldPacket[]];
+      const existingUser: [User[], FieldPacket[]] = await connection.query("SELECT user_id FROM users WHERE email = ?", [email]) as [User[], FieldPacket[]];
       console.log('Existing user: ', existingUser[0]);
       if (existingUser[0].length > 0) {
         return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
@@ -36,10 +36,10 @@ export async function POST(req: Request) {
       let query;
       let values=[];
       if(user_type==='admin'){
-        query = "INSERT INTO User (name, email, hashed_password, registeredAt, user_type) VALUES (?, ?, ?, ?, ?)";
-        values=[name, email, hashedPassword, formattedDateString, user_type];
+        query = "INSERT INTO users (user_type, name, email, hashed_password, created_at) VALUES (?, ?, ?, ?, ?)";
+        values=[user_type, name, email, hashedPassword, formattedDateString];
       } else {
-        query = "INSERT INTO User (name, email, hashed_password, registeredAt) VALUES (?, ?, ?, ?)";
+        query = "INSERT INTO users (name, email, hashed_password, created_at) VALUES (?, ?, ?, ?)";
         values=[name, email, hashedPassword, formattedDateString];
       }
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.query(
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       const userId = result.insertId;
       if(user_type!=='admin'){
         const [cashier]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-          "INSERT INTO Cashier (user_id, rate) VALUES (?, ?)",
+          "INSERT INTO users_cashiers (user_id, rate) VALUES (?, ?)",
           [userId, rate]
         ) as [ResultSetHeader, FieldPacket[]];
         console.log("Inserted Cashier: ", cashier)

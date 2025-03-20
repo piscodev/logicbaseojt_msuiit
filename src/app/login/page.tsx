@@ -63,7 +63,7 @@ export default function AuthPage() {
         throw new Error(data.error);
       }
       if(!isLogin){
-        setUser({name: name, email:email, user_type:'admin'})
+        // setUser({user_id: data.user.user_id, name: name, email:email, user_type:'admin'})
         console.log("user2134=====12", user)
         clearCashiers();// will fetch new data since a new cashier is added
         showMessage('success', "Redirecting to Dashboard...");
@@ -71,8 +71,8 @@ export default function AuthPage() {
           router.push("/dashboard");
         }, 250);
         return
-      } 
-      setUser({name: data.user.name, email:email, user_type:data.user.user_type})
+      }
+      setUser({ user_id: data.user.user_id, name: data.user.name, email: data.user.email, user_type: data.user.user_type })
       console.log("user213412", user)
       showMessage('success', "Redirecting to Dashboard...");
       setTimeout(() => {

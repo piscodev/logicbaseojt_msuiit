@@ -29,6 +29,8 @@
     "react-countup": "^6.5.3",
     "react-dom": "^18",
     "react-icons": "^5.5.0",
+    "react-toastify": "^11.0.5",
+    "web-push": "^3.6.7",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -39,6 +41,8 @@
     "@types/node": "^20.17.19",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/react-toastify": "^4.1.0",
+    "@types/web-push": "^3.6.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.24",
     "postcss": "^8",
