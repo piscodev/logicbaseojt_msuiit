@@ -131,7 +131,6 @@ export async function POST(res: NextRequest)
       const am = amNum.toFixed(2) || '';
       const mid = midNum.toFixed(2) || '';
       const pm = pmNum.toFixed(2) || '';
-      console.log("  ")
       // console.log('Index: ', index)
       // console.log('Particular: ', particular)
       const numericValues = [Number(txData.AM?.amount), Number(txData.MID?.amount), Number(txData.PM?.amount)]

@@ -11,11 +11,11 @@ export async function GET(req: NextRequest) {
       // Query to get all cashier names
       const [rows]: [User[],FieldPacket[]] = await connection.query(
         `
-          SELECT u.name 
-          FROM Cashier c
-          JOIN User u ON c.user_id = u.id
+          SELECT CONCAT(u.first_name, ' ', u.last_name) AS name 
+          FROM users_cashiers c
+          JOIN users u ON c.user_id = u.user_id
           WHERE u.user_type = 'cashier'
-          ORDER BY u.name ASC
+          ORDER BY CONCAT(u.first_name, ' ', u.last_name) ASC
         `
       ) as [User[],FieldPacket[]];
       // Extract just the names from the result

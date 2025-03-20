@@ -51,7 +51,7 @@ export async function POST(req: NextRequest){
             const [transactions]: [TransactionsData[], FieldPacket[]] = await connection.query(`
                 SELECT 
                 c.user_cashier_id AS cashier_id,
-                u.name AS cashier_name,
+                CONCAT(u.first_name, ' ', u.last_name) AS cashier_name,
                 s.shift_name AS shift,
                 p.particular_name AS particular,
                 p.particular_id AS id,
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest){
                 WHERE t.transaction_date = ?
                 GROUP BY c.user_cashier_id, s.shift_id, p.particular_id
                 HAVING SUM(td.amount) > 0
-                ORDER BY u.name, s.shift_id, p.particular_name
+                ORDER BY CONCAT(u.first_name, ' ', u.last_name), s.shift_id, p.particular_name
             `, [currentDate]) as [TransactionsData[], FieldPacket[]];
             console.log('transactions: ', transactions);
             // Get all particulars

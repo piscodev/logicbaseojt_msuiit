@@ -33,26 +33,26 @@ export async function GET() {
     const [lanes] = await connection.execute<RowDataPacket[]>(
       `
       SELECT 
-        CL.id AS id, CL.name AS name,
-        C1.id AS cashier1_id, U1.name AS user1_name, U1.email AS user1_email, 
+        CL.lane_id AS id, CL.lane_name AS name,
+        C1.user_cashier_id AS cashier1_id, CONCAT(U1.first_name, ' ', U1.last_name) AS user1_name, U1.email AS user1_email, 
         U1.user_type AS user1_type, U1.last_login AS user1_last_login, U1.address AS user1_address,
         U1.active AS user1_active, U1.gender AS user1_gender, U1.contact_number AS user1_contact_number,
 
-        C2.id AS cashier2_id, U2.name AS user2_name, U2.email AS user2_email, 
+        C2.user_cashier_id AS cashier2_id, CONCAT(U2.first_name, ' ', U2.last_name) AS user2_name, U2.email AS user2_email, 
         U2.user_type AS user2_type, U2.last_login AS user2_last_login, U2.address AS user2_address,
         U2.active AS user2_active, U2.gender AS user2_gender, U2.contact_number AS user2_contact_number,
 
-        C3.id AS cashier3_id, U3.name AS user3_name, U3.email AS user3_email,
+        C3.user_cashier_id AS cashier3_id, CONCAT(U3.first_name, ' ', U3.last_name) AS user3_name, U3.email AS user3_email,
         U3.user_type AS user3_type, U3.last_login AS user3_last_login, U3.address AS user3_address,
         U3.active AS user3_active, U3.gender AS user3_gender, U3.contact_number AS user3_contact_number
 
-      FROM CashierLane CL
-      LEFT JOIN Cashier C1 ON CL.cashier1_id = C1.id
-      LEFT JOIN User U1 ON C1.user_id = U1.id
-      LEFT JOIN Cashier C2 ON CL.cashier2_id = C2.id
-      LEFT JOIN User U2 ON C2.user_id = U2.id
-      LEFT JOIN Cashier C3 ON CL.cashier3_id = C3.id
-      LEFT JOIN User U3 ON C3.user_id = U3.id
+      FROM users_cashier_lanes CL
+      LEFT JOIN users_cashiers C1 ON CL.cashier1_id = C1.user_cashier_id
+      LEFT JOIN users U1 ON C1.user_id = U1.user_id
+      LEFT JOIN users_cashiers C2 ON CL.cashier2_id = C2.user_cashier_id
+      LEFT JOIN users U2 ON C2.user_id = U2.user_id
+      LEFT JOIN users_cashiers C3 ON CL.cashier3_id = C3.user_cashier_id
+      LEFT JOIN users U3 ON C3.user_id = U3.user_id
       `
     );
 

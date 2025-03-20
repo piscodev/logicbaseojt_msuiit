@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
             SELECT * FROM users_cashiers_attendance
             WHERE user_id = (SELECT c.user_id FROM users_cashiers c
                 JOIN users u ON c.user_id = u.user_id
-                WHERE u.name = ?) 
+                WHERE CONCAT(u.first_name, ' ', u.last_name) = ?) 
             AND DATE(time_in) = CURDATE() 
             AND DATE(time_out) = CURDATE()
         `;
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
             SELECT * FROM users_cashiers_attendance
             WHERE user_id = (SELECT c.                                                                                                  user_id FROM users_cashiers c
                 JOIN users u ON c.user_id = u.user_id
-                WHERE u.name = ?) 
+                WHERE CONCAT(u.first_name, ' ', u.last_name) = ?) 
             AND DATE(time_in) = CURDATE() 
             AND time_out IS NULL
         `;

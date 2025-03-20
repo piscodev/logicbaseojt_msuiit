@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Dropdown, Button, Typography, Space, MenuProps, Tooltip, Badge } from "antd";
-import { BellOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { Dropdown, Button, Typography, Space, MenuProps, Badge } from "antd";
+import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useUserStore } from "@/stores/userStore";
 import { useCashierStore } from "@/stores/cashierStore";
 import PushNotifications from "./notification/PushNotifications";
