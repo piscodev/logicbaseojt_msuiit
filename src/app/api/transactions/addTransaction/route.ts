@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
             const [txResult]: [ResultSetHeader, FieldPacket[]] = await connection.query(
                 `INSERT INTO transactions (user_cashier_id, shift_id, transaction_date)
                 VALUES (
-                (SELECT c.user_id FROM users_cashiers c
+                (SELECT c.user_cashier_id FROM users_cashiers c
                 JOIN users u ON c.user_id = u.user_id
                 WHERE CONCAT(u.first_name, ' ', u.last_name) = ?),
                 (SELECT shift_id FROM shift WHERE shift_name = ?),

@@ -8,6 +8,7 @@ import {
   Space,
   Typography
 } from 'antd';
+import { useCashierStore } from '@/stores/cashierStore';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -63,6 +64,7 @@ interface SignUpProps {
 }
 const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, setAdminData}) => {
   const [form] = Form.useForm();
+  const clearCashiers = useCashierStore((state) => state.clearCashiers)
   const [loading, setLoading] = useState<boolean>(false)
 
   const handleSignUp = async(values: SignUpData) => {
@@ -78,8 +80,12 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
         responseMessage(data.title, data.error, 'error')
         throw new Error("Error signing up");
       }
-      if(setAdminData)
+
+      if(setAdminData) // Sign Up form in main menu - admin
       setAdminData(values)
+      else
+      clearCashiers() // Sign Up form in admin dashboard - add cashier
+
       responseMessage(data.title, data.message, 'success')
       setLoading(false)
     } catch (error) {
