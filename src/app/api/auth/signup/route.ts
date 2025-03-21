@@ -70,7 +70,8 @@ export async function POST(req: Request) {
       );
       // ✅ Store token in cookies
       const response = NextResponse.json({ 
-        message: user_type==="cashier"?"Cashier":"User" + " registered successfully!", 
+        message: user_type==="cashier"?"Cashier registered successfully!":"User registered successfully!", 
+        title: "Account Created!",
         user: { id: result.insertId, email } 
       },
         { status: 201 }
