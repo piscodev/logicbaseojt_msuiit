@@ -8,12 +8,12 @@ interface ShiftHistoryData {
     total_hours_worked: number,
     shift_date: string,
     shift: string,
-    name: string
+    first_name: string,
+    last_name: string
 }
 export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
-        const {name} = await req.json();
-        console.log("Name: ", name)
+        const { user_id } = await req.json();
         
         let connection;
         try {
@@ -51,16 +51,16 @@ export async function POST(req: NextRequest) {
                 FROM users_cashiers_attendance a
                 JOIN users_cashiers c ON a.user_cashier_id = c.user_cashier_id
                 JOIN users u ON c.user_id = u.user_id
-                WHERE u.name = ?
+                WHERE u.user_id = ?
                 GROUP BY shift_date, a.time_in, a.time_out, a.shift
                 ORDER BY a.time_in DESC
             `
 
-            const [shiftHistory]:[ShiftHistoryData[], FieldPacket[]] = await connection.query(query, [name]) as [ShiftHistoryData[], FieldPacket[]];
+            const [shiftHistory]:[ShiftHistoryData[], FieldPacket[]] = await connection.query(query, [user_id]) as [ShiftHistoryData[], FieldPacket[]];
             
             const data = shiftHistory.map((row: ShiftHistoryData, index:number) => ({
                 key: index,
-                name: name,
+                name: row.first_name + ' ' + row.last_name,
                 shift_date: row.shift_date,
                 shift: row.shift,
                 time_in: row.time_in,

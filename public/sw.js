@@ -18,6 +18,6 @@ self.addEventListener("notificationclick", (event) =>
 {
     event.notification.close()
     event.waitUntil(
-      clients.openWindow("https://moneycachehub.vercel.app/attendance")
+      clients.openWindow("https://moneycachehub.vercel.app/dashboard/attendance")
     )
 })

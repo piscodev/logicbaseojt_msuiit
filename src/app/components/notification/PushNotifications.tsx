@@ -7,7 +7,7 @@ import { Button, Tooltip } from "antd";
 import { serviceWorker } from "@/utils/ServiceWorker"
 import { useUserStore } from "@/stores/userStore";
 
-const PUBLIC_VAPID_KEY = "BIK1qzjrQRCZMsOzO6GH4HeXKOBivuy0npF21_eJONISLMFHPjxwDbcuZNs7bWH-P62GPHjcywsqdoiMJ6O87A8";
+const PUBLIC_VAPID_KEY = "BDY4oXnfhlW2Za7Da1N--NVl-zYFIIhAYBQkhCZ-ZwKzu4w2kovg1lWmlqhjCIFy-3jaI9mx1ev8gb09EPW8gaA";
 
 const PushNotifications = () =>
 {
@@ -35,9 +35,9 @@ const PushNotifications = () =>
         }
 
         checkSubscription()
-    }, [isMounted])
+    }, [isMounted, user])
 
-    if (!isMounted)
+    if (!isMounted || !user)
         return null
 
     const subscribeToPush = async () =>
@@ -68,20 +68,7 @@ const PushNotifications = () =>
             {
                 console.log("Subscribed to push notifications!")
                 setSubscribed(true)
-            } //else console.error("Failed to register subscription:", await response.text())
-
-            // await fetch("/api/notifications/subscribe", {
-            //     method: "POST",
-            //     body: JSON.stringify(subscription),
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            // }).then((res) => {
-            //     if (res.ok) {
-            //         console.log("Subscribed to push notifications!");
-            //         setSubscribed(true)
-            //     }
-            // }).catch((err) => console.error(err))
+            }
         } catch (error) {
             console.error("Failed to subscribe to push notifications:", error)
         } finally {

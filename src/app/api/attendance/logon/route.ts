@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 interface AttendanceData
 {
     id: number,
-    name: string
     time_in: string,
     time_out: string,
 }
@@ -21,6 +20,11 @@ export async function POST(req: NextRequest)
     try
     {
         const { userId, imageSrc, time, hasTimedIn} = await req.json()
+        if (!userId || !time)
+            return NextResponse.json({ type: "error", message: "Missing userId or time in request body" }, { status: 400 })
+        
+        if (!imageSrc)
+            return NextResponse.json({ type: "error", message: "Missing imageSrc" }, { status: 400 })
 
         // test purposes
         // console.log(userId, imageSrc, hasTimedIn)
@@ -51,7 +55,11 @@ export async function POST(req: NextRequest)
         const checkTimedOut = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_out) = CURDATE() AND shift = ?"
         const [row_check]: [AttendanceData[], FieldPacket[]] = await conn.execute(checkTimedOut, [userId, shift]) as [AttendanceData[], FieldPacket[]]
         if (row_check.length === 1)
-            return NextResponse.json({ type: "info", message: "Already Timed-Out! Wait for the next shift." }, { status: 200 })
+        {
+            const rc_timeIn = row_check[0].time_in
+            const rc_timeOut = row_check[0].time_out
+            return NextResponse.json({ type: "info", message: "Already Timed-Out! Wait for the next shift.", timeIn: rc_timeIn, timeOut: rc_timeOut }, { status: 200 })
+        }
 
         // kung naa na PM si specific user kay check for tomorrow napd
         const checkOccupiedShifts = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_cashier_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = 'PM'"
@@ -90,7 +98,7 @@ export async function POST(req: NextRequest)
         // const timeLeft_ = (timeElapsed + initTime.getTime()) //- 2_000_000
         const timeLeft_ = workShiftHoursToMillis - timeElapsed
         if (timeElapsed <= workShiftHoursToMillis) // 4 hours in milliseconds
-            return NextResponse.json({ type: "error", message: "Cannot time-out yet!", timeLeft: timeLeft_, timeIn: timeInStamp }, { status: 200 })
+            return NextResponse.json({ type: "error", message: "Cannot time-out yet!", timeLeft: timeLeft_, timeIn: timeInStamp, hasTimedIn: true }, { status: 200 })
 
         // const isValidDate = () => new Date(rows[0].time_in).toString() !== 'Invalid Date'
         // if (isValidDate())
@@ -105,7 +113,7 @@ export async function POST(req: NextRequest)
         const reQuery = "SELECT * FROM users_cashiers_attendance WHERE user_cashier_id = (SELECT c.user_id FROM users_cashiers c JOIN users u ON c.user_id = u.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ?"
         const [updatedRow]: [AttendanceData[], FieldPacket[]] = await conn.execute(reQuery, [userId, shift]) as [AttendanceData[], FieldPacket[]]
         if (updatedRow.length === 0)
-            return NextResponse.json({ type: "success", message: "Timed-Out successfully!", timeOut: initTime.getTime() }, { status: 200 })
+            return NextResponse.json({ type: "success", message: "Timed-Out successfully!", timeOut: initTime.getTime(),  }, { status: 200 })
             // return NextResponse.json( { type: "error", message: "No record found!" }, { status: 404 })
 
         return NextResponse.json({ ...updatedRow, timeOut: initTime.getTime() }, { status: 200 })

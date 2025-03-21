@@ -16,6 +16,8 @@ export default function LogoutButton() {
   const clearCashiers = useCashierStore((state)=>state.clearCashiers);
   const handleLogout = async () => {
     try {
+      router.replace("/login"); // Redirect to login page
+
       const res = await fetch('/api/auth/logout', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -26,7 +28,6 @@ export default function LogoutButton() {
       if (!res.ok) throw new Error(data.error);
       clearUser();
       clearCashiers();
-      router.replace("/login"); // Redirect to login page
     } catch (error) {
       console.error("Logout failed:", error);
     }
