@@ -22,7 +22,7 @@ export default function App()
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: user.name }),
+        body: JSON.stringify({ name: user.first_name }),
       })
 
       if (!response.ok)

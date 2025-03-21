@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table } from 'antd';
+import { useUserStore } from '@/stores/userStore';
 import type { TableColumnsType, TableProps } from 'antd';
 import { DateTime } from 'luxon';
 export type NoUndefinedRangeValueType<DateType> = [start: DateType | null, end: DateType | null];
+
 
 interface DataType {
     time_in: string,
@@ -70,54 +72,36 @@ const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter,
     console.log('params', pagination, filters, sorter, extra)
 }
 
-const ShiftHistoryTable: React.FC<{ data: DataType[], isLoading: boolean }> = ({ data, isLoading }) =>
-{
+const ShiftHistoryData:React.FC = () => {
+    const user = useUserStore((state) => state.user);
+    const [ data, setData ] = useState <DataType[]>()
+    const fetchData = async() => {
+        if(user){
+            const name = user.first_name + " " + user.last_name;
+            const response = await fetch('/api/attendance/shiftHistory',{
+                method:"POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            })
+            if(!response.ok){
+                console.error("Error getting Cashier data");
+            }
+            const parsedData = await response.json()
+            setData(parsedData)
+        }
+    }
+    useEffect(()=>{
+        fetchData();
+    }, []);
     return (
-        <Table<DataType>
-            columns={columns}
-            dataSource={data}
-            onChange={onChange}
-            showSorterTooltip={{ target: 'sorter-icon' }}
-            pagination={{ pageSize: 10 }}
-            loading={isLoading}
-        />
+    <Table<DataType>
+    columns={columns}
+    dataSource={data}
+    onChange={onChange}
+    showSorterTooltip={{ target: 'sorter-icon' }}
+    pagination={{ pageSize: 10 }}
+    />
     )
 }
 
-export default ShiftHistoryTable
-
-// const ShiftHistoryTable:React.FC = () => {
-//     const user = useUserStore((state) => state.user);
-//     const [ data, setData ] = useState <DataType[]>()
-//     const fetchData = async() => {
-//         if(user){
-//             const name = user.name;
-//             const response = await fetch('/api/attendance/shiftHistory',{
-//                 method:"POST",
-//                 headers: { 'Content-Type': 'application/json' },
-//                 body: JSON.stringify({ name })
-//             })
-//             if(!response.ok){
-//                 console.error("Error getting Cashier data");
-//             }
-//             const parsedData = await response.json()
-
-//             setData(parsedData.data)
-//         }
-        
-        
-//     }
-//     useEffect(()=>{
-//         fetchData();
-//     }, []);
-//  return (
-//     <Table<DataType>
-//     columns={columns}
-//     dataSource={data}
-//     onChange={onChange}
-//     showSorterTooltip={{ target: 'sorter-icon' }}
-//     pagination={{ pageSize: 10 }}
-//   />
-//  )
-// };
-// export default ShiftHistoryTable;
+export default ShiftHistoryData
