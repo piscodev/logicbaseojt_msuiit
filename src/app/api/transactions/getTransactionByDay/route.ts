@@ -6,7 +6,7 @@ import { ParticularDefinition } from '@/app/lib/Interface/interface';
 import pool from '@/app/lib/Database/db';
 
 interface TransactionData {
-  particular: string;
+  particular_name: string;
   shift: 'AM' | 'MID' | 'PM';
   amount: number;
   cashier: string;
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
       // Get all predefined particulars in order
       const [particulars]: [ParticularDefinition[], FieldPacket[]] = await connection.query(`
-        SELECT particular_id, particular_name AS particular, particular_type, particular_fee_percent 
+        SELECT particular_id, particular_name, particular_type, particular_fee_percent 
         FROM particulars
         ORDER BY FIELD(particular_id, 
           1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
@@ -49,15 +49,15 @@ export async function POST(req: NextRequest) {
       // Get transaction data for the date
       const [transactions]: [TransactionData[], FieldPacket[]] = await connection.query(`
         SELECT 
-          p.particular_name AS particular,
+          p.particular_name,
           s.shift_name AS shift,
           SUM(td.amount) AS amount,
-          MAX(CONCAT(u.first_name, ' ', u.last_name)) AS users_cashiers
+          GROUP_CONCAT(DISTINCT CONCAT(u.first_name, ' ', u.last_name) SEPARATOR ', ') AS cashier
         FROM transactions t
         JOIN shift AS s ON t.shift_id = s.shift_id
         JOIN users_cashiers AS c ON t.user_cashier_id = c.user_cashier_id
         JOIN users AS u ON c.user_id = u.user_id
-        LEFT JOIN transaction_detail AS td ON t.transaction_id = td.transaction_id
+        LEFT JOIN transactions_detail AS td ON t.transaction_id = td.transaction_id
         LEFT JOIN particulars AS p ON td.particular_id = p.particular_id
         WHERE t.transaction_date = ?
         GROUP BY p.particular_name, s.shift_name
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       const cashiers = { AM: '', MID: '', PM: '' };
       
       transactions.forEach(tx => {
-        const key = tx.particular;
+        const key = tx.particular_name;
         if (!transactionMap.has(key)) {
           transactionMap.set(key, {});
         }
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       let grandPOSGross: number = 0;
       let grandPOSNet: number = 0;
       particulars.forEach((particular, index) => {
-        const txData = transactionMap.get(particular.particular) || {};
+        const txData = transactionMap.get(particular.particular_name) || {};
         const amNum = Number(txData.AM?.amount)
         const midNum = Number(txData.MID?.amount)
         const pmNum = Number(txData.PM?.amount)
@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
         }
         const row: TransactionRow = {
           key: currentKey,
-          particular: particular.particular && particular.particular.toUpperCase(),
+          particular: particular.particular_name && particular.particular_name.toUpperCase(),
           am: am === '' ? '' : Number(am),
           mid: mid === '' ? '' : Number(mid),
           pm: pm === '' ? '' : Number(pm),

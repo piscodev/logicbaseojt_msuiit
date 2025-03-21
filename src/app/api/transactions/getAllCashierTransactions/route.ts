@@ -48,10 +48,33 @@ export async function POST(req: NextRequest){
             const currentDate = DateTime.fromISO(date).setZone('Asia/Manila').toFormat('yyyy-LL-dd');
             console.log('Current date: ', currentDate);
             // Get transactions for the specified date
+            // const [transactions]: [TransactionsData[], FieldPacket[]] = await connection.query(`
+            //     SELECT 
+            //     c.user_cashier_id AS cashier_id,
+            //     GROUP_CONCAT(DISTINCT CONCAT(u.first_name, ' ', u.last_name) SEPARATOR ', ') AS cashier_name,
+            //     s.shift_name AS shift,
+            //     p.particular_name AS particular,
+            //     p.particular_id AS id,
+            //     COALESCE(SUM(td.amount), 0) AS amount,
+            //     COALESCE(SUM(CASE WHEN p.particular_id <= 12 THEN td.amount ELSE 0 END), 0) AS trade_total,
+            //     COALESCE(SUM(CASE WHEN p.particular_id > 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
+            //     COALESCE(SUM(CASE WHEN p.particular_id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
+            //     FROM transactions t
+            //     JOIN users_cashiers c ON t.user_cashier_id = c.user_cashier_id
+            //     JOIN users u ON c.user_id = u.user_id
+            //     JOIN shift s ON t.shift_id = s.shift_id
+            //     LEFT JOIN transactions_detail td ON t.transaction_id = td.transaction_id
+            //     LEFT JOIN particulars p ON td.particular_id = p.particular_id
+            //     WHERE t.transaction_date = ?
+            //     GROUP BY c.user_cashier_id, s.shift_id, p.particular_id
+            //     HAVING SUM(td.amount) > 0
+            //     ORDER BY CONCAT(u.first_name, ' ', u.last_name), s.shift_id, p.particular_name
+            // `, [currentDate]) as [TransactionsData[], FieldPacket[]];
+            
             const [transactions]: [TransactionsData[], FieldPacket[]] = await connection.query(`
                 SELECT 
                 c.user_cashier_id AS cashier_id,
-                CONCAT(u.first_name, ' ', u.last_name) AS cashier_name,
+                u.first_name AS cashier_name,
                 s.shift_name AS shift,
                 p.particular_name AS particular,
                 p.particular_id AS id,
@@ -60,10 +83,10 @@ export async function POST(req: NextRequest){
                 COALESCE(SUM(CASE WHEN p.particular_id > 12 THEN td.amount ELSE 0 END), 0) AS non_trade_total,
                 COALESCE(SUM(CASE WHEN p.particular_id <= 20 THEN td.amount ELSE 0 END), 0) AS grand_total
                 FROM transactions t
-                JOIN users_cashiers c ON t.cashier_id = c.user_cashier_id
+                JOIN users_cashiers c ON t.user_cashier_id = c.user_cashier_id
                 JOIN users u ON c.user_id = u.user_id
                 JOIN shift s ON t.shift_id = s.shift_id
-                LEFT JOIN transaction_detail td ON t.transaction_id = td.transaction_id
+                LEFT JOIN transactions_detail td ON t.transaction_id = td.transaction_id
                 LEFT JOIN particulars p ON td.particular_id = p.particular_id
                 WHERE t.transaction_date = ?
                 GROUP BY c.user_cashier_id, s.shift_id, p.particular_id
@@ -96,8 +119,8 @@ export async function POST(req: NextRequest){
                 shift = {
                         shift: transaction.shift,
                         transactions: particulars.map(p => ({
-                        particular: p.particular,
-                        particular_id: p.id,
+                        particular: p.particular_name,
+                        particular_id: p.particular_id,
                         am: 0,
                         mid: 0,
                         pm: 0,

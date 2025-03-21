@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
                 }
                 try {
                     await connection.query(
-                        `INSERT INTO transaction_detail
+                        `INSERT INTO transactions_detail
                         (transaction_id, particular_id, amount)
                         VALUES(? , (SELECT particular_id FROM particulars where particular_name = ?) , ?)`,
                         [txId, particularName, amount]

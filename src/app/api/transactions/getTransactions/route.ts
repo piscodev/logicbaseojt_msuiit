@@ -36,7 +36,7 @@ export async function GET() {
 
         // Fetch transactions
         const [transactions]: [CashiersTransaction[], FieldPacket[]] = await conn.query(
-            'SELECT * FROM transactions AS t LEFT JOIN transaction_detail ON transaction_detail.transaction_id = t.transaction_id'
+            'SELECT * FROM transactions AS t LEFT JOIN transactions_detail AS td ON td.transaction_id = t.transaction_id'
         ) as [CashiersTransaction[], FieldPacket[]];
 
         const result = cashiers.map((cashier: Testongg) => ({

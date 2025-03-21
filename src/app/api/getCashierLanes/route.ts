@@ -46,7 +46,7 @@ export async function GET() {
         U3.user_type AS user3_type, U3.last_login AS user3_last_login, U3.address AS user3_address,
         U3.active AS user3_active, U3.gender AS user3_gender, U3.contact_number AS user3_contact_number
 
-      FROM users_cashier_lanes CL
+      FROM users_cashiers_lane CL
       LEFT JOIN users_cashiers C1 ON CL.cashier1_id = C1.user_cashier_id
       LEFT JOIN users U1 ON C1.user_id = U1.user_id
       LEFT JOIN users_cashiers C2 ON CL.cashier2_id = C2.user_cashier_id

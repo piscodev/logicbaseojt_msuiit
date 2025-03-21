@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const connection = await pool.getConnection();
     try{
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-        "INSERT INTO CashierLane (name) VALUES (?)",
+        "INSERT INTO users_cashiers_lane (lane_name) VALUES (?)",
         [name]
       ) as [ResultSetHeader, FieldPacket[]];
       console.log('Inserted Cashier Lane: ', result);

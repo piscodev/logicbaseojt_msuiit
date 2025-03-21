@@ -47,7 +47,9 @@ export async function POST(req: NextRequest) {
                     a.time_in,
                     a.time_out,
                     COALESCE(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60, 0) AS total_hours_worked,
-                    a.shift
+                    a.shift,
+                    u.first_name,
+                    u.last_name
                 FROM users_cashiers_attendance a
                 JOIN users_cashiers c ON a.user_cashier_id = c.user_cashier_id
                 JOIN users u ON c.user_id = u.user_id

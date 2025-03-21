@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
             FROM users_cashiers c
             JOIN users u ON c.user_id = u.user_id
             LEFT JOIN users_cashiers_attendance a ON c.user_cashier_id = a.user_cashier_id
-            LEFT JOIN users_cashier_lanes cl 
+            LEFT JOIN users_cashiers_lane cl 
                 ON c.user_cashier_id = cl.cashier1_id OR c.user_cashier_id = cl.cashier2_id OR c.user_cashier_id = cl.cashier3_id
             WHERE u.user_type = 'cashier'
             GROUP BY u.user_id

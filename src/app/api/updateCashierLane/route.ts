@@ -24,12 +24,12 @@ export async function POST(req: Request) {
       // Update the CashierLane with the new cashier assignments
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.execute(
         `
-        UPDATE CashierLane
+        UPDATE users_cashiers_lane
         SET
           cashier1_id = ?,
           cashier2_id = ?,
           cashier3_id = ?
-        WHERE id = ?
+        WHERE lane_id = ?
         `,
         [...cashierIds, laneId]
       ) as [ResultSetHeader, FieldPacket[]];
