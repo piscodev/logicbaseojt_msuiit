@@ -73,7 +73,7 @@ export async function POST(req: NextRequest)
         if (rows.length === 0)
         {
             // if wala pa naka time-in ang cashier, insert
-            const [result] : [ResultSetHeader, FieldPacket[]] = await conn.execute("INSERT INTO users_cashiers_attendance (user_cashier_id, user_id, time_in, time_in_image, shift) VALUES ((SELECT c.user_cashier_id FROM users_cashiers c WHERE c.user_id = ?), ?, ?, ?, ?)", [userId, userId, initTime, imageSrc, shift]) as [ResultSetHeader, FieldPacket[]]
+            const [result] : [ResultSetHeader, FieldPacket[]] = await conn.execute("INSERT INTO users_cashiers_attendance (user_cashier_id, time_in, time_in_image, shift) VALUES ((SELECT c.user_cashier_id FROM users_cashiers c WHERE c.user_id = ?), ?, ?, ?)", [userId, initTime, imageSrc, shift]) as [ResultSetHeader, FieldPacket[]]
             if (result.affectedRows === 0)
                 return NextResponse.json({ type: "error", message: "Failed to insert record" }, { status: 500 })
 
