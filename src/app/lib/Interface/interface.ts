@@ -100,6 +100,6 @@ export interface CashiersTransaction
 export interface ParticularDefinition {
     id: number;
     particular: string;
-    type: 'Trade' | 'Non-Trade';
+    particular_type: 'Trade' | 'Non-Trade';
     particular_fee_percent: number;
   }

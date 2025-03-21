@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
         const gross = numericValues.reduce((sum, v) => Number(sum) + (Number(v) || 0), 0);
         const net = gross * Number((1 - (particular.particular_fee_percent / 100)));
         let currentKey;
-        if(particular.type === 'Trade'){
+        if(particular.particular_type === 'Trade'){
             currentKey = (index + 1).toString();
             grossTradeTotal += Number(gross);
             netTradeTotal += Number(net);
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
           net_total: net.toFixed(2)
         };
         
-        if (particular.type === 'Trade') {
+        if (particular.particular_type === 'Trade') {
             if(am !== '' && txData.AM?.amount)
             subTotalTradeAM += Number(txData.AM?.amount)
             if(mid !== '' && txData.MID?.amount)
