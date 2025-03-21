@@ -68,9 +68,11 @@ export interface User {
     address?:string
     active?:number
     gender?:string
-    contact_number?:string
+    contact_number?:number
     total_hours_worked?: number
     total_earnings ?: number
+    message?:string
+    error?: string
 }
 
 export interface Cashier {

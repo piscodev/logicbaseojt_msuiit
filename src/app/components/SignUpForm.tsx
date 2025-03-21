@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Form,
@@ -12,18 +12,21 @@ import {
 const { Option } = Select;
 const { Text } = Typography;
 interface SignUpData {
-    first_name: string;
-    last_name: string;
-    password: string;
-    confirm_password: string;
-    email: string;
-    address: string;
-    age: number;
-    contact_number: number;
-    gender: 'Male' | 'Female' | 'Not specified';
-    position: string;
-    user_type: string;
-    rate?: number
+  first_name: string;
+  last_name: string;
+  password: string;
+  confirm_password: string;
+  email: string;
+  address: string;
+  age: number;
+  contact_number: number;
+  gender: 'Male' | 'Female' | 'Not specified';
+  position: string;
+  user_type: string;
+  rate?: number;
+  // title?: string;
+  // error?: string;
+  // message?: string
 }
 
 
@@ -50,24 +53,33 @@ const tailFormItemLayout = {
     },
   },
 };
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
 interface SignUpProps {
   user_type?: string,
   title?: string,
-  change?: () => void
+  change?: () => void,
+  setAdminData?: (data:SignUpData) => void,
+  responseMessage: (title:string, message:string, type:NotificationType) => void
 }
-const SignUpForm: React.FC<SignUpProps> = ({user_type, change}) => {
+const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, setAdminData}) => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState<boolean>(false)
 
   const handleSignUp = async(values: SignUpData) => {
     try{
+      setLoading(true)
       const response = await fetch('/api/auth/signup',{
         method: 'POST',
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(values)
       })
+      const data = await response.json()
       if(!response.ok){
+        responseMessage(data.title, data.error, 'error')
         throw new Error("Error signing up");
       }
+      if(setAdminData)
+      setAdminData(values)
     } catch (error) {
       console.log(error)
     }
@@ -241,8 +253,8 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change}) => {
       </Form.Item>)}
       <Form.Item {...tailFormItemLayout}>
         <Space>
-        <Button type="primary" htmlType="submit">
-          Sign Up
+        <Button type="primary" htmlType="submit" loading={loading}>
+        {!user_type?"Sign Up":"Add Cashier"}
         </Button>
         {!user_type&&(<><Text>Already have an account?</Text>
         <Button type="link" size="middle" onClick={change}>
