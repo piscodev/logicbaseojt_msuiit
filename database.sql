@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS `users_cashiers_attendance` (
     `time_out` DATETIME DEFAULT NULL,
     `time_in_image` LONGTEXT DEFAULT NULL,  -- Store image or file path for time-in verification
     `time_out_image` LONGTEXT DEFAULT NULL, -- Store image or file path for time-out verification
+    `shift` enum('AM','MID','PM') NOT NULL,
     FOREIGN KEY (`user_cashier_id`) REFERENCES `users_cashiers`(`user_cashier_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
