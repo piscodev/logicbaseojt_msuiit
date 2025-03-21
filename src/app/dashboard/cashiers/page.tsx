@@ -19,6 +19,9 @@ export default function App()
           description:
             message,
         });
+        if(type==='success'){
+            handleClose()
+        }
       }
   return (
     <>

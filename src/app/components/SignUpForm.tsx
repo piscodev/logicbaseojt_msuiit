@@ -80,6 +80,8 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
       }
       if(setAdminData)
       setAdminData(values)
+      responseMessage(data.title, data.message, 'success')
+      setLoading(false)
     } catch (error) {
       console.log(error)
     }
