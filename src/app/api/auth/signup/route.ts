@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       const existingUser: [User[], FieldPacket[]] = await connection.query("SELECT user_id FROM users WHERE email = ?", [email]) as [User[], FieldPacket[]];
       console.log('Existing user: ', existingUser[0]);
       if (existingUser[0].length > 0) {
-        return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
+        return NextResponse.json({ error: `The email: ${email} is already registered.`, title:"Account already exists" }, { status: 400 });
       }
 
       const formattedDateString = DateTime.now().setZone('Asia/Manila').toFormat('yyyy-LL-dd')
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       );
       // ✅ Store token in cookies
       const response = NextResponse.json({ 
-        message: "User registered successfully!", 
+        message: user_type==="cashier"?"Cashier":"User" + " registered successfully!", 
         user: { id: result.insertId, email } 
       },
         { status: 201 }

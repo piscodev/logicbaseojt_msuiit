@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useRouter } from "next/navigation";
-import { User, useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/userStore";
 import {
     Button,
     Form,
@@ -10,7 +10,7 @@ import {
 } from 'antd';
 
 const { Text } = Typography
-
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
 interface SignUpData {
     first_name?: string;
     last_name?: string;
@@ -44,10 +44,12 @@ const tailFormItemLayout = {
 };
 interface FormProps {
     change: () => void
+    responseMessage : (title:string, message:string, type:NotificationType) => void
 }
-const LoginForm: React.FC<FormProps> = ({change}) => {
+const LoginForm: React.FC<FormProps> = ({change, responseMessage}) => {
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser)
+  const [loading, setLoading] = useState<boolean>(false)
   const router = useRouter();
 
   if(user)
@@ -56,20 +58,24 @@ const LoginForm: React.FC<FormProps> = ({change}) => {
 
   const handleLogin = async(values: SignUpData) => {
     try{
-      const response = await fetch('/api/auth/login',{
-        method: 'POST',
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(values)
-      })
-      const data: User = await response.json();
-      if(!response.ok){
-        throw new Error("Error logging up");
-      }
-      if(data)
-      setUser({ user_id: data.user_id, first_name: data.first_name, last_name:data.last_name, contact_number: data.contact_number ,email: data.email, user_type: data.user_type, age: data.age })
-      router.push("/dashboard");
-      return
+        setLoading(true);
+        const response = await fetch('/api/auth/login',{
+            method: 'POST',
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(values)
+        })
+        const data = await response.json();
+        if(!response.ok){
+            responseMessage(data.title, data.error, 'error')
+            throw new Error(data.error);
+        }
+        responseMessage(data.title, data.message, 'success')
+        if(data)
+        setUser({ user_id: data.user_id, first_name: data.first_name, last_name:data.last_name, contact_number: data.contact_number ,email: data.email, user_type: data.user_type, age: data.age })
+        router.push("/dashboard");
+        return
     } catch (error) {
+       
       console.log(error)
     }
   };
@@ -120,7 +126,7 @@ const LoginForm: React.FC<FormProps> = ({change}) => {
           },
           {
             min: 6,
-            message: 'Password must be at least 6 characters long!'
+            message: 'Password is at least 6 characters long!'
           }
         ]}
         hasFeedback
@@ -130,12 +136,12 @@ const LoginForm: React.FC<FormProps> = ({change}) => {
 
       <Form.Item {...tailFormItemLayout}>
         <Space>
-        <Button type="primary" htmlType="submit">
-          Login
+        <Button type="primary" htmlType="submit" loading={loading}>
+          {loading?"Logging in":"Log in"}
         </Button>
         <Text>Don&apos;t have an account?
             <Button type='link' onClick={change} size="middle">
-                Signup
+                Sign up
             </Button>
         </Text>
         </Space>

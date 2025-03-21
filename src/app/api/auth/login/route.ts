@@ -15,9 +15,10 @@ export async function POST(req: Request) {
       "SELECT * FROM users WHERE email = ?", 
       [email]
     ) as [User[], FieldPacket[]];
+    console.log("Rows: ", rows)
 
     if (rows.length === 0) {
-      return NextResponse.json({ error: "Email not found. Please sign up first." }, { status: 401 });;
+      return NextResponse.json({ error: `The email: ${email} is not found. Please sign up first.`, title:"Account doesn't exist" }, { status: 401 });;
     }
 
     // Compare provided password with the hashed password
