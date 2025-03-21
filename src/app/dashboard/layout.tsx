@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from "react";
-import { Layout, Menu, Button } from "antd";
+import { Layout, Menu, Button, Spin } from "antd";
 import type { MenuProps } from 'antd';
 import {
   DesktopOutlined,
@@ -11,7 +11,7 @@ import {
   TeamOutlined,
   UserOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import Nav from "../components/NavigationBar";
 import { usePathname, useRouter } from "next/navigation";
@@ -47,72 +47,89 @@ export default function RootLayout({ children }: { children: React.ReactNode })
 {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const user = useUserStore((state)=>state.user)
+  const [loading, setLoading] = useState(true)
   const clearUser = useUserStore((state) => state.clearUser)
   const [items, setItems]= useState<MenuItem[]>([])
 
   usePushNotification()
 
-  useEffect(() => {
-    if(user)
-      if(user.user_type === 'admin'){
-        setItems([
-          getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
-          getItem('My Profile', '1', true),
-          getItem('Employee Management', 'sub1', false, <UserOutlined />, [
-            getItem('Assign Cashiers', '/dashboard/employeeManagement/assignCashiers', false),
-            getItem('View Cashiers', '/dashboard/cashiers', false)
-          ]),
-          getItem('Sales Management', 'sub2', false, <DesktopOutlined />, [
-            getItem('View Sales', '2', true),
-          ]),
-          
-          getItem('Product Management', 'sub3', false, <DesktopOutlined />, [
-            getItem('View Products', '3', true), // All Products (filter by out of stock, top-selling products, lowest-selling products), Add Product, Import Products (Bulk Upload), Modify Product (Edit product details, change pricing), Delete Product (Remove product) 
-            getItem('Product Categories', '4', true), // Add categories, manage categories (assign products to categories)
-          ]),
-          getItem('Inventory Management', 'sub4', false, <DesktopOutlined />, [
-            getItem('Stock Overview', '5', true), // Current Inventory levels, Low stock alerts, Add stock to product
-            getItem('Inventory Adjustments', '6', true), // Manual Adjustments, Stock Reconciliation
-            getItem('Stock Audits', '7', true), // Scheduled Audits, Past Audits
-          ]),
-          getItem('Reports & Analytics', 'sub5', false, <UserOutlined />, [
-            getItem('Sales Reports', '8', true), // Daily Sales, Monthly Sales, Sales by Product
-            getItem('Inventory Reports', '9', true), // Stock Management Report, Stock Value Report
-            getItem('Employee Reports', '10', true), // Employee Sales Performance, Shift reports
-            getItem('Audit Logs', '11', true) // Audit History
-          ]),
-          
-          getItem('Settings', 'sub6', false,<TeamOutlined />, [
-            getItem('System', '12', true), 
-            getItem('POS Settings', '13', true),
-            getItem('Security', '14', true), 
-            getItem('Backup & Restore', '15', true),
-          ]),
-          getItem('Logout', '/logout', false, <FileOutlined />),
-        ])
-      } else {
-        setItems([
-          getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
-          getItem('POS', 'sub1', false, <DesktopOutlined />, [
-            getItem('New Sale', '1', true),
-            getItem('Process Refund', '2', true),
-          ]),
-          getItem('Attendance', 'sub2', false, <CalendarOutlined />, [
-            getItem('Clock In/Out', '/dashboard/attendance', false),
-            getItem('Shift History', '/dashboard/shiftHistory', false),
-          ]),
-          getItem('Reports', 'sub3', false, <TeamOutlined />, [
-            getItem('Daily Sales Report', '3', true), 
-            getItem('My Performance', '4', true)]),
-          getItem('Logout', '/logout', false, <FileOutlined />),
-        ])
-      }
+  useEffect(() =>
+  {
+    // if(user)
+    if (user === undefined)
+      return
+
+    if(user?.user_type === 'admin')
+    {
+      setItems([
+        getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
+        getItem('My Profile', '1', true),
+        getItem('Employee Management', 'sub1', false, <UserOutlined />, [
+          getItem('Assign Cashiers', '/dashboard/employeeManagement/assignCashiers', false),
+          getItem('View Cashiers', '/dashboard/cashiers', false)
+        ]),
+        getItem('Sales Management', 'sub2', false, <DesktopOutlined />, [
+          getItem('View Sales', '2', true),
+        ]),
+        
+        getItem('Product Management', 'sub3', false, <DesktopOutlined />, [
+          getItem('View Products', '3', true), // All Products (filter by out of stock, top-selling products, lowest-selling products), Add Product, Import Products (Bulk Upload), Modify Product (Edit product details, change pricing), Delete Product (Remove product) 
+          getItem('Product Categories', '4', true), // Add categories, manage categories (assign products to categories)
+        ]),
+        getItem('Inventory Management', 'sub4', false, <DesktopOutlined />, [
+          getItem('Stock Overview', '5', true), // Current Inventory levels, Low stock alerts, Add stock to product
+          getItem('Inventory Adjustments', '6', true), // Manual Adjustments, Stock Reconciliation
+          getItem('Stock Audits', '7', true), // Scheduled Audits, Past Audits
+        ]),
+        getItem('Reports & Analytics', 'sub5', false, <UserOutlined />, [
+          getItem('Sales Reports', '8', true), // Daily Sales, Monthly Sales, Sales by Product
+          getItem('Inventory Reports', '9', true), // Stock Management Report, Stock Value Report
+          getItem('Employee Reports', '10', true), // Employee Sales Performance, Shift reports
+          getItem('Audit Logs', '11', true) // Audit History
+        ]),
+        
+        getItem('Settings', 'sub6', false,<TeamOutlined />, [
+          getItem('System', '12', true), 
+          getItem('POS Settings', '13', true),
+          getItem('Security', '14', true), 
+          getItem('Backup & Restore', '15', true),
+        ]),
+        getItem('Logout', '/logout', false, <FileOutlined />),
+      ])
+    } else {
+      setItems([
+        getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
+        getItem('POS', 'sub1', false, <DesktopOutlined />, [
+          getItem('New Sale', '1', true),
+          getItem('Process Refund', '2', true),
+        ]),
+        getItem('Attendance', 'sub2', false, <CalendarOutlined />, [
+          getItem('Clock In/Out', '/dashboard/attendance', false),
+          getItem('Shift History', '/dashboard/shiftHistory', false),
+        ]),
+        getItem('Reports', 'sub3', false, <TeamOutlined />, [
+          getItem('Daily Sales Report', '3', true), 
+          getItem('My Performance', '4', true)]),
+        getItem('Logout', '/logout', false, <FileOutlined />),
+      ])
+    }
+
+    setLoading(false)
   }, [user])
   
 
   const router = useRouter();
   const pathname = usePathname();
   const clearCashiers = useCashierStore((state)=>state.clearCashiers);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-white">
+        <Spin tip="Loading..." size="large" />
+      </div>
+    );
+  }
+
   return (
     <Layout>
       <Sider theme="dark" trigger={null} collapsible collapsed={collapsed}>
