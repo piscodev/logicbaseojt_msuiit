@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       
       const [rows]: [User[], FieldPacket[]] = await connection.query(
         `
-          SELECT CONCAT(u.first_name, ' ', u.last_name) as name 
+          SELECT u.first_name, u.last_name
           FROM users_cashiers c
           JOIN users u ON c.user_id = u.user_id
           WHERE u.user_type = 'cashier'
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       console.log('Result: ', rows);
       // Extract just the names from the result
       const cashiers = rows.map((row: User) => ({
-        value: row.name}));
+        value: row.first_name + " " + row.last_name}));
       
       return NextResponse.json(
         { cashiers },

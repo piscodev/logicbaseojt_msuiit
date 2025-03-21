@@ -7,14 +7,19 @@ import { FieldPacket, ResultSetHeader } from "mysql2";
 import { DateTime } from "luxon";
 export async function POST(req: Request) {
   try {
-    const { name, email, password, user_type, rate } = await req.json();
+    const { first_name, last_name, contact_number, address, gender, email, age, password, user_type, rate } = await req.json();
     console.log("Rate: ", rate)
     console.log("Type: ", user_type)
     console.log("Password: ", password)
-    console.log("Name: ", name)
+    console.log("First Name: ", first_name)
+    console.log("Last Name: ", last_name)
     console.log("Email: ", email)
+    console.log("Address: ", address)
+    console.log("Gender: ", gender)
+    console.log("Age: ", age)
+    console.log("Contact Number: ", contact_number)
 
-    if (!name || !email || !password) {
+    if (!first_name || !last_name || !email || !password) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
@@ -36,11 +41,11 @@ export async function POST(req: Request) {
       let query;
       let values=[];
       if(user_type==='admin'){
-        query = "INSERT INTO users (user_type, name, email, hashed_password, created_at) VALUES (?, ?, ?, ?, ?)";
-        values=[user_type, name, email, hashedPassword, formattedDateString];
+        query = "INSERT INTO users (user_type, contact_number, first_name, last_name, address, email, gender, age, hashed_password, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        values=[user_type, contact_number, first_name, last_name, address, email, gender, age, hashedPassword, formattedDateString];
       } else {
-        query = "INSERT INTO users (name, email, hashed_password, created_at) VALUES (?, ?, ?, ?)";
-        values=[name, email, hashedPassword, formattedDateString];
+        query = "INSERT INTO users (contact_number, first_name,  last_name, address, email, gender, age, hashed_password, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        values=[contact_number, first_name, last_name, address, email, gender, age, hashedPassword, formattedDateString];
       }
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.query(
         query,

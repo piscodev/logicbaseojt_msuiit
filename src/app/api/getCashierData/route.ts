@@ -14,7 +14,7 @@ interface ResultData {
   age: number,
   gender: string,
   email: string,
-  cl_name: string | null,
+  lane_name: string | null,
 }
 export async function POST(req: NextRequest) {
   if (req.method === 'POST') {
@@ -33,15 +33,15 @@ export async function POST(req: NextRequest) {
             u.age,
             u.gender,
             u.email,
-            cl.name AS cl_name
+            cl.lane_name AS lane_name
         FROM 
             users_cashiers c
         JOIN 
             users u ON c.user_id = u.user_id
         LEFT JOIN 
-            users_cashiers_attendance a ON c.user_id = a.user_id
+            users_cashiers_attendance a ON c.user_cashier_id = a.user_cashier_id
         LEFT JOIN
-          users_cashiers_lane cl ON 
+          users_cashier_lanes cl ON 
           c.user_cashier_id = cl.cashier1_id OR
           c.user_cashier_id = cl.cashier2_id OR
           c.user_cashier_id = cl.cashier3_id
@@ -63,9 +63,9 @@ export async function POST(req: NextRequest) {
 
         query += `
             GROUP BY 
-                CONCAT(u.first_name, ' ', u.last_name) AS name, c.rate, u.active, u.last_login, u.address, u.age, u.gender, u.email, cl.name
+                CONCAT(u.first_name, ' ', u.last_name), c.rate, u.active, u.last_login, u.address, u.age, u.gender, u.email, cl.lane_name
             ORDER BY 
-                CONCAT(u.first_name, ' ', u.last_name) AS name ASC
+                CONCAT(u.first_name, ' ', u.last_name) ASC
         `;
       const [rows]: [ResultData[], FieldPacket[]] = await connection.query(query, [
         startDate && endDate ? startDate : undefined,
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         age: row.age,
         gender: row.gender,
         email: row.email,
-        cl_name: row.cl_name || null,
+        lane_name: row.lane_name || null,
     }));
       
       return NextResponse.json(

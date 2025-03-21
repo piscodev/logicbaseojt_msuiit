@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const email = await req.json()
     connection = await pool.getConnection();
     console.log("email: ", email);
-    await connection.query("UPDATE User SET active = 0 WHERE email = ?", [email]) ;
+    await connection.query("UPDATE users SET active = 0 WHERE email = ?", [email]) ;
   } catch (error) {
     console.error("Database error:", error);
   } finally{

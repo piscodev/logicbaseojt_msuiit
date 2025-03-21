@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       ) as [User[],FieldPacket[]];
       // Extract just the names from the result
       const cashiers = rows.map((row: User) => ({
-        value: row.name}));
+        value: row.first_name+ " " + row.last_name}));
       
       return NextResponse.json(
         { cashiers },

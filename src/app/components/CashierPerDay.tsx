@@ -86,9 +86,9 @@ const TestTable: React.FC<TestTableProps> = ({
     fetchData(currentDate);
   }, [currentDate]);
   useEffect(() => {
-    const grandRow = data.find((d) => d.particular.startsWith("GRAND"));
-    const tradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL TRADE"));
-    const nonTradeRow = data.find((d) => d.particular.startsWith("SUB TOTAL NON"));
+    const grandRow = data.find((d) => d.particular && d.particular.startsWith("GRAND"));
+    const tradeRow = data.find((d) => d.particular && d.particular.startsWith("SUB TOTAL TRADE"));
+    const nonTradeRow = data.find((d) => d.particular && d.particular.startsWith("SUB TOTAL NON"));
     if (grandRow) {
       setGrandTotalPos(Number(grandRow.net_total));
     }
@@ -167,9 +167,21 @@ const TestTable: React.FC<TestTableProps> = ({
       dataIndex: 'am',
       width: '15%',
       editable: true,
-      render:(_: unknown, record: DataType)=>(
+      render: (_: unknown, record: DataType) => (
         <>
-          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ) ? (<Text strong>{Number(record.am).toFixed(2)}</Text>) : (record.particular.startsWith('CASHIER')?<Text>{record.am}</Text>:Number(record.am)>0?<Text>{Number(record.am).toFixed(2)}</Text>:<Text>{''}</Text>)}
+          {record.particular ? (
+            record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ? (
+              <Text strong>{Number(record.am).toFixed(2)}</Text>
+            ) : record.particular.startsWith('CASHIER') ? (
+              <Text>{record.am}</Text>
+            ) : Number(record.am) > 0 ? (
+              <Text>{Number(record.am).toFixed(2)}</Text>
+            ) : (
+              <Text>{''}</Text>
+            )
+          ) : (
+            <Text>{''}</Text>
+          )}
         </>
       )
     },
@@ -178,11 +190,23 @@ const TestTable: React.FC<TestTableProps> = ({
       dataIndex: 'mid',
       width: '15%',
       editable: true,
-      render:(_: unknown, record: DataType)=>(
+      render: (_: unknown, record: DataType) => (
         <>
-          {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ) ? (<Text strong>{Number(record.mid).toFixed(2)}</Text>) : (record.particular.startsWith('CASHIER')?<Text>{record.mid}</Text>:Number(record.mid)>0?<Text>{Number(record.mid).toFixed(2)}</Text>:<Text>{''}</Text>)}
+          {record.particular ? (
+            record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ? (
+              <Text strong>{Number(record.am).toFixed(2)}</Text>
+            ) : record.particular.startsWith('CASHIER') ? (
+              <Text>{record.am}</Text>
+            ) : Number(record.am) > 0 ? (
+              <Text>{Number(record.am).toFixed(2)}</Text>
+            ) : (
+              <Text>{''}</Text>
+            )
+          ) : (
+            <Text>{''}</Text>
+          )}
         </>
-      ),
+      )
       
     },
     {
@@ -190,9 +214,21 @@ const TestTable: React.FC<TestTableProps> = ({
         dataIndex: 'pm',
         width: '15%',
         editable: true,
-        render:(_: unknown, record: DataType)=>(
+        render: (_: unknown, record: DataType) => (
           <>
-            {(record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ) ? (<Text strong>{Number(record.pm).toFixed(2)}</Text>) : (record.particular.startsWith('CASHIER')?<Text>{record.pm}</Text>:Number(record.pm)>0?<Text>{Number(record.pm).toFixed(2)}</Text>:<Text>{''}</Text>)}
+            {record.particular ? (
+              record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ? (
+                <Text strong>{Number(record.am).toFixed(2)}</Text>
+              ) : record.particular.startsWith('CASHIER') ? (
+                <Text>{record.am}</Text>
+              ) : Number(record.am) > 0 ? (
+                <Text>{Number(record.am).toFixed(2)}</Text>
+              ) : (
+                <Text>{''}</Text>
+              )
+            ) : (
+              <Text>{''}</Text>
+            )}
           </>
         )
     },

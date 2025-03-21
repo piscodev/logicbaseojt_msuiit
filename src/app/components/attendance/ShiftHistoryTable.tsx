@@ -70,6 +70,23 @@ const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter,
     console.log('params', pagination, filters, sorter, extra)
 }
 
+<<<<<<< HEAD
+const ShiftHistoryTable:React.FC = () => {
+    const user = useUserStore((state) => state.user);
+    const [ data, setData ] = useState <DataType[]>()
+    const fetchData = async() => {
+        if(user){
+            const name = user.first_name + " " + user.last_name;
+            const response = await fetch('/api/attendance/shiftHistory',{
+                method:"POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            })
+            if(!response.ok){
+                console.error("Error getting Cashier data");
+            }
+            const parsedData = await response.json()
+=======
 const ShiftHistoryTable: React.FC<{ data: DataType[], isLoading: boolean }> = ({ data, isLoading }) =>
 {
     return (
@@ -83,6 +100,7 @@ const ShiftHistoryTable: React.FC<{ data: DataType[], isLoading: boolean }> = ({
         />
     )
 }
+>>>>>>> 7d84f1d13001d20bb537178dac7cc8d78992f976
 
 export default ShiftHistoryTable
 
