@@ -194,11 +194,11 @@ const TestTable: React.FC<TestTableProps> = ({
         <>
           {record.particular ? (
             record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ? (
-              <Text strong>{Number(record.am).toFixed(2)}</Text>
+              <Text strong>{Number(record.mid).toFixed(2)}</Text>
             ) : record.particular.startsWith('CASHIER') ? (
-              <Text>{record.am}</Text>
-            ) : Number(record.am) > 0 ? (
-              <Text>{Number(record.am).toFixed(2)}</Text>
+              <Text>{record.mid}</Text>
+            ) : Number(record.mid) > 0 ? (
+              <Text>{Number(record.mid).toFixed(2)}</Text>
             ) : (
               <Text>{''}</Text>
             )
@@ -218,11 +218,11 @@ const TestTable: React.FC<TestTableProps> = ({
           <>
             {record.particular ? (
               record.particular.startsWith('GRAND') || record.particular.startsWith('SUB TOTAL') ? (
-                <Text strong>{Number(record.am).toFixed(2)}</Text>
+                <Text strong>{Number(record.pm).toFixed(2)}</Text>
               ) : record.particular.startsWith('CASHIER') ? (
-                <Text>{record.am}</Text>
-              ) : Number(record.am) > 0 ? (
-                <Text>{Number(record.am).toFixed(2)}</Text>
+                <Text>{record.pm}</Text>
+              ) : Number(record.pm) > 0 ? (
+                <Text>{Number(record.pm).toFixed(2)}</Text>
               ) : (
                 <Text>{''}</Text>
               )
