@@ -70,7 +70,7 @@ const [randomQuote, setRandomQuote] = useState<{ quote: string; author: string }
               {randomQuote ? (
                 <>
                   <Title level={3} style={{ marginBottom: "16px", fontStyle: "italic", color: "#595959" }}>
-                    &quot;{randomQuote.quote}&quote;
+                    &quot;{randomQuote.quote}&quot;
                   </Title>
                   <Text strong style={{ color: "#1890ff" }}>
                     - {randomQuote.author}
