@@ -57,10 +57,13 @@ export interface TransactionValuesState {
 
 export interface User {
     user_id: number
-    name: string
+    first_name: string
+    last_name: string
     email: string
     hashed_password: string
     user_type: string
+    email_verified: number
+    age?: number
     last_login?: string
     address?:string
     active?:number
@@ -94,7 +97,7 @@ export interface CashiersTransaction
 
 export interface ParticularDefinition {
     id: number;
-    name: string;
+    particular: string;
     type: 'Trade' | 'Non-Trade';
-    fee_percent: number;
+    particular_fee_percent: number;
   }

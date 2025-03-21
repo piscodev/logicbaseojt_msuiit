@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // Generate JWT Token (expires in 1 day)
     const token = jwt.sign(
-      { user_id: rows[0].user_id, email: rows[0].email, name: rows[0].name }, // Include name in the token
+      { user_id: rows[0].user_id, email: rows[0].email, first_name: rows[0].first_name }, // Include name in the token
       process.env.JWT_SECRET!,
       { expiresIn: "1d" }
     );
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     // Store token in cookies (Secure, HTTPOnly)
     const response = NextResponse.json(
-      { message: "Login successful", user: { user_id: rows[0].user_id, name: rows[0].name, email: rows[0].email, user_type: rows[0].user_type } }, 
+      { message: "Login successful", user_id: rows[0].user_id, first_name: rows[0].first_name, last_name: rows[0].last_name, email: rows[0].email, user_type: rows[0].user_type, contact_number: rows[0].contact_number, age: rows[0].age }, 
       { status: 200 }
     );
     response.headers.set(

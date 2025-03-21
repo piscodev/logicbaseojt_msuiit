@@ -70,13 +70,14 @@ const CameraCapture = () =>
     if (!user)
       return
 
-    const name = user?.name;
+    const first_name = user?.first_name;
+    const last_name = user?.last_name;
     const response = await fetch('/api/attendance/get', {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({name})
+      body: JSON.stringify({first_name, last_name})
     })
     const data = await response.json()
     console.log("data attendance exist: ", data);
@@ -130,7 +131,7 @@ const CameraCapture = () =>
       // startCamera()
 
       // retrieveCashierAttendance()
-      if (user?.name)
+      if (user?.first_name && user?.last_name)
         fetchTodayAttendance()
   }, [isTimedIn, user])
 
@@ -203,7 +204,10 @@ const CameraCapture = () =>
           {
             setUser({
               user_id: user.user_id,
-              name: user.name,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              age: user.age,
+              contact_number: user.contact_number,
               email: user.email,
               user_type: user.user_type,
               loginData: {
@@ -257,7 +261,10 @@ const CameraCapture = () =>
           {
             setUser({
               user_id: user.user_id,
-              name: user.name,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              age: user.age,
+              contact_number: user.contact_number,
               email: user.email,
               user_type: user.user_type,
               loginData: {
@@ -282,7 +289,7 @@ const CameraCapture = () =>
   }
 
   return (
-    <Card title={"Attendance | User: " + user?.name}>
+    <Card title={"Attendance | User: " + user?.first_name + " " + user?.last_name}>
       <Space direction="vertical" style={{ marginBottom: '24px' }}>
         <Meta
           title={

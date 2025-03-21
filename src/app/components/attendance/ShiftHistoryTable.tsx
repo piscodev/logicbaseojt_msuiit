@@ -74,7 +74,7 @@ const ShiftHistoryTable:React.FC = () => {
     const [ data, setData ] = useState <DataType[]>()
     const fetchData = async() => {
         if(user){
-            const name = user.name;
+            const name = user.first_name + " " + user.last_name;
             const response = await fetch('/api/attendance/shiftHistory',{
                 method:"POST",
                 headers: { 'Content-Type': 'application/json' },

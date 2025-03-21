@@ -34,7 +34,7 @@ export default function LogoutButton() {
   if(user===null){return null}
   
   // Display actual name and email
-  const userName = user?.name || "";
+  const userName = user?.first_name + " " + user?.last_name|| "";
   const userEmail = user?.email || "";
 
   // Define dropdown menu items

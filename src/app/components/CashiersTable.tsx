@@ -20,7 +20,7 @@ interface DataType {
   age: number
   gender: string
   email: string
-  cl_name: string | null
+  lane_name: string | null
 }
 
 const columns: TableColumnsType<DataType> = [
@@ -84,7 +84,7 @@ const columns: TableColumnsType<DataType> = [
       dataIndex: 'cl_name',
       render:(_: unknown, record: DataType)=>(
         <>
-          {(record.cl_name !== null) ? (record.cl_name) : "Not yet Assigned"}
+          {(record.lane_name !== null) ? (record.lane_name) : "Not yet Assigned"}
         </>
       ),
     },

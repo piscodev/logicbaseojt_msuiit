@@ -63,7 +63,7 @@ export async function POST(req: NextRequest){
                 JOIN users_cashiers c ON t.cashier_id = c.user_cashier_id
                 JOIN users u ON c.user_id = u.user_id
                 JOIN shift s ON t.shift_id = s.shift_id
-                LEFT JOIN transactions_detail td ON t.transaction_id = td.transaction_id
+                LEFT JOIN transaction_detail td ON t.transaction_id = td.transaction_id
                 LEFT JOIN particulars p ON td.particular_id = p.particular_id
                 WHERE t.transaction_date = ?
                 GROUP BY c.user_cashier_id, s.shift_id, p.particular_id
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest){
                 shift = {
                         shift: transaction.shift,
                         transactions: particulars.map(p => ({
-                        particular: p.name,
+                        particular: p.particular,
                         particular_id: p.id,
                         am: 0,
                         mid: 0,
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest){
                         grand_total_am: 0,
                         grand_total_mid: 0,
                         grand_total_pm: 0,
-                        fee_percent: p.fee_percent
+                        fee_percent: p.particular_fee_percent
                         }))
                     };
                     cashier.shifts.push(shift);

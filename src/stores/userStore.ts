@@ -4,9 +4,13 @@ import { persist } from "zustand/middleware";
 
 export type User = {
   user_id?: number | null;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   user_type: string;
+  contact_number: number;
+  age: number;
+  
 
   loginData?: {
     time_in: string;
