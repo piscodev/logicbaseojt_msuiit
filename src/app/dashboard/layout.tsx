@@ -59,11 +59,12 @@ export default function RootLayout({ children }: { children: React.ReactNode })
     if (user === undefined)
       return
 
-    if(user?.user_type === 'admin')
+    if (user?.user_type === 'admin')
     {
       setItems([
         getItem('Dashboard', '/dashboard', false, <PieChartOutlined />),
         getItem('My Profile', '1', true),
+        getItem('Attendance', '/dashboard/attendance', false, <UserOutlined />),
         getItem('Employee Management', 'sub1', false, <UserOutlined />, [
           getItem('Assign Cashiers', '/dashboard/employeeManagement/assignCashiers', false),
           getItem('View Cashiers', '/dashboard/cashiers', false)

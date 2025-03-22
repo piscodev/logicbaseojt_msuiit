@@ -191,15 +191,15 @@ const CameraCapture = () =>
       canvasRef.current.width = width
       canvasRef.current.height = height
       context.drawImage(videoRef.current, 0, 0, width, height)
-  
+
       const imageData = canvasRef.current.toDataURL("image/png")
       photoRef.current.src = imageData
-  
+
       const response = await fetch("/api/attendance/logon",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn }),
+        body: JSON.stringify({ userId: user?.user_id, imageSrc: imageData, time: dateNow, hasTimedIn: isTimedIn, user_type: user?.user_type }),
       })
 
       if (!response.ok)
@@ -219,8 +219,8 @@ const CameraCapture = () =>
               user_id: user.user_id,
               first_name: user.first_name,
               last_name: user.last_name,
-              contact_number:user.contact_number,
-              age:user.age,
+              contact_number: user.contact_number,
+              age: user.age,
               email: user.email,
               user_type: user.user_type,
               loginData: {
@@ -253,9 +253,9 @@ const CameraCapture = () =>
               setUser({
                 user_id: user.user_id,
                 first_name: user.first_name,
-				last_name: user.last_name,
-				contact_number:user.contact_number,
-				age:user.age,
+                last_name: user.last_name,
+                contact_number: user.contact_number,
+                age: user.age,
                 email: user.email,
                 user_type: user.user_type,
                 loginData: {
@@ -266,6 +266,7 @@ const CameraCapture = () =>
                 }
               })
             }
+
             setTimeOutStamp(data.timeOut || 0)
             sendNotification("🔔 Attendance Notification", `Cashier: ${user?.first_name} ${user?.last_name} has successfully Timed-Out!`)
           }
@@ -296,7 +297,7 @@ const CameraCapture = () =>
       console.error("Failed to send notification:", error)
     }
   }
-  
+
   // unoptimized Paklay
   // const takePhoto = async (typ: string) =>
   // {
