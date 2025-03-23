@@ -66,6 +66,18 @@ CREATE TABLE IF NOT EXISTS `users_cashiers_attendance` (
     FOREIGN KEY (`user_cashier_id`) REFERENCES `users_cashiers`(`user_cashier_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Create Attendance table to store time-in and time-out data
+CREATE TABLE IF NOT EXISTS `users_admins_attendance` (
+    `attendance_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `user_admin_id` INT UNSIGNED NOT NULL,
+    `time_in` DATETIME DEFAULT NULL,
+    `time_out` DATETIME DEFAULT NULL,
+    `time_in_image` LONGTEXT DEFAULT NULL,  -- Store image or file path for time-in verification
+    `time_out_image` LONGTEXT DEFAULT NULL, -- Store image or file path for time-out verification
+    `shift` enum('AM','MID','PM') NOT NULL,
+    FOREIGN KEY (`user_admin_id`) REFERENCES `users_admins`(`user_admin_id`) ON DELETE CASCADE
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Shift table
 CREATE TABLE IF NOT EXISTS `shift` (
     `shift_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
