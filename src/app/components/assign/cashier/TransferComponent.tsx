@@ -190,6 +190,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
         // Update both states after all data is ready
         setTableData(tableDataResult.data);
         setCashierLanes(updatedLanes);
+        setActiveLane(updatedLanes[0].lane_id)
       } catch (error) {
         console.error('Error fetching data:', error);
       }

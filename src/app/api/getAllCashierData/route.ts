@@ -4,7 +4,7 @@ import pool from '@/app/lib/Database/db';
 // import { Cashier } from '@/app/lib/Interface/interface';
 // import { User } from '@/app/lib/Interface/interface';
 interface CashierResult {
-    id: number
+    user_cashier_id: number
     name: string
     email: string
     user_type: string
@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
         ) as [CashierResult[],FieldPacket[]];
         // Extract just the names from the result
         const data = rows.map((row: CashierResult) => ({
-            key: String(row.id),
-            id: row.id,
+            key: String(row.user_cashier_id),
+            id: row.user_cashier_id,
             name: row.name,
             last_login: row.last_login,
             address: row.address,
