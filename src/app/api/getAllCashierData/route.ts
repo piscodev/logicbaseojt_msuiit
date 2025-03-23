@@ -44,7 +44,15 @@ export async function POST(req: NextRequest) {
             LEFT JOIN users_cashiers_lane cl 
                 ON c.user_cashier_id = cl.cashier1_id OR c.user_cashier_id = cl.cashier2_id OR c.user_cashier_id = cl.cashier3_id
             WHERE u.user_type = 'cashier' AND c.user_admin_id = ?
-            GROUP BY u.user_id
+            GROUP BY 
+              u.user_id
+              u.last_login,
+              u.active,
+              u.address,
+              u.gender,
+              u.contact_number,
+              c.user_cashier_id,
+              cl.lane_id
             ORDER BY CONCAT(u.first_name, ' ', u.last_name) ASC
             `,
             [user_admin_id]
