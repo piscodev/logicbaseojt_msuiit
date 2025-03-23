@@ -23,8 +23,18 @@ export default function AuthPage() {
         message,
     });
   }
-  const setData = (data: User) => {
-    setUser(data)
+  const setData = (user_id: number, user_admin_id:number, data: User) => {
+    if(data)
+    setUser({
+      user_id:user_id, 
+      user_admin_id:user_admin_id,
+      first_name:data.first_name, 
+      last_name:data.last_name, 
+      email:data.email, 
+      user_type:data.user_type,
+      contact_number:data.contact_number,
+      age:data.age
+    })
     router.push("/dashboard");
   }
 

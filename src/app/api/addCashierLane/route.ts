@@ -3,16 +3,14 @@ import pool from "@/app/lib/Database/db";
 import { FieldPacket, ResultSetHeader } from "mysql2";
 export async function POST(req: Request) {
   try {
-    const { name } = await req.json();
-
-    console.log("Cashier Lane: ", name);
+    const { user_admin_id, lane_name } = await req.json();
 
     // ✅ Check database connection
     const connection = await pool.getConnection();
     try{
       const [result]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-        "INSERT INTO users_cashiers_lane (lane_name) VALUES (?)",
-        [name]
+        "INSERT INTO users_cashiers_lane (lane_name, user_admin_id) VALUES (?, ?)",
+        [lane_name.lane_name, user_admin_id]
       ) as [ResultSetHeader, FieldPacket[]];
       console.log('Inserted Cashier Lane: ', result);
       
@@ -27,7 +25,7 @@ export async function POST(req: Request) {
     }
     
   } catch (error) {
-    console.error("Signup Error:", error);
+    console.error("Adding Cashier Lane Error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

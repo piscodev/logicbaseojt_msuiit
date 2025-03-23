@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `users_cashiers` (
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Create CashierLane table
-CREATE TABLE IF NOT EXISTS `users_cashier_lanes` (
+CREATE TABLE IF NOT EXISTS `users_cashiers_lane` (
     `lane_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `user_admin_id` INT UNSIGNED,
     `lane_name` VARCHAR(50) NOT NULL UNIQUE,
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS `transactions` (
         ON DELETE RESTRICT
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Transaction details (Amounts per particular)
-CREATE TABLE IF NOT EXISTS `transaction_detail` (
+-- Transaction detail (Amounts per particular)
+CREATE TABLE IF NOT EXISTS `transactions_detail` (
     `transaction_detail_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `transaction_id` INT UNSIGNED NOT NULL,
     `particular_id` INT UNSIGNED NOT NULL,

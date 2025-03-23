@@ -12,7 +12,12 @@ export async function POST(req: Request) {
     connection = await pool.getConnection();
     // Fetch user by email
     const [rows]: [User[], FieldPacket[]] = await pool.query(
-      "SELECT * FROM users WHERE email = ?", 
+      `SELECT 
+        u.*, 
+        a.user_admin_id 
+      FROM users u
+      LEFT JOIN users_admins a ON u.user_id = a.user_id 
+      WHERE email = ?`, 
       [email]
     ) as [User[], FieldPacket[]];
     console.log("Rows: ", rows)
@@ -40,7 +45,7 @@ export async function POST(req: Request) {
 
     // Store token in cookies (Secure, HTTPOnly)
     const response = NextResponse.json(
-      { message: "Login successful", user_id: rows[0].user_id, first_name: rows[0].first_name, last_name: rows[0].last_name, email: rows[0].email, user_type: rows[0].user_type, contact_number: rows[0].contact_number, age: rows[0].age }, 
+      { message: "Login successful", user_id: rows[0].user_id, first_name: rows[0].first_name, last_name: rows[0].last_name, email: rows[0].email, user_type: rows[0].user_type, contact_number: rows[0].contact_number, age: rows[0].age, user_admin_id: rows[0].user_admin_id }, 
       { status: 200 }
     );
     response.headers.set(

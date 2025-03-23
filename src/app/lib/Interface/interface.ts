@@ -63,6 +63,8 @@ export interface User {
     hashed_password: string
     user_type: string
     email_verified: number
+    user_admin_id?:number
+    user_cashier_id?:number
     age?: number
     last_login?: string
     address?:string

@@ -18,10 +18,10 @@ interface CashierResult {
     lane_id: number
 }
 import { FieldPacket } from 'mysql2';
-export async function GET(req: NextRequest) {
-  if (req.method === 'GET') {
+export async function POST(req: NextRequest) {
+  if (req.method === 'POST') {
     let connection;
-    // const { startDate, endDate } = await req.json()
+    const { user_admin_id } = await req.json()
     try {
       connection = await pool.getConnection();
       // Query to get all cashier names
@@ -43,10 +43,11 @@ export async function GET(req: NextRequest) {
             LEFT JOIN users_cashiers_attendance a ON c.user_cashier_id = a.user_cashier_id
             LEFT JOIN users_cashiers_lane cl 
                 ON c.user_cashier_id = cl.cashier1_id OR c.user_cashier_id = cl.cashier2_id OR c.user_cashier_id = cl.cashier3_id
-            WHERE u.user_type = 'cashier'
+            WHERE u.user_type = 'cashier' AND c.user_admin_id = ?
             GROUP BY u.user_id
             ORDER BY CONCAT(u.first_name, ' ', u.last_name) ASC
-            `
+            `,
+            [user_admin_id]
         ) as [CashierResult[],FieldPacket[]];
         // Extract just the names from the result
         const data = rows.map((row: CashierResult) => ({

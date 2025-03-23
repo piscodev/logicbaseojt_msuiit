@@ -4,7 +4,7 @@ import type { GetProp, TableColumnsType, TableProps, TransferProps } from 'antd'
 
 type NotificationType = 'success' | 'info' | 'warning' | 'error';
 
-// import { useUserStore } from '@/stores/userStore';
+import { useUserStore } from '@/stores/userStore';
 // import { DateTime } from 'luxon';
 // import { User } from '@/app/lib/Interface/interface';
 type TransferItem = GetProp<TransferProps, 'dataSource'>[number];
@@ -26,8 +26,8 @@ interface DataType {
   lane_id: number | null
 }
 interface CashierLane {
-  id: number;
-  name: string;
+  lane_id: number;
+  lane_name: string;
   assignedCashiers: DataType[];
   initialCashiers: DataType[]; // Holds the original data for comparison
 }
@@ -129,12 +129,17 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
   const TransferComponent: React.FC = () => {
     const [form] = Form.useForm();
     const [targetKeys, setTargetKeys] = useState<TransferProps['targetKeys']>([]);
+    const user = useUserStore((state) => state.user);
     // const [disabled, setDisabled] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
     const [tableData, setTableData] = useState<DataType[]>([]);
     const [cashierLanes, setCashierLanes] = useState<CashierLane[]>([]);// WILL UPDATE THIS TO FETCH ACTUAL LANES FROM API
     const [api, contextHolder] = notification.useNotification();
-
+    let user_admin_id:number
+    if(user){
+      console.log("User: ", user);
+      user_admin_id = user.user_admin_id as number
+    }
     const openNotificationWithIcon = (type: NotificationType, message:string, description:string) => {
       api[type]({
         message: message,
@@ -149,14 +154,22 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
     }
     const fetchAllData = async () => {
       try {
-        const laneResponse = await fetch('/api/getCashierLanes');
+        const laneResponse = await fetch('/api/getCashierLanes',
+          {
+            method: 'POST',
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({user_admin_id})
+          }
+        );
         const lanesData = await laneResponse.json();
         if (!laneResponse.ok) {
           throw new Error('Failed to fetch cashier lanes');
         } 
         console.log('Fetched cashier lanes:', lanesData.data);
         const tableResponse = await fetch(`/api/getAllCashierData`, {
-          method: 'GET'
+          method: 'POST',
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({user_admin_id})
         });
         const tableDataResult = await tableResponse.json()
         if(!tableResponse.ok){
@@ -181,15 +194,15 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
         console.error('Error fetching data:', error);
       }
     };
-    const handleSubmitCashierLane = async(name:string) => {
+    const handleSubmitCashierLane = async(lane_name:string) => {
       try {
-        console.log("cashier lane name", name)
+        console.log("cashier lane name", lane_name)
         const response = await fetch(`/api/addCashierLane`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(name),
+          body: JSON.stringify({user_admin_id, lane_name}),
         });
     
         if (!response.ok) {
@@ -236,7 +249,8 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            laneId: lane.id,
+            user_admin_id: user_admin_id,
+            laneId: lane.lane_id,
             assignedCashiers: lane.assignedCashiers.map((cashier) => cashier.id),
           }),
         });
@@ -248,7 +262,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
         // Update initialCashiers after successful save
         setCashierLanes((prevLanes) =>
           prevLanes.map((prevLane) =>
-            prevLane.id === lane.id
+            prevLane.lane_id === lane.lane_id
               ? {
                   ...prevLane,
                   initialCashiers: [...prevLane.assignedCashiers],
@@ -256,10 +270,10 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
               : prevLane
           )
         );
-        console.log(`Changes saved for ${lane.name}`);
-        openNotificationWithIcon('success', "Success", `Changes saved for ${lane.name}`);
+        console.log(`Changes saved for ${lane.lane_name}`);
+        openNotificationWithIcon('success', "Success", `Changes saved for ${lane.lane_name}`);
       } catch (error) {
-        openNotificationWithIcon('error', "Error", `Failed to save changes for ${lane.name}`);
+        openNotificationWithIcon('error', "Error", `Failed to save changes for ${lane.lane_name}`);
         console.error('Error saving changes:', error);
       }
     };
@@ -270,7 +284,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
       // Update active lane with new assigned cashiers
       setCashierLanes((prevLanes) =>
         prevLanes.map((lane) =>
-          lane.id === activeLane
+          lane.lane_id === activeLane
             ? {
                 ...lane,
                 assignedCashiers: tableData.filter((user) => nextTargetKeys.includes(user.key)), // Store full user objects
@@ -315,14 +329,14 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
         >
           {cashierLanes.map((lane) => (
             <Card
-              key={lane.id}
-              title={lane.name}
+              key={lane.lane_id}
+              title={lane.lane_name}
               style={{
                 margin: '8px',
                 cursor: 'pointer',
-                border: activeLane === lane.id ? '2px solid #1890ff' : undefined
+                border: activeLane === lane.lane_id ? '2px solid #1890ff' : undefined
               }}
-              onClick={() => setActiveLane(lane.id)}
+              onClick={() => setActiveLane(lane.lane_id)}
               actions={[
                 <>
                 {!areCashiersEqual(lane.assignedCashiers, lane.initialCashiers) && (
@@ -344,7 +358,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
                     (cashier) => String(cashier.key) === String(user.key)
                   );
                   if (found) {
-                    console.log(`User matched for lane ${lane.name}:`, user.name); // ✅ Debug here
+                    console.log(`User matched for lane ${lane.lane_name}:`, user.name); // ✅ Debug here
                   }
                   return found;
                 })}
@@ -366,7 +380,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
           form={form}
           layout="vertical"
           onFinish={handleSubmitCashierLane}>
-            <Form.Item label="Cashier Lane Name" name="name"rules={[{ required: true, message: 'Please input the cashier lane name!' }]}>
+            <Form.Item label="Cashier Lane Name" name="lane_name"rules={[{ required: true, message: 'Please input the cashier lane name!' }]}>
               <Input />
             </Form.Item>
             <Form.Item>
@@ -377,7 +391,7 @@ const areCashiersEqual = (arr1: DataType[], arr2: DataType[]) => {
           </Form>
         </Drawer>
         <TableTransfer
-          titles={["Cashiers", `${activeLane !== null && cashierLanes.find((lane) => lane.id === activeLane)?.name}`]}
+          titles={["Cashiers", `${activeLane !== null && cashierLanes.find((lane) => lane.lane_id === activeLane)?.lane_name}`]}
           dataSource={tableData.filter((user) => user.lane_id === null || user.lane_id === activeLane)}
           targetKeys={targetKeys}
           // disabled={disabled}

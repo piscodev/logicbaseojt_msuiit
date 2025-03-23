@@ -9,7 +9,7 @@ import {
   Typography
 } from 'antd';
 import { useCashierStore } from '@/stores/cashierStore';
-
+import { useUserStore, type User } from '@/stores/userStore';
 const { Option } = Select;
 const { Text } = Typography;
 interface SignUpData {
@@ -24,6 +24,8 @@ interface SignUpData {
   gender: 'Male' | 'Female' | 'Not specified';
   position: string;
   user_type: string;
+  user_admin_id:number;
+  admin_position?: string;
   rate?: number;
   // title?: string;
   // error?: string;
@@ -59,11 +61,17 @@ interface SignUpProps {
   user_type?: string,
   title?: string,
   change?: () => void,
-  setAdminData?: (data:SignUpData) => void,
+  setAdminData?: (user_id: number, user_admin_id: number, data:User) => void,
   responseMessage: (title:string, message:string, type:NotificationType) => void
 }
 const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, setAdminData}) => {
   const [form] = Form.useForm();
+  const {user} = useUserStore((state) => state)
+  let adminId = null
+  if(user_type && user){
+    adminId = user.user_admin_id;
+    console.log("Admin id: ", user.user_admin_id)
+  }
   const clearCashiers = useCashierStore((state) => state.clearCashiers)
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -82,7 +90,7 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
       }
 
       if(setAdminData) // Sign Up form in main menu - admin
-      setAdminData(values)
+      setAdminData( data.user.user_id, data.user.user_admin_id, values)
       else
       clearCashiers() // Sign Up form in admin dashboard - add cashier
 
@@ -106,7 +114,8 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
       onFinish={onFinish}
       size='large'
       initialValues={{  
-        user_type: user_type || "admin" 
+        user_type: user_type || "admin",
+        user_admin_id: user_type ? adminId : null,
       }}
       style={{ maxWidth: 600 }}
       scrollToFirstError
@@ -114,7 +123,6 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
       <Form.Item
         name="user_type"
         label="Role"
-        
         noStyle
         rules={[{ required: true, message: 'Please select user type!' }]}
         >
@@ -124,6 +132,12 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
             <Option value="admin">Admin</Option>
             <Option value="cashier">Cashier</Option>
           </Select>
+      </Form.Item>
+      <Form.Item
+      name="user_admin_id"
+      noStyle
+      >
+        <InputNumber style={{visibility:'hidden'}} />
       </Form.Item>
       
       <Form.Item
@@ -154,6 +168,13 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
           </Form.Item>
         </Space.Compact>
       </Form.Item>
+
+      {!user_type&&<Form.Item
+      name="admin_position"
+      label="Position"
+      >
+        <Input style={{visibility:user_type?'hidden':'visible'}} />
+      </Form.Item>}
       
       <Form.Item
         name="email"
@@ -161,11 +182,11 @@ const SignUpForm: React.FC<SignUpProps> = ({user_type, change, responseMessage, 
         rules={[
           {
             type: 'email',
-            message: 'The input is not valid E-mail!',
+            message: 'The input is not valid email!',
           },
           {
             required: true,
-            message: 'Please input your E-mail!',
+            message: 'Please input your email!',
           },
         ]}
       >

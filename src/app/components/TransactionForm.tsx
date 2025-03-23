@@ -10,6 +10,7 @@ import { TransactionValuesState } from '../lib/Interface/interface';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { useCashierStore } from '@/stores/cashierStore';
+import { useUserStore } from '@/stores/userStore';
 export const dynamic = 'force-dynamic';
 
 type NotificationType = 'success' | 'info' | 'warning' | 'error';
@@ -24,6 +25,7 @@ interface TransactionFormProps {
 const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDate}) => {
     const [form] = Form.useForm();
     const cashiersStore = useCashierStore((state)=>state.cashiers)
+    const user = useUserStore((state) => state.user)
     const setCashiersStore = useCashierStore((state)=>state.setCashiers)
     const clearItems = useTransactionStore((state)=>state.clearItems)
     // const [messageApi, contextHolder] = message.useMessage();
@@ -31,11 +33,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({onProcess, selectedDat
     const [cashiers, setCashiers] = useState<AutoCompleteProps['options']>([]);
     const [isCashierNotAllowed, setIsCashierNotAllowed] = useState<boolean>(true);
     const [message, setMessage] = useState('')
+    let user_admin_id:number;
+    if(user){
+        user_admin_id = user.user_admin_id as number
+    }
     clearItems();//Ensure Items are cleared on component load.
     const fetchCashiers = async() => {
         try{
             const response = await fetch(`/api/getCashierNames`, {
-                method:"GET"
+                method:"POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_admin_id })
             });
 
             const data = await response.json();
