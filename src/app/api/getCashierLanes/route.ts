@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/app/lib/Database/db';
 import { RowDataPacket } from 'mysql2';
 
@@ -19,21 +19,22 @@ interface DataType {
 }
 
 interface CashierLane {
-  id: number;
-  name: string;
+  lane_id: number;
+  lane_name: string;
   assignedCashiers: DataType[];
   initialCashiers: DataType[];
 }
 
-export async function GET() {
+export async function POST(req: NextRequest) {
   try {
+    const { user_admin_id } = await req.json()
     const connection = await pool.getConnection();
 
     // Fetch all cashier lanes and their assigned cashiers
     const [lanes] = await connection.execute<RowDataPacket[]>(
       `
       SELECT 
-        CL.lane_id AS id, CL.lane_name AS name,
+        CL.lane_id, CL.lane_name,
         C1.user_cashier_id AS cashier1_id, CONCAT(U1.first_name, ' ', U1.last_name) AS user1_name, U1.email AS user1_email, 
         U1.user_type AS user1_type, U1.last_login AS user1_last_login, U1.address AS user1_address,
         U1.active AS user1_active, U1.gender AS user1_gender, U1.contact_number AS user1_contact_number,
@@ -53,7 +54,9 @@ export async function GET() {
       LEFT JOIN users U2 ON C2.user_id = U2.user_id
       LEFT JOIN users_cashiers C3 ON CL.cashier3_id = C3.user_cashier_id
       LEFT JOIN users U3 ON C3.user_id = U3.user_id
-      `
+      WHERE CL.user_admin_id = ?
+      `,
+      [user_admin_id]
     );
 
     // Transform the data into the desired structure
@@ -81,8 +84,8 @@ export async function GET() {
       });
 
       return {
-        id: lane.id,
-        name: lane.name,
+        lane_id: lane.lane_id,
+        lane_name: lane.lane_name,
         assignedCashiers:assignedCashiers,
         initialCashiers: assignedCashiers, // Set initialCashiers for comparison
       };

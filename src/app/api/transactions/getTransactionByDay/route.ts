@@ -131,11 +131,11 @@ export async function POST(req: NextRequest) {
         const net = gross * Number((1 - (particular.particular_fee_percent / 100)));
         let currentKey;
         if(particular.particular_type === 'Trade'){
-            currentKey = (index + 1).toString();
+            currentKey = Number(index + 1).toString();
             grossTradeTotal += Number(gross);
             netTradeTotal += Number(net);
         } else {
-            currentKey = (index + 2).toString();
+            currentKey = Number(index + 2).toString();
             grossNonTradeTotal += Number(gross);
             netNonTradeTotal += Number(net);
         }
@@ -213,6 +213,8 @@ export async function POST(req: NextRequest) {
             }
         }
       });
+      const returnData = JSON.stringify({data: [cashierRow, ...tradeRows, ...nonTradeRows]})
+      console.log("Data: ", returnData)
 
       return NextResponse.json({
         data: [cashierRow, ...tradeRows, ...nonTradeRows]

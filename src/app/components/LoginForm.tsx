@@ -71,7 +71,7 @@ const LoginForm: React.FC<FormProps> = ({change, responseMessage}) => {
         }
         responseMessage(data.title, data.message, 'success')
         if(data)
-        setUser({ user_id: data.user_id, first_name: data.first_name, last_name:data.last_name, contact_number: data.contact_number ,email: data.email, user_type: data.user_type, age: data.age })
+        setUser({ user_id: data.user_id, first_name: data.first_name, last_name:data.last_name, contact_number: data.contact_number ,email: data.email, user_type: data.user_type, age: data.age, user_admin_id:data.user_admin_id })
         router.push("/dashboard");
         return
     } catch (error) {

@@ -7,7 +7,7 @@ import { FieldPacket, ResultSetHeader } from "mysql2";
 import { DateTime } from "luxon";
 export async function POST(req: Request) {
   try {
-    const { first_name, last_name, contact_number, address, gender, email, age, password, user_type, rate } = await req.json();
+    const { first_name, last_name, contact_number, address, gender, email, age, password, user_type, rate, admin_position, user_admin_id } = await req.json();
     console.log("Rate: ", rate)
     console.log("Type: ", user_type)
     console.log("Password: ", password)
@@ -54,12 +54,20 @@ export async function POST(req: Request) {
       console.log('Inserted user ');
 
       const userId = result.insertId;
+      let userAdminId = null;
       if(user_type!=='admin'){
         const [cashier]: [ResultSetHeader, FieldPacket[]] = await connection.query(
-          "INSERT INTO users_cashiers (user_id, rate) VALUES (?, ?)",
-          [userId, rate]
+          "INSERT INTO users_cashiers (user_id, rate, user_admin_id) VALUES (?, ?, ?)",
+          [userId, rate, user_admin_id]
         ) as [ResultSetHeader, FieldPacket[]];
         console.log("Inserted Cashier: ", cashier)
+      } else if (user_type === 'admin') {
+        const [admin]: [ResultSetHeader, FieldPacket[]] = await connection.query(
+          "INSERT INTO users_admins (user_id, admin_position) VALUES (?, ?)",
+          [userId, admin_position]
+        ) as [ResultSetHeader, FieldPacket[]];
+        console.log("Inserted Admin: ", admin)
+        userAdminId = admin.insertId
       }
       
       // ✅ Generate JWT Token
@@ -72,7 +80,7 @@ export async function POST(req: Request) {
       const response = NextResponse.json({ 
         message: user_type==="cashier"?"Cashier registered successfully!":"User registered successfully!", 
         title: "Account Created!",
-        user: { id: result.insertId, email } 
+        user: { user_id: userId, user_admin_id: userAdminId} 
       },
         { status: 201 }
       );

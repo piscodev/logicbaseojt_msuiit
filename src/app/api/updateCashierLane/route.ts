@@ -5,7 +5,7 @@ import { ResultSetHeader, FieldPacket } from 'mysql2';
 export async function POST(req: Request) {
   try {
     // Parse request body
-    const { laneId, assignedCashiers }: { laneId: number; assignedCashiers: number[] } = await req.json();
+    const { user_admin_id, laneId, assignedCashiers }: { user_admin_id:number, laneId: number; assignedCashiers: number[] } = await req.json();
     console.log('laneId:', laneId);
     console.log('assignedCashiers:', assignedCashiers);
     if (!laneId || !Array.isArray(assignedCashiers)) {
@@ -26,12 +26,13 @@ export async function POST(req: Request) {
         `
         UPDATE users_cashiers_lane
         SET
+          user_admin_id = ?,
           cashier1_id = ?,
           cashier2_id = ?,
           cashier3_id = ?
         WHERE lane_id = ?
         `,
-        [...cashierIds, laneId]
+        [user_admin_id, ...cashierIds, laneId]
       ) as [ResultSetHeader, FieldPacket[]];
 
       if (result.affectedRows === 0) {
