@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
                 ON c.user_cashier_id = cl.cashier1_id OR c.user_cashier_id = cl.cashier2_id OR c.user_cashier_id = cl.cashier3_id
             WHERE u.user_type = 'cashier' AND c.user_admin_id = ?
             GROUP BY 
-              u.user_id
+              u.user_id,
               u.last_login,
               u.active,
               u.address,
