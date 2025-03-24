@@ -81,7 +81,7 @@ const CameraCapture = () =>
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_id })
+      body: JSON.stringify({ user_id, user_type: user.user_type }),
     })
 
     const data = await response.json()

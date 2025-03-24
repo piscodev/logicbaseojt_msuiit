@@ -11,16 +11,17 @@ interface ShiftHistoryData {
     first_name: string,
     last_name: string
 }
+
 export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
-        const { user_id } = await req.json();
-        
+        const { user_id, user_type } = await req.json();
+
         let connection;
         try {
             connection = await pool.getConnection();
             // await connection.beginTransaction();
             // console.log('Connection established, begin transaction')
-            
+
             // const query = `
             // SELECT 
             // DATE(a.time_in) AS shift_date,
@@ -40,26 +41,47 @@ export async function POST(req: NextRequest) {
             // GROUP BY DATE(a.time_in), a.time_in, a.time_out
             // ORDER BY a.time_in DESC
             // `;
-            
-            const query = `
-                SELECT
-                    DATE(a.time_in) AS shift_date,
-                    a.time_in,
-                    a.time_out,
-                    COALESCE(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60, 0) AS total_hours_worked,
-                    a.shift,
-                    u.first_name,
-                    u.last_name
-                FROM users_cashiers_attendance a
-                JOIN users_cashiers c ON a.user_cashier_id = c.user_cashier_id
-                JOIN users u ON c.user_id = u.user_id
-                WHERE u.user_id = ?
-                GROUP BY shift_date, a.time_in, a.time_out, a.shift
-                ORDER BY a.time_in DESC
-            `
+
+            let query
+            if (user_type !== 'admin')
+            {
+                query = `
+                    SELECT
+                        DATE(a.time_in) AS shift_date,
+                        a.time_in,
+                        a.time_out,
+                        COALESCE(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60, 0) AS total_hours_worked,
+                        a.shift,
+                        u.first_name,
+                        u.last_name
+                    FROM users_cashiers_attendance a
+                    JOIN users_cashiers c ON a.user_cashier_id = c.user_cashier_id
+                    JOIN users u ON c.user_id = u.user_id
+                    WHERE u.user_id = ?
+                    GROUP BY shift_date, a.time_in, a.time_out, a.shift
+                    ORDER BY a.time_in DESC
+                `
+            } else {
+
+                query = `
+                    SELECT
+                        DATE(a.time_in) AS shift_date,
+                        a.time_in,
+                        a.time_out,
+                        COALESCE(TIMESTAMPDIFF(MINUTE, a.time_in, a.time_out) / 60, 0) AS total_hours_worked,
+                        a.shift,
+                        u.first_name,
+                        u.last_name
+                    FROM users_attendance a
+                    JOIN users u ON a.user_id = u.user_id
+                    WHERE u.user_id = ?
+                    GROUP BY shift_date, a.time_in, a.time_out, a.shift
+                    ORDER BY a.time_in DESC
+                `
+            }
 
             const [shiftHistory]:[ShiftHistoryData[], FieldPacket[]] = await connection.query(query, [user_id]) as [ShiftHistoryData[], FieldPacket[]];
-            
+                
             const data = shiftHistory.map((row: ShiftHistoryData, index:number) => ({
                 key: index,
                 name: row.first_name + ' ' + row.last_name,
@@ -69,12 +91,12 @@ export async function POST(req: NextRequest) {
                 time_out: row.time_out,
                 total_hours_worked: row.total_hours_worked,
             }));
+
             return NextResponse.json(
                 { data },
                 { status: 200 }
                 );
-
-            
+                
         } catch (error) {
             if (connection) await connection.rollback();
             console.error('Transaction Error:', error);

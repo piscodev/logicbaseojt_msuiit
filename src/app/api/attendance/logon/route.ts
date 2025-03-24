@@ -134,7 +134,7 @@ export async function POST(req: NextRequest)
             // admin attendance TODO
 
             // check if timed-out already
-            const checkTimedOut = "SELECT * FROM users_attendance WHERE user_id = (SELECT u.user_id FROM users u JOIN users_attendance ua ON u.user_id = ua.user_id WHERE u.user_id = ?) AND DATE(time_out) = CURDATE() AND shift = ?"
+            const checkTimedOut = "SELECT * FROM users_attendance WHERE user_id = ? AND DATE(time_out) = CURDATE() AND shift = ?"
             const [row_check]: [AttendanceData[], FieldPacket[]] = await conn.execute(checkTimedOut, [userId, shift]) as [AttendanceData[], FieldPacket[]]
             if (row_check.length === 1)
             {
@@ -153,13 +153,13 @@ export async function POST(req: NextRequest)
             }
 
             // kung naa na PM si specific user kay check for tomorrow napd
-            const checkOccupiedShifts = "SELECT * FROM users_attendance WHERE user_id = (SELECT u.user_id FROM users u JOIN users_attendance ua ON u.user_id = ua.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = 'PM'"
+            const checkOccupiedShifts = "SELECT * FROM users_attendance WHERE user_id = ? AND DATE(time_in) = CURDATE() AND shift = 'PM'"
             const [row_shift]: [AttendanceData[], FieldPacket[]] = await conn.execute(checkOccupiedShifts, [userId]) as [AttendanceData[], FieldPacket[]]
             if (row_shift.length === 1)
                 return NextResponse.json({ type: "info", message: "Unable to Time-Out, try again tomorrow!" }, { status: 200 })
 
             // check if naka time-in
-            const query = "SELECT * FROM users_attendance WHERE user_id = (SELECT u.user_id FROM users u JOIN users_attendance ua ON u.user_id = ua.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ?"
+            const query = "SELECT * FROM users_attendance WHERE user_id = ? AND DATE(time_in) = CURDATE() AND shift = ?"
             const [rows]: [AttendanceData[], FieldPacket[]] = await conn.execute(query, [userId, shift]) as [AttendanceData[], FieldPacket[]]
             if (rows.length === 0)
             {
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest)
                     return NextResponse.json({ type: "error", message: "Failed to insert record" }, { status: 500 })
 
                 // Re-query the updated record
-                const reQuery = "SELECT * FROM users_attendance WHERE user_id = (SELECT u.user_id FROM users u JOIN users_attendance ua ON u.user_id = ua.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ? AND time_in_image = ?"
+                const reQuery = "SELECT * FROM users_attendance WHERE user_id = ? AND DATE(time_in) = CURDATE() AND shift = ? AND time_in_image = ?"
                 const [updatedRow]: [AttendanceData[], FieldPacket[]] = await conn.execute(reQuery, [userId, shift, imageSrc]) as [AttendanceData[], FieldPacket[]]
                 if (updatedRow.length === 0)
                     return NextResponse.json({ type: "success", message: "Timed-In successfully!", timeIn: initTime.getTime()}, { status: 200 })
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest)
             await conn.execute("UPDATE users_attendance SET time_out = ?, time_out_image = ? WHERE user_id = ? AND DATE(time_in) = CURDATE() AND shift = ?", [initTime, imageSrc, userId, shift])
 
             // Re-query the updated record
-            const reQuery = "SELECT * FROM users_attendance WHERE user_id = (SELECT u.user_id FROM users u JOIN users_attendance ua ON u.user_id = ua.user_id WHERE u.user_id = ?) AND DATE(time_in) = CURDATE() AND shift = ?"
+            const reQuery = "SELECT * FROM users_attendance WHERE user_id = ? AND DATE(time_in) = CURDATE() AND shift = ?"
             const [updatedRow]: [AttendanceData[], FieldPacket[]] = await conn.execute(reQuery, [userId, shift]) as [AttendanceData[], FieldPacket[]]
             if (updatedRow.length === 0)
                 return NextResponse.json({ type: "success", message: "Timed-Out successfully!", timeOut: initTime.getTime(),  }, { status: 200 })

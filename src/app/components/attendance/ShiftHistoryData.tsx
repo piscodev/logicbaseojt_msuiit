@@ -81,7 +81,7 @@ const ShiftHistoryData:React.FC = () => {
             const response = await fetch('/api/attendance/shiftHistory',{
                 method:"POST",
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name, user_type: user.user_type })
             })
             if(!response.ok){
                 console.error("Error getting Cashier data");
